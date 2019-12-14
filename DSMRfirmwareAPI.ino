@@ -812,8 +812,10 @@ void setup()
   //httpServer.serveStatic("/DSMRgraphics.js",  SPIFFS, "/DSMRgraphics.js");
   httpServer.serveStatic("/FSexplorer.png",   SPIFFS, "/FSexplorer.png");
 
-  httpServer.on("/restAPI", HTTP_GET, restAPI);
-  httpServer.on("/restapi", HTTP_GET, restAPI);
+  httpServer.on("/api/devinfo", HTTP_GET, restAPI);
+  httpServer.on("/api/actual",  HTTP_GET, restAPI);
+  httpServer.on("/api/long",    HTTP_GET, restAPI);
+  httpServer.on("/api",         HTTP_GET, restAPI);
 
   httpServer.begin();
   DebugTln( "HTTP server gestart\r" );
