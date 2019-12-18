@@ -45,8 +45,19 @@ void setupFSexplorer()    // Funktionsaufruf "spiffs();" muss im Setup eingebund
   httpServer.on("/update", updateFirmware);
   httpServer.onNotFound([]() 
   {
-    if (!handleFile(httpServer.urlDecode(httpServer.uri())))
-      httpServer.send(404, "text/plain", "FileNotFound");
+    DebugTf("in 'onNotFound()'!! [%s] => ", String(httpServer.uri()).c_str());
+    if (httpServer.uri().indexOf("/api/") == 0) 
+    {
+      Debugf("next: processAPI(%s)\r\n", String(httpServer.uri()).c_str());
+      processAPI();
+    }
+    else
+    {
+      Debugf("next: handleFile(%s)\r\n"
+                      , String(httpServer.urlDecode(httpServer.uri())).c_str());
+      if (!handleFile(httpServer.urlDecode(httpServer.uri())))
+        httpServer.send(404, "text/plain", "FileNotFound");
+    }
   });
   
 } // setupFSexplorer()
@@ -58,7 +69,7 @@ void APIlistFiles()             // Senden aller Daten an den Client
   FSInfo SPIFFSinfo;
 
   typedef struct _fileMeta {
-    char    Name[20];     
+    char    Name[30];     
     int32_t Size;
   } fileMeta;
 
@@ -69,7 +80,7 @@ void APIlistFiles()             // Senden aller Daten an den Client
   while (dir.next())  
   {
     dirMap[fileNr].Name[0] = '\0';
-    strncat(dirMap[fileNr].Name, dir.fileName().substring(1).c_str(), 19); // remove leading '/'
+    strncat(dirMap[fileNr].Name, dir.fileName().substring(1).c_str(), 29); // remove leading '/'
     dirMap[fileNr].Size = dir.fileSize();
     fileNr++;
   }
@@ -119,7 +130,7 @@ bool handleFile(String&& path)
   if (httpServer.hasArg("delete")) 
   {
     DebugTf("Delete -> [%s]\n\r",  httpServer.arg("delete").c_str());
-    SPIFFS.remove(httpServer.arg("delete"));        // Datei löschen
+    SPIFFS.remove(httpServer.arg("delete"));    // Datei löschen
     httpServer.sendContent(Header);
     return true;
   }

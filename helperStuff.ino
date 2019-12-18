@@ -70,21 +70,21 @@ boolean isValidIP(IPAddress ip)
   return _isValidIP;
 } //  isValidIP()
 
-/****
+
 //===========================================================================================
-String macToStr(const uint8_t* mac) 
+bool isNumericp(const char *timeStamp, int8_t len)
 {
-  String result;
-  for (int i = 0; i < 6; ++i) 
+  for (int i=0; (i<len && i<12);i++)
   {
-    result += String(mac[i], 16);
-    if (i < 5)
-      result += ':';
+    if (timeStamp[i] < '0' || timeStamp[i] > '9')
+    {
+      return false;
+    }
   }
-  return result;
+  return true;
   
-} // macToStr()
-****/
+} // isNumericp()
+
 
 //===========================================================================================
 int8_t splitString(String inStrng, char delimiter, String wOut[], uint8_t maxWords) 
@@ -184,6 +184,47 @@ void strConcat(char *dest, int maxLen, int32_t v)
 
 
 //===========================================================================================
+void strToLower(char *src)
+{
+  for (int i = 0; i < strlen(src); i++)
+  {
+    if (src[i] == '\0') return;
+    if (src[i] >= 'A' && src[i] <= 'Z')
+        src[i] += 32;
+  }
+} // strToLower()
+
+//===========================================================================================
+// a 'save' string copy
+void strCopy(char *dest, int maxLen, const char *src, uint8_t frm, uint8_t to)
+{
+  int d=0;
+//DebugTf("dest[%s], src[%s] max[%d], frm[%d], to[%d] =>\r\n", dest, src, maxLen, frm, to);
+  dest[0] = '\0';
+  for (int i=0; i<=frm; i++)
+  {
+    if (src[i] == 0) return;
+  }
+  for (int i=frm; (src[i] != 0  && i<=to && d<maxLen); i++)
+  {
+    dest[d++] = src[i];
+  }
+  dest[d] = '\0';
+    
+} // strCopy()
+
+//===========================================================================================
+// a 'save' version of strncpy() that does not put a '\0' at
+// the end of dest if src >= maxLen!
+void strCopy(char *dest, int maxLen, const char *src)
+{
+  dest[0] = '\0';
+  strcat(dest, src);
+    
+} // strCopy()
+
+
+//===========================================================================================
 char *intToStr(int32_t v)
 {
   static char buff[25];
@@ -213,6 +254,24 @@ float formatFloat(float v, int dec)
   return (String(v, dec).toFloat());
 
 } //  formatFloat()
+
+
+//=======================================================================        
+template<typename Item>
+Item& typecastValue(Item& i) 
+{
+  return i;
+}
+
+String typecastValue(TimestampedFixedValue i) 
+{
+  return String(i);
+}
+  
+float typecastValue(FixedValue i) 
+{
+  return i;
+}
 
 /***************************************************************************
 *

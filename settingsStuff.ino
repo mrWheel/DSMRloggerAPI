@@ -37,7 +37,7 @@ void writeSettings()
   file.print("FontColor = ");         file.println(settingFontColor);           Debug(F("."));
 
 #ifdef USE_MQTT
-  //sprintf(settingMQTTbroker, "%s:%d", MQTTbrokerURL, MQTTbrokerPort);
+  sprintf(settingMQTTbroker, "%s:%d", MQTTbrokerURL, MQTTbrokerPort);
   file.print("MQTTbroker = ");        file.println(settingMQTTbroker);          Debug(F("."));
   file.print("MQTTUser = ");          file.println(settingMQTTuser);            Debug(F("."));
   file.print("MQTTpasswd = ");        file.println(settingMQTTpasswd);          Debug(F("."));
@@ -65,7 +65,7 @@ void writeSettings()
     DebugT(F("FontColor = "));         Debugln(settingFontColor);   
 
 #ifdef USE_MQTT
-    //sprintf(settingMQTTbroker, "%s:%d", MQTTbrokerURL, MQTTbrokerPort);
+    sprintf(settingMQTTbroker, "%s:%d", MQTTbrokerURL, MQTTbrokerPort);
     DebugT(F("MQTTbroker = "));        Debugln(settingMQTTbroker);          
     DebugT(F("MQTTUser = "));          Debugln(settingMQTTuser);     
   #ifdef SHOW_PASSWRDS       
@@ -103,8 +103,8 @@ void readSettings(bool show)
   settingGNBK       = 11.11;
   settingInterval   = 10; // seconds
   settingSleepTime  =  0; // infinite
-  strcpy(settingBgColor, "deepskyblue");
-  strcpy(settingFontColor, "white");
+  strCopy(settingBgColor, sizeof(settingBgColor), "deepskyblue");
+  strCopy(settingFontColor, sizeof(settingFontColor), "white");
   settingMQTTbroker[0]     = '\0';
   settingMQTTuser[0]       = '\0';
   settingMQTTpasswd[0]     = '\0';
@@ -150,40 +150,40 @@ void readSettings(bool show)
     if (words[0].equalsIgnoreCase("SleepTime"))         settingSleepTime    = words[1].toInt();  
     if (words[0].equalsIgnoreCase("TelegramInterval"))  settingInterval     = words[1].toInt();  
 
-    //if (words[0].equalsIgnoreCase("BackgroundColor")) strcpy(settingBgColor,   String(nColor).substring(0,(MAXCOLORNAME - 1)).c_str());  
-    if (words[0].equalsIgnoreCase("BackgroundColor"))   strncpy(settingBgColor,   words[1].c_str(), (MAXCOLORNAME - 1));  
-    //if (words[0].equalsIgnoreCase("FontColor"))       strcpy(settingFontColor, String(nColor).substring(0,(MAXCOLORNAME - 1)).c_str());  
-    if (words[0].equalsIgnoreCase("FontColor"))         strncpy(settingFontColor,  words[1].c_str(), (MAXCOLORNAME - 1)); 
+    //if (words[0].equalsIgnoreCase("BackgroundColor")) strncpy(settingBgColor,   String(nColor).substring(0,(MAXCOLORNAME - 1)).c_str());  
+    if (words[0].equalsIgnoreCase("BackgroundColor"))   strCopy(settingBgColor, (MAXCOLORNAME - 1),   words[1].c_str());  
+    //if (words[0].equalsIgnoreCase("FontColor"))       strncpy(settingFontColor, String(nColor).substring(0,(MAXCOLORNAME - 1)).c_str());  
+    if (words[0].equalsIgnoreCase("FontColor"))         strCopy(settingFontColor, (MAXCOLORNAME - 1),  words[1].c_str()); 
 
-    if (words[0].equalsIgnoreCase("MindergasAuthtoken"))  strncpy(settingMindergasAuthtoken, words[1].c_str(), 20);  
+    if (words[0].equalsIgnoreCase("MindergasAuthtoken"))  strCopy(settingMindergasAuthtoken, 20, words[1].c_str());  
    
 #ifdef USE_MQTT
     if (words[0].equalsIgnoreCase("MQTTbroker"))  {
       memset(settingMQTTbroker, '\0', sizeof(settingMQTTbroker));
       memset(MQTTbrokerURL, '\0', sizeof(MQTTbrokerURL));
-      //strcpy(settingMQTTbroker, String(words[1]).substring(0, 100).c_str());
-      strncpy(settingMQTTbroker, words[1].c_str(), 100);
-      int cln = String(settingMQTTbroker).indexOf(":");
-      if (Verbose1) DebugTf("settingMQTTbroker[%s] => found[:] @[%d]\r\n", settingMQTTbroker, cln);
+      strCopy(settingMQTTbroker, 100, words[1].c_str());
+      int cln = String(settingMQTTbroker).indexOf(":",0);
+      DebugTf("settingMQTTbroker[%s] => found[:] @[%d]\r\n", settingMQTTbroker, cln);
       if (cln > -1) 
       {
-        //strcpy(MQTTbrokerURL, String(settingMQTTbroker).substring(0,cln).c_str());
-        strncpy(MQTTbrokerURL, settingMQTTbroker, cln);
-        DebugTf("->Port[%s]\r\n", String(settingMQTTbroker).substring((cln+1)).c_str());
         MQTTbrokerPort = String(settingMQTTbroker).substring((cln+1)).toInt();
+        settingMQTTbroker[cln] = '\0';
+        strCopy(MQTTbrokerURL, cln, settingMQTTbroker);
+        //DebugTf("URL[%s]->Port[%d]\r\n", MQTTbrokerURL, MQTTbrokerPort);
+        sprintf(settingMQTTbroker, "%s:%d", MQTTbrokerURL, MQTTbrokerPort);
+        //DebugTf("new -> settingMQTTbroker[%s]\r\n", settingMQTTbroker);
       } 
       else 
       {
-        strncpy(MQTTbrokerURL, settingMQTTbroker, 100);
-        Debugln();
+        strCopy(MQTTbrokerURL, 100, settingMQTTbroker);
         MQTTbrokerPort = 1883;
       }
-      DebugTf("=> MQTTbrokerURL[%s], port[%d]\r\n", MQTTbrokerURL, MQTTbrokerPort);
+      DebugTf("[%s] => MQTTbrokerURL[%s], port[%d]\r\n", settingMQTTbroker, MQTTbrokerURL, MQTTbrokerPort);
     }
-    if (words[0].equalsIgnoreCase("MQTTuser"))          strncpy(settingMQTTuser    , words[1].c_str(), 35);  
-    if (words[0].equalsIgnoreCase("MQTTpasswd"))        strncpy(settingMQTTpasswd  , words[1].c_str(), 25);  
-    if (words[0].equalsIgnoreCase("MQTTinterval"))      settingMQTTinterval        = words[1].toInt();  
-    if (words[0].equalsIgnoreCase("MQTTtopTopic"))      strncpy(settingMQTTtopTopic, words[1].c_str(), 20);  
+    if (words[0].equalsIgnoreCase("MQTTuser"))      strCopy(settingMQTTuser    ,35 ,words[1].c_str());  
+    if (words[0].equalsIgnoreCase("MQTTpasswd"))    strCopy(settingMQTTpasswd  ,25, words[1].c_str());  
+    if (words[0].equalsIgnoreCase("MQTTinterval"))  settingMQTTinterval        = words[1].toInt();  
+    if (words[0].equalsIgnoreCase("MQTTtopTopic"))  strCopy(settingMQTTtopTopic, 20, words[1].c_str());  
 #endif
     
   } // while available()
@@ -208,7 +208,7 @@ void readSettings(bool show)
 #ifdef USE_MQTT
   Debugln(F("\r\n==== MQTT settings ==============================================\r"));
   Debugf("          MQTT broker URL/IP : %s:%d", MQTTbrokerURL, MQTTbrokerPort);
-  if (MQTTisConnected) Debugln(F(" (is Connected!)\r"));
+  if (MQTTclient.connected()) Debugln(F(" (is Connected!)\r"));
   else                 Debugln(F(" (NOT Connected!)\r"));
   Debugf("                   MQTT user : %s\r\n", settingMQTTuser);
 #ifdef SHOW_PASSWRDS
@@ -228,150 +228,6 @@ void readSettings(bool show)
 
 } // readSettings()
 
-
-//=======================================================================
-void writeColors() 
-{
-  yield();
-  DebugTf(" %s .. ", GUI_COLORS_FILE);
-  File file = SPIFFS.open(GUI_COLORS_FILE, "w"); // open for reading and writing
-  if (!file) {
-    Debugf("open(%s, 'w') FAILED!!! --> Bailout\r\n", GUI_COLORS_FILE);
-    return;
-  }
-  yield();
-  Debug(F("Start writing data .."));
-
-  file.print("iniBordEDC = ");        file.println(iniBordEDC);
-  file.print("iniFillEDC = ");        file.println(iniFillEDC);
-  file.print("iniBordERC = ");        file.println(iniBordERC);
-  file.print("iniFillERC = ");        file.println(iniFillERC);
-  file.print("iniBordGDC = ");        file.println(iniBordGDC);
-  file.print("iniFillGDC = ");        file.println(iniFillGDC);
-  file.print("iniBordED2C = ");       file.println(iniBordED2C);
-  file.print("iniFillED2C = ");       file.println(iniFillED2C);
-  file.print("iniBordER2C = ");       file.println(iniBordER2C);
-  file.print("iniFillER2C = ");       file.println(iniFillER2C);
-  file.print("iniBordGD2C = ");       file.println(iniBordGD2C);
-  file.print("iniFillGD2C = ");       file.println(iniFillGD2C);
-  file.print("iniBordPR123C = ");     file.println(iniBordPR123C);
-  file.print("iniFillPR123C = ");     file.println(iniFillPR123C);
-  file.print("iniBordPD1C = ");       file.println(iniBordPD1C);
-  file.print("iniFillPD1C = ");       file.println(iniFillPD1C);
-  file.print("iniBordPD2C = ");       file.println(iniBordPD2C);
-  file.print("iniFillPD2C = ");       file.println(iniFillPD2C);
-  file.print("iniBordPD3C = ");       file.println(iniBordPD3C);
-  file.print("iniFillPD3C = ");       file.println(iniFillPD3C);
-
-  file.close();  
-  
-  Debugln(F(" .. done\r"));
-
-} // writeColors()
-
-
-//=======================================================================
-void readColors(bool show) 
-{
-  String sTmp, nColor;
-  String words[10];
-
-  DebugTf(" %s ..", GUI_COLORS_FILE);
-
-  strcpy(iniFillEDC   , "red");
-  strcpy(iniBordEDC   , "red");
-  strcpy(iniFillERC   , "green");
-  strcpy(iniBordERC   , "green");
-  strcpy(iniFillGDC   , "blue");
-  strcpy(iniBordGDC   , "blue");
-  strcpy(iniFillED2C  , "tomato");
-  strcpy(iniBordED2C  , "tomato");
-  strcpy(iniFillER2C  , "lightgreen");
-  strcpy(iniBordER2C  , "lightgreen");
-  strcpy(iniFillGD2C  , "lightblue");
-  strcpy(iniBordGD2C  , "lightblue");
-  strcpy(iniFillPR123C, "green");
-  strcpy(iniBordPR123C, "green");
-  strcpy(iniFillPD1C  , "yellow");
-  strcpy(iniBordPD1C  , "yellow");
-  strcpy(iniFillPD2C  , "lightgreen");
-  strcpy(iniBordPD2C  , "lightgreen");
-  strcpy(iniFillPD3C  , "lime");
-  strcpy(iniBordPD3C  , "lime");
-
-  if (!SPIFFS.exists(GUI_COLORS_FILE)) 
-  {
-    Debugln(F(" .. file not found! --> created file!\r"));
-    writeColors();
-  }
-
-  File file = SPIFFS.open(GUI_COLORS_FILE, "r");
-
-  //Debugln(F("\r"));
-  while(file.available()) 
-  {
-    sTmp                = file.readStringUntil('\n');
-    sTmp.replace("\r", "");
-    //DebugTf("[%s] (%d)\r\n", sTmp.c_str(), sTmp.length());
-    int8_t wc = splitString(sTmp.c_str(), '=', words, 10);
-    words[0].toLowerCase();
-    nColor = words[1].substring(0,15);
-
-    if (words[0].equalsIgnoreCase("iniBordEDC"))      strncpy(iniBordEDC   , words[1].c_str(), (MAXCOLORNAME -1));  
-    if (words[0].equalsIgnoreCase("iniFillEDC"))      strncpy(iniFillEDC   , words[1].c_str(), (MAXCOLORNAME -1));  
-    if (words[0].equalsIgnoreCase("iniBordERC"))      strncpy(iniBordERC   , words[1].c_str(), (MAXCOLORNAME -1));  
-    if (words[0].equalsIgnoreCase("iniFillERC"))      strncpy(iniFillERC   , words[1].c_str(), (MAXCOLORNAME -1));  
-    if (words[0].equalsIgnoreCase("iniBordGDC"))      strncpy(iniBordGDC   , words[1].c_str(), (MAXCOLORNAME -1));  
-    if (words[0].equalsIgnoreCase("iniFillGDC"))      strncpy(iniFillGDC   , words[1].c_str(), (MAXCOLORNAME -1));  
-    if (words[0].equalsIgnoreCase("iniBordED2C"))     strncpy(iniBordED2C  , words[1].c_str(), (MAXCOLORNAME -1));  
-    if (words[0].equalsIgnoreCase("iniFillED2C"))     strncpy(iniFillED2C  , words[1].c_str(), (MAXCOLORNAME -1));  
-    if (words[0].equalsIgnoreCase("iniBordER2C"))     strncpy(iniBordER2C  , words[1].c_str(), (MAXCOLORNAME -1));  
-    if (words[0].equalsIgnoreCase("iniFillER2C"))     strncpy(iniFillER2C  , words[1].c_str(), (MAXCOLORNAME -1));  
-    if (words[0].equalsIgnoreCase("iniBordGD2C"))     strncpy(iniBordGD2C  , words[1].c_str(), (MAXCOLORNAME -1));  
-    if (words[0].equalsIgnoreCase("iniFillGD2C"))     strncpy(iniFillGD2C  , words[1].c_str(), (MAXCOLORNAME -1));  
-    if (words[0].equalsIgnoreCase("iniBordPR123C"))   strncpy(iniBordPR123C, words[1].c_str(), (MAXCOLORNAME -1));  
-    if (words[0].equalsIgnoreCase("iniFillPR123C"))   strncpy(iniFillPR123C, words[1].c_str(), (MAXCOLORNAME -1));  
-    if (words[0].equalsIgnoreCase("iniBordPD1C"))     strncpy(iniBordPD1C  , words[1].c_str(), (MAXCOLORNAME -1));  
-    if (words[0].equalsIgnoreCase("iniFillPD1C"))     strncpy(iniFillPD1C  , words[1].c_str(), (MAXCOLORNAME -1));  
-    if (words[0].equalsIgnoreCase("iniBordPD2C"))     strncpy(iniBordPD2C  , words[1].c_str(), (MAXCOLORNAME -1));  
-    if (words[0].equalsIgnoreCase("iniFillPD2C"))     strncpy(iniFillPD2C  , words[1].c_str(), (MAXCOLORNAME -1));  
-    if (words[0].equalsIgnoreCase("iniBordPD3C"))     strncpy(iniBordPD3C  , words[1].c_str(), (MAXCOLORNAME -1));  
-    if (words[0].equalsIgnoreCase("iniFillPD3C"))     strncpy(iniFillPD3C  , words[1].c_str(), (MAXCOLORNAME -1));  
-
-    yield();
-    
-  } // while available()
-  
-  file.close();  
-  Debugln(F(" .. done\r"));
-
-  if (!show) return;
-
-  Debugln(F("\r\n==== Chart colors ===============================================\r"));
-  Debugf("  Energie Verbruik LineColor : %s\r\n", iniBordEDC);  
-  Debugf("  Energie Verbruik BackColor : %s\r\n", iniFillEDC);  
-  Debugf("  Energie Returned LineColor : %s\r\n", iniBordERC);  
-  Debugf("  Energie Returned BackColor : %s\r\n", iniFillERC);  
-  Debugf("      Gas Verbruik LineColor : %s\r\n", iniBordGDC);  
-  Debugf("      Gas Verbruik BackColor : %s\r\n", iniFillGDC);  
-  Debugf("Energie Verbruik H LineColor : %s\r\n", iniBordED2C);  
-  Debugf("Energie Verbruik H BackColor : %s\r\n", iniFillED2C);  
-  Debugf("Energie Returned H LineColor : %s\r\n", iniBordER2C);  
-  Debugf("Energie Returned H BackColor : %s\r\n", iniFillER2C);  
-  Debugf("    Gas Verbruik H LineColor : %s\r\n", iniBordGD2C);  
-  Debugf("    Gas Verbruik H BackColor : %s\r\n", iniFillGD2C);  
-  Debugf(" Power Verbruik L1 LineColor : %s\r\n", iniBordPD1C);  
-  Debugf(" Power Verbruik L1 BackColor : %s\r\n", iniFillPD1C);  
-  Debugf(" Power Verbruik L2 LineColor : %s\r\n", iniBordPD2C);  
-  Debugf(" Power Verbruik L2 BackColor : %s\r\n", iniFillPD2C);  
-  Debugf(" Power Verbruik L3 LineColor : %s\r\n", iniBordPD3C);
-  Debugf(" Power Verbruik L3 BackColor : %s\r\n", iniFillPD3C);  
-  Debugf("   Power Ret. L123 LineColor : %s\r\n", iniBordPR123C);  
-  Debugf("   Power Ret. L123 BackColor : %s\r\n", iniFillPR123C);  
-  
-  Debugln(F("-\r"));
-
-} // readColors()
 
 /***************************************************************************
 *

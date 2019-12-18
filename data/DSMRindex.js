@@ -8,7 +8,7 @@
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
 */
-  const APIGW='http://'+window.location.host+'/api/';
+  const APIGW='http://'+window.location.host+'/api/v1/';
 
 "use strict";
 
@@ -45,7 +45,8 @@
   let settingBackPD3C   = "lime";
   let settingLinePD3C   = "black";
 
-  var requestData = new XMLHttpRequest();
+  var requestDevInfo = new XMLHttpRequest();
+  //var requestSmFields = new XMLHttpRequest();
   
   window.onload=bootsTrap;
   window.onfocus = function() {
@@ -92,30 +93,65 @@
   
   } // bootsTrap()
   
-  function refreshDevInfo() {
-  	console.log("GET ["+APIGW+"devinfo");
-    requestData.open('GET', APIGW+'devinfo', true);
-    requestData.send();
-  };
-  
-  function refreshLong() {
-  	console.log("GET ["+APIGW+"actual");
-    requestData.open('GET', APIGW+'actual', true);
-    requestData.send();
-  };
-
-  requestData.onload = function()
+  function refreshDevInfo()
   {
-    if (requestData.status >= 200 && requestData.status < 400) {
-    	//var data = JSON.parse(this.response);
-    	
-      var data = JSON.parse(this.response, (key, val) => {
-      	console.log("name->["+key+"]"); 
-      	console.log("value->["+val+"]");
-      });
-     
-    }	// status ..
-  }	// requestData.onload()
+    fetch(APIGW+"dev/info")
+      .then(response => response.json())
+      .then(response => {
+        console.log("parsed .., data is ["+ JSON.stringify(response)+"]");
+    	  for( let fld in response ){
+    		  console.log( "Fld["+fld+"], value ["+response[fld]+"]" );
+    	  }
+        console.log('-------------------');
+      })
+
+      .catch(function(error) {
+  		console.log(error);
+    	});     
+  }	// refreshDevInfo()
+  
+  function refreshSmFields()
+  {
+    fetch(APIGW+"sm/fields")
+      .then(response => response.json())
+      .then(json => {
+      		//console.log("parsed .., fields is ["+ JSON.stringify(json)+"]");
+      		
+      		for (var i in json.fields) {
+      		/*
+      			if (json.fields[i].hasOwnProperty('unit'))
+      						console.log(">>"+ json.fields[i].name + ": " + json.fields[i].value +", "+json.fields[i].unit);
+						else	console.log(">>"+ json.fields[i].name + ": " + json.fields[i].value);
+					*/	
+      			var tableRef = document.getElementById('lastHoursTable').getElementsByTagName('tbody')[0];
+      			if( ( document.getElementById("hoursTable_"+json.fields[i].name)) == null )
+      			{
+      				var newRow   = tableRef.insertRow();
+							newRow.setAttribute("id", "hoursTable_"+json.fields[i].name, 0);
+							// Insert a cell in the row at index 0
+							var newCell  = newRow.insertCell(0);
+						  var newText  = document.createTextNode('');
+							newCell.appendChild(newText);
+							newCell  = newRow.insertCell(1);
+							newCell.appendChild(newText);
+							newCell  = newRow.insertCell(2);
+							newCell.appendChild(newText);
+						}
+						tableCells = document.getElementById("hoursTable_"+json.fields[i].name).cells;
+						tableCells[0].innerHTML = json.fields[i].name;
+						tableCells[1].innerHTML = json.fields[i].value;
+	     			if (json.fields[i].hasOwnProperty('unit'))
+	     			{
+		     			tableCells[1].style.textAlign = "right";
+							tableCells[2].innerHTML = json.fields[i].unit;
+						}
+      		}
+      		//console.log("-->done..");
+      })
+      .catch(function(error) {
+  		  console.log(error);
+    	});     
+  };	// refreshSmFields()
   
   function openTab(tabName) {
     
@@ -147,8 +183,8 @@
 
     } else if (tabName == "LastHours") {
       console.log("newTab: LastHours");
-      refreshLong();
-      var TimerTab = setInterval(refreshLong, 60 * 1000); // repeat every 30s
+      refreshSmFields();
+      var TimerTab = setInterval(refreshSmFields, 60 * 1000); // repeat every 60s
 
     } else if (tabName == "LastDays") {
       console.log("newTab: LastDays");
@@ -176,6 +212,14 @@
     }
   } // openTab()
 
+  
+  function createNode(element) {
+    return document.createElement(element); // Create the type of element you pass in the parameters
+  }
+
+  function append(parent, el) {
+    return parent.appendChild(el); // Append the second parameter(element) to the first one
+  }
   
 
   

@@ -23,7 +23,7 @@
     <!-- <div class="dev-header"> -->
     <div class="header">
       <h1>
-        <span id="sysName">DSMR-logger</span> &nbsp; &nbsp; &nbsp;
+        <span id="sysName">DSMR-logger(API)</span> &nbsp; &nbsp; &nbsp;
         <span id="devName" style='font-size: small;'>-</span> &nbsp;
         <span id="devVersion" style='font-size: small;'>[version]</span>
       </h1>
@@ -55,6 +55,8 @@
   <!-- START Actual Tab -->
   <div id="Actual" class="tabName" style="display:block">
     <!-- START actueelTab Dummy -->
+    <h1>Authors</h1>
+    <ul id="jsonFields"></ul>
       <div class="container-card">
         <div class="container-box">
           <div class="flex-item">
@@ -71,8 +73,22 @@
 
   <!-- START LastHoursTab -->
   <div id="LastHours" class="tabName" style="display:none">
-    <h2>Afgelopen uren</h2>
+    <h2>/api/v1/fields</h2>
     <div id='lastHours' style="margin-left: 50px; background: white;">
+    <table id="lastHoursTable">
+    <thead>
+        <tr>
+            <th align='left'>Name</th><th align='left'>Value</th><th>Unit</th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+    <tfoot>
+        <tr>
+            <td>nice table</td>
+        </tr>
+    <tfoot>
+</table>
     </div>
   </div> <!-- END LastHoursTab -->
 
