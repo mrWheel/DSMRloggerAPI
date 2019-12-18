@@ -12,6 +12,7 @@
 //===========================================================================================
 void displayDaysHist(bool Telnet=true) 
 {
+  /**
   char EDT1[20], EDT2[20], ERT1[20], ERT2[20], GDT[20];
   uint16_t YY, MM, DD;
   int32_t  Label;
@@ -19,7 +20,7 @@ void displayDaysHist(bool Telnet=true)
 
   if (Telnet) Debugln(F("\r\n======== WeekDay History ==========\r\n\r"));
 
-  fileWriteData(DAYS, dayData);
+  writeDataToFiles(DAYS, dayData);
 
   for (int i=1; i<=DAYS_RECS; i++) 
   {
@@ -39,20 +40,21 @@ void displayDaysHist(bool Telnet=true)
     if (Telnet) Debugln(cMsg);
   }
   if (Telnet) Debugln(F("-\r"));
-  
+  **/
 } // displayDaysHist()
 
 
 //===========================================================================================
 void displayHoursHist(bool Telnet=true) 
 {
+  /**
   char EDT1[20], EDT2[20], ERT1[20], ERT2[20], GDT[20]; //, cHour;
   //v1.0.3b int thisHourKey = HoursKeyTimestamp(pTimestamp);
   uint32_t Label;
   dataStruct tmpRec;
 
   if (Telnet) Debugln(F("\r\n======== Hours History ==========\r\n\r"));
-  fileWriteData(HOURS, hourData);  
+  writeDataToFiles(HOURS, hourData);  
   for (int i=1; i < HOURS_RECS; i++) 
   {
     tmpRec = fileReadData(HOURS, i);
@@ -68,18 +70,19 @@ void displayHoursHist(bool Telnet=true)
 
   }
   if (Telnet) Debugln(F("-\r"));
-
+  **/
 } // displayHoursHist()
 
 
 //===========================================================================================
 void displayMonthsHist(bool Telnet=true) 
 {
+  /**
   char EDT1[20], EDT2[20], ERT1[20], ERT2[20], GDT[20];
   dataStruct tmpRec;
 
   if (Telnet) Debugln(F("\r\n======== Months History ==========\r\n\r"));
-  fileWriteData(MONTHS, monthData);
+  writeDataToFiles(MONTHS, monthData);
   
   for (int i=1; i <= MONTHS_RECS; i++) 
   {
@@ -96,7 +99,7 @@ void displayMonthsHist(bool Telnet=true)
 
   }
   if (Telnet) Debugln(F("-\r"));
-
+  **/
 } // displayMonthsHist()
 
 
@@ -230,9 +233,6 @@ void handleKeyInput()
       case 'b':
       case 'B':     displayBoardInfo();
                     break;
-      case 'c':
-      case 'C':     readColors(true);
-                    break;
       case 's':
       case 'S':     readSettings(true);
                     break;
@@ -305,7 +305,6 @@ void handleKeyInput()
                     break;
       default:      Debugln(F("\r\nCommands are:\r\n"));
                     Debugln(F("   B - Board Info\r"));
-                    Debugln(F("   C - list GUI Colors\r"));
                     Debugln(F("   S - list Settings\r"));
                     Debugln(F("   D - Display Day table from SPIFFS\r"));
                     Debugln(F("   H - Display Hour table from SPIFFS\r"));
