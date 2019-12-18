@@ -184,6 +184,40 @@ void strConcat(char *dest, int maxLen, int32_t v)
 
 
 //===========================================================================================
+void strToLower(char *src)
+{
+  for (int i = 0; i < strlen(src); i++)
+  {
+    if (src[i] == '\0') return;
+    if (src[i] >= 'A' && src[i] <= 'Z')
+        src[i] += 32;
+  }
+} // strToLower()
+
+//===========================================================================================
+// a 'save' string copy
+void strnCopy(char *dest, int maxLen, const char *src, uint8_t frm, uint8_t to)
+{
+  int d=0;
+  dest[0] = '\0';
+  for (int i=frm; (i<(maxLen-1), i<to); i++)
+    dest[d++] = src[i];
+  dest[d] = '\0';
+    
+} // strnCopy()
+
+//===========================================================================================
+// a 'save' version of strncpy() that does not put a '\0' at
+// the end of dest if src >= maxLen!
+void strCopy(char *dest, int maxLen, const char *src)
+{
+  dest[0] = '\0';
+  strcat(dest, src);
+    
+} // strCopy()
+
+
+//===========================================================================================
 char *intToStr(int32_t v)
 {
   static char buff[25];
@@ -213,6 +247,24 @@ float formatFloat(float v, int dec)
   return (String(v, dec).toFloat());
 
 } //  formatFloat()
+
+
+//=======================================================================        
+template<typename Item>
+Item& typecastValue(Item& i) 
+{
+  return i;
+}
+
+String typecastValue(TimestampedFixedValue i) 
+{
+  return String(i);
+}
+  
+float typecastValue(FixedValue i) 
+{
+  return i;
+}
 
 /***************************************************************************
 *

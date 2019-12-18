@@ -9,31 +9,49 @@
 ***************************************************************************      
 */
 
-static time_t ntpTimeSav;
+//static time_t ntpTimeSav;
 
 //===========================================================================================
-String buildDateTimeString(String timeStamp) 
+String buildDateTimeString(const char* timeStamp, int len) 
 {
+  String tmpTS = String(timeStamp);
   String DateTime = "";
-
-  DateTime   = "20" + timeStamp.substring(0, 2);
-  DateTime  += "-"  + timeStamp.substring(2, 4);
-  DateTime  += "-"  + timeStamp.substring(4, 6);
-  DateTime  += " "  + timeStamp.substring(6, 8);
-  DateTime  += ":"  + timeStamp.substring(8, 10);
-  DateTime  += ":"  + timeStamp.substring(10, 12);
+  if (len < 12) return String(timeStamp);
+  DateTime   = "20" + tmpTS.substring(0, 2);    // YY
+  DateTime  += "-"  + tmpTS.substring(2, 4);    // MM
+  DateTime  += "-"  + tmpTS.substring(4, 6);    // DD
+  DateTime  += " "  + tmpTS.substring(6, 8);    // HH
+  DateTime  += ":"  + tmpTS.substring(8, 10);   // MM
+  DateTime  += ":"  + tmpTS.substring(10, 12);  // SS
   return DateTime;
     
 } // buildDateTimeString()
 
 //===========================================================================================
+void epochToTimestamp(time_t t, char *ts, int8_t len) 
+{
+  if (len < 12) {
+    strcpy(ts, "Error");
+    return;
+  }
+  //------------yy  mm  dd  hh  mm  ss
+  sprintf(ts, "%02d%02d%02d%02d%02d%02d", year(t)-2000, month(t), day(t)
+                                        , hour(t), minute(t), second(t));
+                                               
+  //DebugTf("epochToTimestamp() => [%s]\r\n", ts);
+  
+} // epochToTimestamp()
+
+//===========================================================================================
 String getDayName(int weekDayNr) 
 {
+  /*
   if (weekDayNr >=1 && weekDayNr <= 7)
       return weekDayName[weekDayNr];
       
   return weekDayName[0];    
-    
+  */
+  return "vandaag";  
 } // getDayName()
 
 
@@ -87,9 +105,14 @@ int32_t HoursKeyTimestamp(String timeStamp)
 } // HourFromTimestamp()
 
 //===========================================================================================
-time_t epoch(String timeStamp) 
+// calculate epoch from timeStamp
+// if syncTime is true, set system time to calculated epoch-time
+time_t epoch(const char *timeStamp, int8_t len, bool syncTime) 
 {
-/**  
+  //DebugTf("epoch(%s)\r\n", timeStamp.c_str());  Serial.flush();
+
+  if (len < 13) return now();
+  /*
   DebugTf("DateTime: [%02d]-[%02d]-[%02d] [%02d]:[%02d]:[%02d]\r\n"
                                                                  ,DayFromTimestamp(timeStamp)
                                                                  ,MonthFromTimestamp(timeStamp)
@@ -98,8 +121,10 @@ time_t epoch(String timeStamp)
                                                                  ,MinuteFromTimestamp(timeStamp)
                                                                  ,0
                        );
-**/  
-  ntpTimeSav = now();
+  */ 
+ 
+  time_t nT;
+  time_t savEpoch = now();
   
   setTime(HourFromTimestamp(timeStamp)
          ,MinuteFromTimestamp(timeStamp)
@@ -108,7 +133,13 @@ time_t epoch(String timeStamp)
          ,MonthFromTimestamp(timeStamp)
          ,YearFromTimestamp(timeStamp));
 
-  return now();
+  nT = now();
+  if (!syncTime)
+  {
+    setTime(savEpoch);
+    //DebugTln("Restore saved time");
+  }
+  return nT;
 
 } // epoch()
 

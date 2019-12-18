@@ -10,70 +10,88 @@
 */
 
 // global vars
-static DynamicJsonDocument jsonDoc(3000);  // generic doc to return, clear() before use!
+static  DynamicJsonDocument jsonDoc(4000);  // generic doc to return, clear() before use!
+char    rootName[20] = "";
+char    fieldName[40] = "";
+
 
 //=======================================================================
-void restAPI() 
+void processAPI() 
 {
-  const char *URI = httpServer.uri().c_str();
-
-  DebugTf("Received [%s]\r\n", URI);
+  char *URI = (char*)httpServer.uri().c_str();
+  char fName[40] = "";
   
-  if (!strcasecmp(URI, "/api/devinfo") )
+  strToLower(URI);
+  DebugTf("incomming URL is [%s] \r\n", URI);
+  
+  if (!strcasecmp(URI, "/api/v1/dev/info") )
   {
     sendDeviceInfo();
   }
-  else if (!strcasecmp(URI, "/api/actual") )
+  else if (!strcasecmp(URI, "/api/v1/sm/actual") )
   {
     sendActual();
   }
-  else if (!strcasecmp(URI, "/api/long") )
+  else if (!strncmp(URI, "/api/v1/sm/fields", strlen("/api/v1/sm/fields")) )
   {
-    sendJson();
+    if (strlen(URI) > strlen("/api/v1/sm/fields") ) 
+    {
+      strnCopy(fName, sizeof(fName), URI, strlen("/api/v1/sm/fields/"), strlen(URI));
+      DebugTf("fName is [%s]\r\n", fName);
+    }
+    sendJson("fields", fName);
   }
-  else  if (!strcasecmp(URI, "/api") )
+  else 
   {
-    sendInfo();
+    sendApiInfo();
   }
   
-} // restAPI()
+} // processAPI()
 
 //====================================================
-void sendInfo()
+void sendApiInfo()
 {
-  char temp[401];
-snprintf ( temp, 400,
+  const char *APIhelp = \
 "<html>\
   <head>\
-    <title>%s API reference</title>\
+    <title>API reference</title>\
     <style>\
       body { background-color: #cccccc; font-family: Arial, Helvetica, Sans-Serif; Color: #000088; }\
     </style>\
   </head>\
   <body>\
-    <h1>%s API Reference</h1>\
+    <h1>API Reference</h1>\
     <ul>\
-    <li><b>/api/devinfo</b> - Device information in JSON format</li>\
-    <li><b>/api/actual</b> - Actual data from Slimme Meter in JSON format</li>\
-    <li><b>/api/long</b> - All available fields from the Slimme Meter in JSON format</li>\
+    <li><b>/api/v1/dev/info</b> - Device information in JSON format</li>\
+    <li><b>/api/v1/sm/actual</b> - Actual data from Slimme Meter in JSON format</li>\
+    <li><b>/api/v1/sm/fields</b> - All available fields from the Slimme Meter in JSON format</li>\
+    <li><b>/api/v1/sm/fields/{fieldName}</b> - Only the requested field from the Slimme Meter in JSON format</li>\
     </ul>\
+    <br>\
+    JSON format: {\"fields\":[{\"name\":\"&lt;fieldName&gt;\",\"value\":&lt;value&gt;,\"unit\":\"&lt;unit&gt;\"}]}\
+    <br>\
+    <br>\
+    See the documenatation @weet ik veel \
   </body>\
-</html>", _HOSTNAME, _HOSTNAME);
+</html>\r\n";
 
-  httpServer.send ( 200, "text/html", temp );
-} // sendInfo()
+  httpServer.send ( 200, "text/html", APIhelp );
+  
+} // sendApiInfo()
 
+
+//=======================================================================
 // some helper functions
 void _returnJSON(JsonObject obj);
 void _returnJSON(JsonObject obj)
 {
-  String toReturn;
+  String jsonString;
 
-  //serializeJson(obj, toReturn);
-  serializeJsonPretty(obj, toReturn);
-  DebugTf("JSON String is %d chars\r\n", toReturn.length());
-  DebugTln(toReturn);
-  httpServer.send(200, "application/json", toReturn);
+  serializeJson(obj, jsonString);         // machine readable
+  //serializeJsonPretty(obj, jsonString); // human readable for testing
+  DebugTf("JSON String is %d chars\r\n", jsonString.length());
+  //DebugTln(jsonString);
+  httpServer.send(200, "application/json", jsonString);
   
 } // _returnJSON()
 
@@ -91,12 +109,12 @@ void sendDeviceInfo()
     
 //-Slimme Meter Info----------------------------------------------------------
   
-  jsonDoc["Identification"]      = Identification;
-  jsonDoc["P1_Version"]          = P1_Version;
-  jsonDoc["Equipment_Id"]        = Equipment_Id;
-  jsonDoc["Electricity_Tariff"]  = ElectricityTariff;
-  jsonDoc["Gas_Device_Type"]     = GasDeviceType;
-  jsonDoc["Gas_Equipment_Id"]    = GasEquipment_Id;
+  jsonDoc["Identification"]      = DSMRdata.identification;
+  jsonDoc["P1_Version"]          = DSMRdata.p1_version;
+  jsonDoc["Equipment_Id"]        = DSMRdata.equipment_id;
+  jsonDoc["Electricity_Tariff"]  = DSMRdata.electricity_tariff;
+  jsonDoc["Gas_Device_Type"]     = DSMRdata.gas_device_type;
+  jsonDoc["Gas_Equipment_Id"]    = DSMRdata.gas_equipment_id;
   
 //-Device Info-----------------------------------------------------------------
   jsonDoc["Author"]              = "Willem Aandewiel (www.aandewiel.nl)";
@@ -156,21 +174,6 @@ void sendActual()
 {
   jsonDoc.clear();
 
-#ifdef HAS_NO_METER
-  hourData.EDT1           += 0.33;
-  EnergyDeliveredTariff1  = hourData.EDT1;
-  hourData.EDT2           += 0.17;
-  EnergyDeliveredTariff2  = hourData.EDT2;
-  EnergyDelivered         = hourData.EDT1 + hourData.EDT2;
-  hourData.ERT1           += 0.11;
-  EnergyReturnedTariff1   = hourData.ERT1;
-  hourData.ERT2           += 0.07;
-  EnergyReturnedTariff2   = hourData.ERT2;
-  EnergyReturned          = hourData.ERT1 + hourData.ERT2;
-  hourData.GDT            += 0.08;
-  GasDelivered            = hourData.GDT;
-#endif
-
 //-Totalen----------------------------------------------------------
 
   jsonDoc["Timestamp"]                 = pTimestamp;
@@ -203,61 +206,69 @@ void sendActual()
 
 
 //=======================================================================
-struct buildJson {
+struct buildJsonApi {
 //  {
-//    "equipment_id": [
+//    "apiName": [
 //      {
-//        "value": "4530303336303000000000000000000040"
-//      }
-//    ],
-//    "energy_delivered_tariff1": [
+//        "name": "identification",
+//        "value":"XMX5LGBBLB2410065887"
+//      },
 //      {
-//        "value": 234.196,
-//        "unit": "kWh"
+//        "name":"energy_returned_tariff2",
+//        "value":79.141,
+//        "unit":"kWh"}
 //      }
 //    ]
 //  }
+
+    JsonArray root = jsonDoc.createNestedArray(rootName);
+    bool  skip = false;
     
     template<typename Item>
     void apply(Item &i) {
-      if (i.present()) 
+      skip = false;
+      String Name = Item::name;
+      if (strlen(fieldName) > 1 && Name != String(fieldName))
       {
-        String Name = Item::name;
-        String Unit = Item::unit();
-        JsonArray array = jsonDoc.createNestedArray(Name);
-        JsonObject nested = array.createNestedObject();
-        if (Unit.length() > 0)
+        skip = true;
+      }
+      if (!skip)
+      {
+        JsonObject nested = root.createNestedObject();
+
+        nested["name"]  = Name;
+        if (i.present()) 
         {
-          float fVal;
-          int32_t lVal = String(i.val()).toFloat() * 1000.0;
-          fVal = lVal / 1000.0;
-          nested["value"] = fVal;
-          nested["unit"]  = Unit;
+          String Unit = Item::unit();
+          nested["value"] = typecastValue(i.val());
+        
+          if (Unit.length() > 0)
+          {
+            nested["unit"]  = Unit;
+          }
         }
-        else 
+        else
         {
-           nested["value"] = String(i.val());
+          nested["value"] = "-";
         }
       }
   }
-  
-  template<typename Item>
-  Item& value_to_json(Item& i) {
-    return i;
-  }
 
-  float value_to_json(FixedValue i) {
-    return i.val();
-  }
 };
 
-
 //=======================================================================
-void sendJson() 
+void sendJson(const char *Name, const char *fName) 
 {
   jsonDoc.clear();
 
-  DSMRdata.applyEach(buildJson());
+  strcpy(rootName, Name);
+  if (strlen(fName) > 0)
+  {
+        strCopy(fieldName, sizeof(fieldName), fName);
+  }
+  else fieldName[0] = '\0';
+
+  DSMRdata.applyEach(buildJsonApi());
 
   _returnJSON( jsonDoc.as<JsonObject>() );
 

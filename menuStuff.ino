@@ -139,9 +139,6 @@ void displayBoardInfo()
 #ifdef SM_HAS_NO_FASE_INFO
   Debug(F("[SM_HAS_NO_FASE_INFO]"));
 #endif
-#ifdef HAS_NO_METER
-  Debug(F("[HAS_NO_METER]"));
-#endif
 #ifdef SHOW_PASSWRDS
   Debug(F("[SHOW_PASSWRDS]"));
 #endif
@@ -269,14 +266,6 @@ void handleKeyInput()
       case 'T':     forceMindergasUpdate();  //skip waiting for (midnight||countdown) 
                     break;
 #endif
-#ifdef HAS_NO_METER
-      case 'Z':     createDummyData();
-                    break;
-      case 'n':     forceDay++;
-                    break;
-      case 'N':     forceMonth++;
-                    break;
-#else
       case 'p':
       case 'P':     showRaw = !showRaw;
                  #ifdef IS_ESP12
@@ -285,7 +274,6 @@ void handleKeyInput()
                  #endif
                     showRawCount = 0;
                     break;
-#endif
       case 'R':     DebugT(F("Reboot in 3 seconds ... \r\n"));
                     DebugFlush();
                     delay(3000);
@@ -323,11 +311,6 @@ void handleKeyInput()
                     Debugln(F("   H - Display Hour table from SPIFFS\r"));
                     Debugln(F("   M - Display Month table from SPIFFS\r"));
                     Debugf ("   I - Identify by blinking LED on GPIO[%02d]\r\n", LED_BUILTIN);
-#ifdef HAS_NO_METER
-                    Debugln(F("  *Z - create Dummy Data\r"));
-                    Debugln(F("  *n - force next Day\r"));
-                    Debugln(F("  *N - force next Month\r"));
-#endif
                     if (showRaw) 
                     {
                       Debugln(F("   P - Start Parsing again\r"));

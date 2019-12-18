@@ -11,6 +11,104 @@
 
 int16_t  bytesWritten;
 
+
+//====================================================================
+void readLastStatus()
+{
+  char buffer[50] = "";
+  char dummy[50] = "";
+  char spiffsTimestamp[20] = "";
+  
+  File _file = SPIFFS.open("/DSMRstatus.csv", "r");
+  if (!_file)
+  {
+    DebugTln("read(): No /DSMRstatus.csv found ..");
+  }
+  if(_file.available()) {
+    int l = _file.readBytesUntil('\n', buffer, sizeof(buffer));
+    buffer[l] = 0;
+    DebugTf("read lastUpdate[%s]\r\n", buffer);
+    sscanf(buffer, "%[^;]; %u; %u; %[^;]", spiffsTimestamp, &nrReboots, &slotErrors, dummy);
+    DebugTf("values timestamp[%s], nrReboots[%u], slotErrors[%u], dummy[%s]\r\n"
+                                                    , spiffsTimestamp
+                                                    , nrReboots
+                                                    , slotErrors
+                                                    , dummy);
+    yield();
+  }
+  _file.close();
+  if (strlen(spiffsTimestamp) != 13) {
+    strcpy(spiffsTimestamp, "010101010101X");
+  }
+  sprintf(actTimestamp, "%s", spiffsTimestamp);
+  
+}  // readLastStatus()
+
+
+//====================================================================
+void writeLastStatus()
+{
+  char buffer[50] = "";
+  DebugTf("writeLastStatus() => %s; %u; %u;\r\n", actTimestamp, nrReboots, slotErrors);
+  File _file = SPIFFS.open("/DSMRstatus.csv", "w");
+  if (!_file)
+  {
+    DebugTln("write(): No /DSMRstatus.csv found ..");
+  }
+  sprintf(buffer, "%-13.13s; %010u; %010u; %s;\n", actTimestamp
+                                          , nrReboots
+                                          , slotErrors
+                                          , "meta data");
+  _file.print(buffer);
+  _file.flush();
+  _file.close();
+  
+} // writeLastStatus()
+
+//====================================================================
+uint16_t timestampToHourSlot(const char * TS, int8_t len)
+{
+  char      aSlot[5];
+  time_t    t1 = epoch((char*)TS, strlen(TS), false);
+  uint32_t  nrDays = t1 / SECS_PER_DAY;
+  sprintf(aSlot, "%d", ((nrDays % KEEP_DAYS_HOURS) *24) + hour(t1));
+  uint8_t   uSlot  = String(aSlot).toInt();
+  uint8_t   recSlot = (uSlot % _NO_HOUR_SLOTS_) +1;
+  
+  DebugTf("===>>>>> HOUR[%02d] => recSlot[%02d]\r\n", hour(t1), recSlot);
+
+  if (recSlot < 1 || recSlot > _NO_HOUR_SLOTS_)
+  {
+    DebugTf("HOUR: Some serious error! Slot is [%d]\r\n", recSlot);
+    recSlot = _NO_HOUR_SLOTS_ + 1;
+  }
+  return recSlot;
+  
+} // timestampToHourSlot()
+
+
+//====================================================================
+uint16_t timestampToDaySlot(const char * TS, int8_t len)
+{
+  char      aSlot[5];
+  time_t    t1 = epoch((char*)TS, strlen(TS), false);
+  uint32_t  nrDays = t1 / SECS_PER_DAY;
+  sprintf(aSlot, "%d", (nrDays % KEEP_DAYS));
+  uint8_t   uSlot  = String(aSlot).toInt();
+  uint8_t   recSlot = (uSlot % _NO_DAY_SLOTS_) +1;
+  
+  DebugTf("===>>>>>  DAY[%02d] => recSlot[%02d]\r\n", day(t1), recSlot);
+
+  if (recSlot < 1 || recSlot > _NO_DAY_SLOTS_)
+  {
+    DebugTf("DAY: Some serious error! Slot is [%d]\r\n", recSlot);
+    recSlot = _NO_DAY_SLOTS_ + 1;
+  }
+  return recSlot;
+  
+} // timestampToDaySlot()
+
+
 //===========================================================================================
 int32_t freeSpace() 
 {
@@ -710,142 +808,6 @@ int8_t getLastYear()
   return lastYear;
 
 } // getLastYear()
-
-#ifdef HAS_NO_METER
-void displayMonthsHist(bool);
-void displayDaysHist(bool);
-void displayHoursHist(bool);
-
-//===========================================================================================
-void createDummyData() 
-{
-  int8_t YY, MM, DD, HH;
-  
-  DebugTln(F(" ==> monthData.. \r"));
-  SPIFFS.remove(MONTHS_FILE);
-  //--- write dummy month-data to file ---------
-  char cLabel[10];
-  float EDT1=9000, EDT2=4500, ERT1=3000, ERT2=1500, GDT=2000;
-  for (int s=1; s<=MONTHS_RECS; s++) 
-  {
-    if (s>24) 
-    {
-      sprintf(cLabel, "14%02d", (37 - s));
-    } else if (s>12) 
-    {   
-      sprintf(cLabel, "15%02d", (25 - s));
-    } 
-    else 
-    {
-      sprintf(cLabel, "16%02d", (13 - s));
-    }
-    monthData.Label = String(cLabel).toInt();
-    monthData.EDT1  = EDT1;
-    monthData.ERT1  = ERT1;
-    monthData.EDT2  = EDT2;
-    monthData.ERT2  = ERT2;
-    monthData.GDT   = GDT;
-    DebugTf("Write MONTHS record [%02d] Label[%04d]\r\n", s, monthData.Label);
-
-    fileWriteData(MONTHS, monthData, s);
-
-    EDT1 -= 100.0;
-    ERT1 -=  10.0;
-    EDT2 -=  45.0;
-    ERT2 -=   4.0;
-    GDT  -=  50.0;
-  }
-  
-  displayMonthsHist(true);
-  DebugTln(F("Done creating dummy monthData\r"));
-
-  monthData = fileReadData(MONTHS, 1);
-  label2Fields(monthData.Label, YY, MM);
-  DebugTf("First MONTHS record [01] Label[%04d]\r\n", monthData.Label);
-  
-  EnergyDeliveredTariff1  = EDT1;
-  EnergyReturnedTariff1   = ERT1;
-  EnergyDeliveredTariff2  = EDT2;
-  EnergyReturnedTariff2   = ERT2;
-  GasDelivered            = GDT;
-  EnergyDelivered = EnergyDeliveredTariff1 + EnergyDeliveredTariff2;
-  EnergyReturned  = EnergyReturnedTariff1  + EnergyReturnedTariff2;
-
-  sprintf(cMsg, "%02d%02d%02d%02d%02d15S", YY, MM, 1, 1, 1);
-  pTimestamp = String(cMsg);
-  
-  DebugTln(F(" ==> dayData.. \r"));
-  SPIFFS.remove(DAYS_FILE);
-  DD = 22;
-  sprintf(cMsg, "%02d%02d%02d", YY, MM, DD);
-  dayData.Label = String(cMsg).toInt();
-  DebugTf("Write DAYS record [01] Label[%06d]\r\n", dayData.Label);
-  dayData.EDT1  = 8000.508;
-  dayData.ERT1  = 2000.408;
-  dayData.EDT2  = 6000.254;
-  dayData.ERT2  = 1200.204;
-  dayData.GDT   =  600.888;
-  fileWriteData(DAYS, dayData, 1);
-  for (int s=2; s<=DAYS_RECS; s++) 
-  {
-    DD--;
-    sprintf(cMsg, "%02d%02d%02d", YY, MM, DD);
-    dayData.Label = String(cMsg).toInt();
-    DebugTf("Write DAYS record [%02d] Label[%06d]\r\n", s, dayData.Label);
-    dayData.EDT1  -=  250.01;
-    dayData.ERT1  -=  125.02;
-    dayData.EDT2  -=  100.03;
-    dayData.ERT2  -=   50.04;
-    dayData.GDT   -=    4.05;
-    fileWriteData(DAYS, dayData, s);
-  }
-  displayDaysHist(true);
-  DebugTln(F("Done creating dummy dayData\r"));
-
-  DebugTln(F(" ==> hourData[].. \r"));
-  SPIFFS.remove(HOURS_FILE);
-
-  dayData = fileReadData(DAYS, 1);
-  label2Fields(dayData.Label, YY, MM, DD);
-  DebugTf("First DAYS record [01] Label[%06d]\r\n", dayData.Label);
-
-  HH =  12;
-  sprintf(cMsg, "%02d%02d%02d%02d", YY, MM, DD, HH);
-  hourData.Label = String(cMsg).toInt();
-  DebugTf("Write HOURS record [01] Label[%08d]\r\n", hourData.Label);
-  hourData.EDT1   = 3045.67;
-  hourData.ERT1   = 1023.45;
-  hourData.EDT2   = 1545.67;
-  hourData.ERT2   =  823.45;
-  hourData.GDT    =   10.23;
-  fileWriteData(HOURS, hourData, 1);
-
-  for (int s=2; s <= HOURS_RECS; s++) 
-  {
-    HH--;
-    if (HH < 0) 
-    {
-      DD--;
-      HH = 23;
-    }
-    sprintf(cMsg, "%02d%02d%02d%02d", YY, MM, DD, HH);
-    hourData.Label = String(cMsg).toInt();
-    DebugTf("Write HOURS record [%02d] Label[%08d]\r\n", s, hourData.Label);
-    hourData.EDT1  += 100.0;
-    hourData.ERT1  +=  50.0;
-    hourData.EDT2  +=  66.0;
-    hourData.ERT2  +=  22.0;
-    hourData.GDT   +=   0.1;
-    fileWriteData(HOURS, hourData, s);
-  }
-  displayHoursHist(true);
-  DebugTln(F("Done creating dummy hourData\r\n"));
-
-  DebugTln(F("\r\nNow rebooting\r"));
-  ESP.reset();
-
-} // createDummyData()
-#endif
 
 
 //=======================================================================

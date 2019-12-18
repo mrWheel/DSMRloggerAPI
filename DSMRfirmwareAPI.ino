@@ -2,7 +2,7 @@
 ***************************************************************************  
 **  Program  : DSMRfirmwareAPI (restAPI)
 */
-#define _FW_VERSION "v0.0.1 (09-12-2019)"
+#define _FW_VERSION "v0.0.2 (18-12-2019)"
 /*
 **  Copyright (c) 2019 Willem Aandewiel
 **
@@ -37,9 +37,8 @@
 //  #define USE_NTP_TIME              // define to generate Timestamp from NTP (Only Winter Time for now)
 //  #define SM_HAS_NO_FASE_INFO       // if your SM does not give fase info use total delevered/returned
 #define USE_MQTT                  // define if you want to use MQTT
-#define USE_MINDERGAS             // define if you want to update mindergas (also add token down below)
+//  #define USE_MINDERGAS             // define if you want to update mindergas (also add token down below)
 //  #define SHOW_PASSWRDS             // well .. show the PSK key and MQTT password, what else?
-//  #define HAS_NO_METER              // define if No "Slimme Meter" is attached (*TESTING*)
 /******************** don't change anything below this comment **********************/
 
 #include <TimeLib.h>            // https://github.com/PaulStoffregen/Time
@@ -55,33 +54,19 @@
 #endif
 
 #ifdef ARDUINO_ESP8266_GENERIC
-  #ifdef HAS_NO_METER
-    #define _HOSTNAME     "TEST-DSMR"
-  #else
-    #define _HOSTNAME     "DSMR-API"  
-    #ifdef IS_ESP12
-      #define DTR_ENABLE  12
-    #endif  // is_esp12
-  #endif  // has_no_meter
+  #define _HOSTNAME     "DSMR-API"  
+  #ifdef IS_ESP12
+    #define DTR_ENABLE  12
+  #endif  // is_esp12
 #else // not arduino_esp8266_generic
-  #ifdef HAS_NO_METER
-    #define _HOSTNAME     "TEST-DSMR"
-  #else // not has_no_meter
-    #define _HOSTNAME     "ESP12-DSMR"
-    #ifdef IS_ESP12
-      #define DTR_ENABLE  12
-    #endif
-  #endif  // has_no_meter
+  #define _HOSTNAME     "ESP12-DSMR"
+  #ifdef IS_ESP12
+    #define DTR_ENABLE  12
+  #endif
 #endif  // arduino_esp8266_generic
-#ifdef HAS_NO_METER
-    #define HOURS_FILE     "/TSThours.csv"
-    #define DAYS_FILE      "/TSTdays.csv"
-    #define MONTHS_FILE    "/TSTmonths.csv"
-#else // not has_no_meter
-    #define HOURS_FILE     "/PRDhours.csv"
-    #define DAYS_FILE      "/PRDdays.csv"
-    #define MONTHS_FILE    "/PRDmonths.csv"
-#endif  // has_no_meter
+  #define HOURS_FILE     "/PRDhours.csv"
+  #define DAYS_FILE      "/PRDdays.csv"
+  #define MONTHS_FILE    "/PRDmonths.csv"
 #define SETTINGS_FILE      "/DSMRsettings.ini"
 #define GUI_COLORS_FILE    "/DSMRchartColors.ini"
 //-------------------------.........1....1....2....2....3....3....4....4....5....5....6....6....7....7
@@ -102,6 +87,15 @@
 #define LED_OFF          HIGH
 #define FLASH_BUTTON        0
 #define MAXCOLORNAME       15
+
+
+#define KEEP_DAYS_HOURS   3
+#define _NO_HOUR_SLOTS_   (KEEP_DAYS_HOURS * 24)
+#define KEEP_DAYS         14  
+#define _NO_DAY_SLOTS_    (KEEP_DAYS * 7)
+#define KEEP_MONTS        24  
+#define _NO_MONT_SLOTS_   (KEEP_MONTHS * 12)
+
 
 #include "Debug.h"
 uint8_t   settingSleepTime; // needs to be declared before the oledStuff.h include
@@ -132,19 +126,19 @@ using MyData = ParsedData<
   /* String */        ,electricity_tariff
   /* FixedValue */    ,power_delivered
   /* FixedValue */    ,power_returned
-//  /* FixedValue */    ,electricity_threshold
-//  /* uint8_t */       ,electricity_switch_position
-//  /* uint32_t */      ,electricity_failures
-//  /* uint32_t */      ,electricity_long_failures
-//  /* String */        ,electricity_failure_log
-//  /* uint32_t */      ,electricity_sags_l1
-//  /* uint32_t */      ,electricity_sags_l2
-//  /* uint32_t */      ,electricity_sags_l3
-//  /* uint32_t */      ,electricity_swells_l1
-//  /* uint32_t */      ,electricity_swells_l2
-//  /* uint32_t */      ,electricity_swells_l3
-//  /* String */        ,message_short
-//  /* String */        ,message_long
+  /* FixedValue */    ,electricity_threshold
+  /* uint8_t */       ,electricity_switch_position
+  /* uint32_t */      ,electricity_failures
+  /* uint32_t */      ,electricity_long_failures
+  /* String */        ,electricity_failure_log
+  /* uint32_t */      ,electricity_sags_l1
+  /* uint32_t */      ,electricity_sags_l2
+  /* uint32_t */      ,electricity_sags_l3
+  /* uint32_t */      ,electricity_swells_l1
+  /* uint32_t */      ,electricity_swells_l2
+  /* uint32_t */      ,electricity_swells_l3
+  /* String */        ,message_short
+  /* String */        ,message_long
   /* FixedValue */    ,voltage_l1
   /* FixedValue */    ,voltage_l2
   /* FixedValue */    ,voltage_l3
@@ -159,11 +153,11 @@ using MyData = ParsedData<
   /* FixedValue */    ,power_returned_l3
   /* uint16_t */      ,gas_device_type
   /* String */        ,gas_equipment_id
-//  /* uint8_t */       ,gas_valve_position
+  /* uint8_t */       ,gas_valve_position
   /* TimestampedFixedValue */ ,gas_delivered
-#ifdef USE_PRE40_PROTOCOL                                     //PRE40
-  /* TimestampedFixedValue */ ,gas_delivered2                 //PRE40
-#endif                                                        //PRE40
+#ifdef USE_PRE40_PROTOCOL                          //PRE40
+  /* TimestampedFixedValue */ ,gas_delivered2      //PRE40
+#endif                                             //PRE40
 //  /* uint16_t */      ,thermal_device_type
 //  /* String */        ,thermal_equipment_id
 //  /* uint8_t */       ,thermal_valve_position
@@ -177,8 +171,6 @@ using MyData = ParsedData<
 //  /* uint8_t */       ,slave_valve_position
 //  /* TimestampedFixedValue */ ,slave_delivered
 >;
-
-MyData    DSMRdata;
 
 enum    { TAB_UNKNOWN, TAB_ACTUEEL, TAB_LAST24HOURS, TAB_LAST7DAYS, TAB_LAST24MONTHS, TAB_GRAPHICS, TAB_SYSINFO, TAB_EDITOR };
 enum    { PERIOD_UNKNOWN, HOURS, MONTHS, DAYS };
@@ -220,8 +212,18 @@ struct FSInfo {
 
 
 
-WiFiClient  wifiClient;
+//===========================GLOBAL VAR'S======================================
+  WiFiClient  wifiClient;
+  MyData      DSMRdata;
+  uint32_t    readTimer;
+  time_t      actT, newT;
+  char        actTimestamp[20] = "";
+  char        newTimestamp[20] = "";
+  //int         hr = 1;
+  uint32_t    slotErrors = 0;
+  uint32_t    nrReboots  = 0;
 
+//----------------- old var's -----(remove as soon as possible)-----------------
 int8_t    actTab = 0;
 uint32_t  telegramInterval, noMeterWait, telegramCount, telegramErrors, lastOledStatus;
 char      cMsg[150], fChar[10];
@@ -302,280 +304,9 @@ void displayStatus()
   
 } // displayStatus()
 
-
-//===========================================================================================
-void printData() 
-{
-  String dateTime;
-
-    DebugTln(F("\r"));
-    Debugln(F("-Totalen----------------------------------------------------------\r"));
-    dateTime = buildDateTimeString(pTimestamp);
-    sprintf(cMsg, "Datum / Tijd         :  %s\r", dateTime.c_str());
-    Debugln(cMsg);
-
-    //dtostrf(EnergyDelivered, 9, 3, fChar);
-    sprintf(cMsg, "Energy Delivered     : %12.3fkWh\r", EnergyDelivered);
-    Debugln(cMsg);
-
-    //dtostrf(EnergyReturned, 9, 3, fChar);
-    sprintf(cMsg, "Energy Returned      : %12.3fkWh\r", EnergyReturned);
-    Debugln(cMsg);
-
-    dtostrf(PowerDelivered, 9, 3, fChar);
-    sprintf(cMsg, "Power Delivered      : %skW\r", fChar);
-    Debugln(cMsg);
-
-    dtostrf(PowerReturned, 9, 3, fChar);
-    sprintf(cMsg, "Power Returned       : %skW\r", fChar);
-    Debugln(cMsg);
-    
-    dtostrf(PowerDelivered_l1, 9, 0, fChar);
-    sprintf(cMsg, "Power Delivered (l1) : %sWatt\r", fChar);
-    Debugln(cMsg);
-    
-    dtostrf(PowerDelivered_l2, 9, 0, fChar);
-    sprintf(cMsg, "Power Delivered (l2) : %sWatt\r", fChar);
-    Debugln(cMsg);
-    
-    dtostrf(PowerDelivered_l3, 9, 0, fChar);
-    sprintf(cMsg, "Power Delivered (l3) : %sWatt\r", fChar);
-    Debugln(cMsg);
-    
-    dtostrf(PowerReturned_l1, 9, 0, fChar);
-    sprintf(cMsg, "Power Returned (l1)  : %sWatt\r", fChar);
-    Debugln(cMsg);
-    
-    dtostrf(PowerReturned_l2, 9, 0, fChar);
-    sprintf(cMsg, "Power Returned (l2)  : %sWatt\r", fChar);
-    Debugln(cMsg);
-    
-    dtostrf(PowerReturned_l3, 9, 0, fChar);
-    sprintf(cMsg, "Power Returned (l3)  : %sWatt\r", fChar);
-    Debugln(cMsg);
-
-    dtostrf(GasDelivered, 9, 3, fChar);
-    sprintf(cMsg, "Gas Delivered        : %sm3\r", fChar);
-    Debugln(cMsg);
-    Debugln(F("==================================================================\r"));
-  
+void printData()
+{  
 } // printData()
-
-
-//===========================================================================================
-//WS void processData(MyData DSMRdata) 
-void processData() 
-{
-  
-#ifndef HAS_NO_METER
-    strcpy(Identification, DSMRdata.identification.c_str());
-    P1_Version                        = DSMRdata.p1_version;
-
-#if defined(USE_NTP_TIME)                                                               //USE_NTP
-    time_t t = now(); // store the current time in time variable t                      //USE_NTP
-    sprintf(cMsg, "%02d%02d%02d%02d%02d%02dW\0\0", (year(t) - 2000), month(t), day(t)   //USE_NTP
-                                                 , hour(t), minute(t), second(t));      //USE_NTP
-    pTimestamp = cMsg;                                                                  //USE_NTP
-  //DebugTf("Time from NTP is [%s]\r\n", pTimestamp.c_str());                              //USE_NTP
-#else   //                                                                              //else
-    pTimestamp                        = DSMRdata.timestamp;                             //
-#endif                                                                                  //USE_NTP
-
-    if (DSMRdata.equipment_id_present) {
-            Equipment_Id              = DSMRdata.equipment_id;
-    } else  Equipment_Id              = "Unknown";
-    if (DSMRdata.energy_delivered_tariff1_present) {
-            EnergyDeliveredTariff1    = (float)DSMRdata.energy_delivered_tariff1;
-    } else  EnergyDeliveredTariff1    = 0.0;
-    if (DSMRdata.energy_delivered_tariff2_present) {
-            EnergyDeliveredTariff2    = (float)DSMRdata.energy_delivered_tariff2;
-    } else  EnergyDeliveredTariff2    = 0.0;
-    if (DSMRdata.energy_returned_tariff1_present) {
-            EnergyReturnedTariff1     = (float)DSMRdata.energy_returned_tariff1;
-    } else  EnergyReturnedTariff1     = 0.0;
-    if (DSMRdata.energy_returned_tariff2_present) {
-            EnergyReturnedTariff2     = (float)DSMRdata.energy_returned_tariff2;
-    } else  EnergyReturnedTariff2     = 0.0; 
-    if (DSMRdata.electricity_tariff_present) {
-            ElectricityTariff         = DSMRdata.electricity_tariff;
-    } else  ElectricityTariff         = "-"; 
-    if (DSMRdata.voltage_l1_present) {
-            Voltage_l1                = (float)DSMRdata.voltage_l1;
-    } else  Voltage_l1                = 0.0; 
-    if (DSMRdata.voltage_l2_present) {
-            Voltage_l2                = (float)DSMRdata.voltage_l2;
-    } else  Voltage_l2                = 0.0; 
-    if (DSMRdata.voltage_l3_present) {
-            Voltage_l3                = (float)DSMRdata.voltage_l3;
-    } else  Voltage_l3                = 0.0;
-    if (DSMRdata.current_l1_present) {
-            Current_l1                = DSMRdata.current_l1;
-    } else  Current_l1                = 0;
-    if (DSMRdata.current_l2_present) {
-            Current_l2                = DSMRdata.current_l2;
-    } else  Current_l2                = 0;
-    if (DSMRdata.current_l3_present) {
-            Current_l3                = DSMRdata.current_l3;
-    } else  Current_l3                = 0;
-    if (DSMRdata.power_delivered_present) {
-            PowerDelivered            = (float)DSMRdata.power_delivered;
-    } else  PowerDelivered            = 0.0;
-    if (DSMRdata.power_delivered_l1_present) {
-            PowerDelivered_l1         = DSMRdata.power_delivered_l1.int_val();
-    } else  PowerDelivered_l1         = 0;
-    if (DSMRdata.power_delivered_l2_present) {
-            PowerDelivered_l2         = DSMRdata.power_delivered_l2.int_val();
-    } else  PowerDelivered_l2         = 0;
-    if (DSMRdata.power_delivered_l3_present) {
-            PowerDelivered_l3         = DSMRdata.power_delivered_l3.int_val();
-    } else  PowerDelivered_l3         = 0;
-    if (DSMRdata.power_returned_present) {
-            PowerReturned             = (float)DSMRdata.power_returned;
-    } else  PowerReturned             = 0.0;
-    if (DSMRdata.power_returned_l1_present) {
-            PowerReturned_l1          = DSMRdata.power_returned_l1.int_val();
-    } else  PowerReturned_l1          = 0;
-    if (DSMRdata.power_returned_l2_present) {
-            PowerReturned_l2          = DSMRdata.power_returned_l2.int_val();
-    } else  PowerReturned_l2          = 0;
-    if (DSMRdata.power_returned_l3_present) {
-            PowerReturned_l3          = DSMRdata.power_returned_l3.int_val();
-    } else  PowerReturned_l3          = 0;
-    if (DSMRdata.gas_device_type_present) {
-            GasDeviceType             = DSMRdata.gas_device_type;
-    } else  GasDeviceType             = 0;
-    if (DSMRdata.gas_equipment_id_present) {
-            GasEquipment_Id           = DSMRdata.gas_equipment_id;
-    } else  GasEquipment_Id           = "Unknown";
-    if (DSMRdata.gas_delivered_present) {
-            GasDelivered              = (float)DSMRdata.gas_delivered;
- #ifdef USE_PRE40_PROTOCOL                                                      //PRE40
-    } else if (DSMRdata.gas_delivered2_present) {                               //PRE40
-            GasDelivered              = (float)DSMRdata.gas_delivered2;         //PRE40
- #endif                                                                         //PRE40
-    } else  GasDelivered              = 0.0;
-
-    EnergyDelivered   = EnergyDeliveredTariff1 + EnergyDeliveredTariff2; 
-    EnergyReturned    = EnergyReturnedTariff1  + EnergyReturnedTariff2;
-#endif  // has_no_meter
-    unixTimestamp       = epoch(pTimestamp);
-
-//================= update data set's =======================================================
-    monthData.EDT1 = EnergyDeliveredTariff1;
-    monthData.ERT1 = EnergyReturnedTariff1;
-    monthData.EDT2 = EnergyDeliveredTariff2;
-    monthData.ERT2 = EnergyReturnedTariff2;
-    monthData.GDT  = GasDelivered;
-    dayData.EDT1   = EnergyDeliveredTariff1;
-    dayData.ERT1   = EnergyReturnedTariff1;
-    dayData.EDT2   = EnergyDeliveredTariff2;
-    dayData.ERT2   = EnergyReturnedTariff2;
-    dayData.GDT    = GasDelivered;
-    hourData.EDT1  = EnergyDeliveredTariff1;
-    hourData.ERT1  = EnergyReturnedTariff1;
-    hourData.EDT2  = EnergyDeliveredTariff2;
-    hourData.ERT2  = EnergyReturnedTariff2;
-    hourData.GDT   = GasDelivered;
-    
-#ifdef SM_HAS_NO_FASE_INFO                                                                  //NO_FASE
-    PowerDelivered_l1   = PowerDelivered * 1000;  // kW * 1000 => Watt                      //NO_FASE
-    PowerDelivered_l2   = 0;                                                                //NO_FASE
-    PowerDelivered_l3   = 0;                                                                //NO_FASE
-                                                                                            //NO_FASE
-    PowerReturned_l1    = PowerReturned * 1000;   // kW * 1000 => Watt                      //NO_FASE
-    PowerReturned_l2    = 0;                                                                //NO_FASE
-    PowerReturned_l3    = 0;                                                                //NO_FASE
-#endif                                                                                      //NO_FASE
-
-    if ((PowerDelivered_l1 + PowerDelivered_l2 + PowerDelivered_l3) > maxPowerDelivered) 
-    {
-      maxPowerDelivered = PowerDelivered_l1 + PowerDelivered_l2 + PowerDelivered_l3;
-      sprintf(maxTimePD, "%02d:%02d", HourFromTimestamp(pTimestamp), MinuteFromTimestamp(pTimestamp));
-    }
-    if ((PowerReturned_l1 + PowerReturned_l2 + PowerReturned_l3)  > maxPowerReturned) 
-    {
-      maxPowerReturned  = PowerReturned_l1 + PowerReturned_l2 + PowerReturned_l3;
-      sprintf(maxTimePR, "%02d:%02d", HourFromTimestamp(pTimestamp), MinuteFromTimestamp(pTimestamp));
-    }
-    
-//----- update OLED display ---------
-#if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
-    String DT   = buildDateTimeString(pTimestamp);
-
-    sprintf(cMsg, "%s - %s", DT.substring(0, 10).c_str(), DT.substring(11, 16).c_str());
-    oled_Print_Msg(0, cMsg, 0);
-    sprintf(cMsg, "-Power%7d Watt", (PowerDelivered_l1 + PowerDelivered_l2 + PowerDelivered_l3));
-    oled_Print_Msg(1, cMsg, 0);
-    sprintf(cMsg, "+Power%7d Watt", (PowerReturned_l1 + PowerReturned_l2 + PowerReturned_l3));
-    oled_Print_Msg(2, cMsg, 0);
-#endif  // has_oled_ssd1206
-
-
-    //================= handle Month change ======================================================
-    if (thisMonth != MonthFromTimestamp(pTimestamp)) 
-    {
-      if (Verbose1) DebugTf("thisYear[20%02d] => thisMonth[%02d]\r\n", thisYear, thisMonth);
-      if (thisMonth > -1) 
-      {
-        DebugTf("Saving data for thisMonth[20%02d-%02d] \r\n", thisYear, thisMonth);
-        sprintf(cMsg, "%02d%02d", thisYear, thisMonth);
-        monthData.Label  = String(cMsg).toInt();
-        fileWriteData(MONTHS, monthData);
-        if (Verbose1) DebugTf("monthData for [20%04ld] saved!\r\n", String(cMsg).toInt());
-      }
-      
-      //-- write same data to the new month -------
-      thisMonth = MonthFromTimestamp(pTimestamp);
-      thisYear  = YearFromTimestamp(pTimestamp);
-      sprintf(cMsg, "%02d%02d", thisYear, thisMonth);
-      monthData.Label  = String(cMsg).toInt();
-      fileWriteData(MONTHS, monthData);
-
-      DebugTf("Rollover on the Month: thisMonth [%02d%02d]\r\n", thisYear, thisMonth);
-    } // if (thisMonth != MonthFromTimestamp(pTimestamp)) 
-    
-    //================= handle Day change ======================================================
-    if (thisDay != DayFromTimestamp(pTimestamp)) 
-    {
-      DebugTf("actual thisDay is [%08d] NEW thisDay is [%08d]\r\n", thisDay, DayFromTimestamp(pTimestamp));
-      // Once a day setup mindergas update cycle
-      if (thisDay > -1) 
-      {
-        DebugTf("Saving data for Day[%02d]\r\n", thisDay);
-        fileWriteData(DAYS, dayData);
-      }
-      maxPowerDelivered = PowerDelivered_l1 + PowerDelivered_l2 + PowerDelivered_l3;
-      sprintf(maxTimePD, "00:01");
-      maxPowerReturned  = PowerReturned_l1 + PowerReturned_l2 + PowerReturned_l3;
-      sprintf(maxTimePR, "00:01");
-      
-      //-- write same data to the new day ---------------
-      sprintf(cMsg, "%02d%02d%02d", YearFromTimestamp(pTimestamp), MonthFromTimestamp(pTimestamp), DayFromTimestamp(pTimestamp));
-      dayData.Label = String(cMsg).toInt();
-      fileWriteData(DAYS, dayData);
-      thisDay           = DayFromTimestamp(pTimestamp);
-      DebugTf("Rollover on the Day: thisDay [%02d]\r\n", thisDay);
-    }
-
-    //================= handle Hour change ======================================================
-    if (Verbose1) DebugTf("actual hourKey is [%08d] NEW hourKey is [%08d]\r\n", thisHourKey, HoursKeyTimestamp(pTimestamp));
-    if (thisHourKey != HoursKeyTimestamp(pTimestamp)) 
-    {
-      if (thisHourKey > -1) 
-      {
-        DebugTf("Saving data for thisHourKey[%08d]\r\n", thisHourKey);
-        hourData.Label = thisHourKey;
-        fileWriteData(HOURS, hourData);
-      }
-        
-      //-- write same data to the new hour -------------------
-      thisHourKey    = HoursKeyTimestamp(pTimestamp);
-      hourData.Label = thisHourKey;
-      fileWriteData(HOURS, hourData);
-      DebugTf("Rollover on the Hour: thisHourKey is [%08d]\r\n", thisHourKey);
-    } // if (thisHourKey != HourFromTimestamp(pTimestamp)) 
-
-} // processData()
 
 
 //===========================================================================================
@@ -639,6 +370,17 @@ void setup()
     oled_Print_Msg(3, "SPIFFS mounted", 1500);
 #endif  // has_oled_ssd1306
   }
+
+//------ read status file for last Timestamp --------------------
+  //strcpy(actTimestamp, "010101010101X");
+  //writeLastStatus();  // only for firsttime initialization
+  readLastStatus(); // place it in actTimestamp
+  // set the time to actTimestamp!
+  actT = epoch(actTimestamp, strlen(actTimestamp), true);
+  DebugTf("===>actTimestamp[%s]=nrReboots[%u]=Errors[%u]<======\r\n\n", actTimestamp
+                                                                    , nrReboots++
+                                                                    , slotErrors);
+
 //=============now test if SPIFFS is correct populated!============
   DSMRfileExist("/DSMRindex.html");
   DSMRfileExist("/DSMRindex.js");
@@ -737,13 +479,13 @@ void setup()
   thisHour  = hour(t);                                                              //USE_NTP
                                                                                     //USE_NTP
 #else // not use_ntp_time
-  label2Fields(monthData.Label, thisYear, thisMonth);
-  label2Fields(dayData.Label,   thisYear, thisMonth, thisDay);
-  label2Fields(hourData.Label,  thisYear, thisMonth, thisDay, thisHour);
-  if (thisYear == 0) thisYear = 10;
-  sprintf(cMsg, "%02d%02d%02d%02d0101W", thisYear, thisMonth, thisDay, thisHour);
-  pTimestamp = cMsg;
-  DebugTf("Time is set to [%s] from hourData\r\n", cMsg);
+  //label2Fields(monthData.Label, thisYear, thisMonth);
+  //label2Fields(dayData.Label,   thisYear, thisMonth, thisDay);
+  //label2Fields(hourData.Label,  thisYear, thisMonth, thisDay, thisHour);
+  //if (thisYear == 0) thisYear = 10;
+  //sprintf(cMsg, "%02d%02d%02d%02d0101W", thisYear, thisMonth, thisDay, thisHour);
+  //pTimestamp = cMsg;
+  //DebugTf("Time is set to [%s] from hourData\r\n", cMsg);
 #endif  // use_dsmr_30
 
 #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
@@ -752,10 +494,8 @@ void setup()
   oled_Print_Msg(3, cMsg, 1500);
 #endif  // has_oled_ssd1306
 
-  epoch(pTimestamp);
-
   readSettings(false);
-  readColors(false);
+  //readColors(false);
 
 #ifdef USE_MQTT                                               //USE_MQTT
   startMQTT();
@@ -764,19 +504,6 @@ void setup()
     oled_Print_Msg(3, "MQTT server set!", 1500);              //USE_MQTT
   #endif  // has_oled_ssd1306                                 //USE_MQTT
 #endif                                                        //USE_MQTT
-
-
-#ifdef HAS_NO_METER
-/**/  //      createDummyData(); use "Z" in menu!
-/**/  Equipment_Id            = "Equipment01";
-/**/  GasDeviceType           = 1;
-/**/  GasEquipment_Id         = "GasEquipment12";
-/**/  EnergyDeliveredTariff1  = monthData.EDT1;
-/**/  EnergyReturnedTariff1   = monthData.ERT1;
-/**/  EnergyDeliveredTariff2  = monthData.EDT2;
-/**/  EnergyReturnedTariff2   = monthData.ERT2;
-/**/  GasDelivered            = monthData.GDT;
-#endif  // has_no_meter
 
   telegramCount   = 0;
   telegramErrors  = 0;
@@ -812,10 +539,8 @@ void setup()
   //httpServer.serveStatic("/DSMRgraphics.js",  SPIFFS, "/DSMRgraphics.js");
   httpServer.serveStatic("/FSexplorer.png",   SPIFFS, "/FSexplorer.png");
 
-  httpServer.on("/api/devinfo", HTTP_GET, restAPI);
-  httpServer.on("/api/actual",  HTTP_GET, restAPI);
-  httpServer.on("/api/long",    HTTP_GET, restAPI);
-  httpServer.on("/api",         HTTP_GET, restAPI);
+  httpServer.on("/api", HTTP_GET, processAPI);
+  // all other api calls are catched in FSexplorer onNotFounD!
 
   httpServer.begin();
   DebugTln( "HTTP server gestart\r" );
@@ -838,12 +563,10 @@ void setup()
 
   //test(); monthTabel
 
-  DebugTf("Startup complete! pTimestamp[%s]\r\n", pTimestamp.c_str());  
+  DebugTf("Startup complete! actTimestamp[%s]\r\n", actTimestamp);  
 
 #ifdef IS_ESP12
-  #ifndef HAS_NO_METER
-    Serial.swap();
-  #endif
+  Serial.swap();
 #endif // is_esp12
 
   sprintf(cMsg, "Last reset reason: [%s]\r", ESP.getResetReason().c_str());
@@ -915,12 +638,47 @@ void loop ()
     }
   } // !showRaw 
   
-#ifdef HAS_NO_METER
-  #include "has_no_meter.h"
-  
-#else
   //---- this part is processed in 'normal' operation mode!
-  if (showRaw) 
+  if (!showRaw) 
+  {
+      if (slimmeMeter.available()) 
+      {
+        DebugTln(F("\r\n[Time----][FreeHeap/mBlck][Function----(line):\r"));
+        // Voorbeeld: [21:00:11][   9880/  8960] loop        ( 997): read telegram [28] => [140307210001S]
+        telegramCount++;
+        DebugTf("read telegram [%d] => [%s]\r\n", telegramCount, actTimestamp);
+        DSMRdata = {};
+        String    DSMRerror;
+        
+        if (slimmeMeter.parse(&DSMRdata, &DSMRerror))   // Parse succesful, print result
+        {
+          if (telegramCount > 1563000000) 
+          {
+            delay(1000);
+            ESP.reset();
+            delay(1000);
+          }
+          digitalWrite(LED_BUILTIN, LED_OFF);
+          processTelegram();
+          sendMQTTData();
+
+          if (Verbose2) 
+          {
+            DSMRdata.applyEach(showValues());
+            printData();
+          }
+          
+        } else                  // Parser error, print error
+        {
+          telegramErrors++;
+          DebugTf("Parse error\r\n%s\r\n\r\n", DSMRerror.c_str());
+          slimmeMeter.enable(true);
+        }
+        
+      } // if (slimmeMeter.available()) 
+
+  }
+  else   
   {
 #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
       if (showRawCount == 0) 
@@ -953,49 +711,6 @@ void loop ()
         showRawCount  = 0;
       }
   } 
-  else 
-  {
-      if (slimmeMeter.available()) 
-      {
-        DebugTln(F("\r\n[Time----][FreeHeap/mBlck][Function----(line):\r"));
-        // Voorbeeld: [21:00:11][   9880/  8960] loop        ( 997): read telegram [28] => [140307210001S]
-        telegramCount++;
-        DebugTf("read telegram [%d] => [%s]\r\n", telegramCount, pTimestamp.c_str());
-        //WS MyData    DSMRdata;
-        DSMRdata = {};
-        String    DSMRerror;
-        
-        if (slimmeMeter.parse(&DSMRdata, &DSMRerror))   // Parse succesful, print result
-        {
-          if (telegramCount > 1563000000) 
-          {
-            delay(1000);
-            ESP.reset();
-            delay(1000);
-          }
-          digitalWrite(LED_BUILTIN, LED_OFF);
-          //WS processData(DSMRdata);
-          processData();
-          sendMQTTData();
-
-          if (Verbose2) 
-          {
-            DSMRdata.applyEach(showValues());
-            printData();
-          }
-          
-        } else                  // Parser error, print error
-        {
-          telegramErrors++;
-          DebugTf("Parse error\r\n%s\r\n\r\n", DSMRerror.c_str());
-        }
-        
-      } // if (slimmeMeter.available()) 
-
-  }   
-#endif // else has_no_meter
-
-
 
 } // loop()
 
