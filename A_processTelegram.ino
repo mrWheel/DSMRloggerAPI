@@ -18,13 +18,13 @@ void processTelegram()
   // has the hout changed (or the day)
   if (hour(actT) != hour(newT) || day(actT) != day(newT) )
   {
-    writeDataToFiles();
     updateStatus = true;
   }
 
   sprintf(actTimestamp, "%s", newTimestamp);
   if (updateStatus)
   {
+    writeDataToFiles();
     writeLastStatus();
     updateStatus = false;
   }

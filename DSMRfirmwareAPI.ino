@@ -88,6 +88,7 @@
 #define KEEP_YEAR_MONTHS  1  
 #define _NO_MONTH_SLOTS_  (KEEP_YEAR_MONTHS * 12)
 
+enum    { PERIOD_UNKNOWN, HOURS, DAYS, MONTHS, YEARS };
 
 #include "Debug.h"
 uint8_t   settingSleepTime; // needs to be declared before the oledStuff.h include
@@ -165,7 +166,6 @@ using MyData = ParsedData<
 >;
 
 enum    { TAB_UNKNOWN, TAB_ACTUEEL, TAB_LAST24HOURS, TAB_LAST7DAYS, TAB_LAST24MONTHS, TAB_GRAPHICS, TAB_SYSINFO, TAB_EDITOR };
-enum    { PERIOD_UNKNOWN, HOURS, DAYS, MONTHS };
 
 typedef struct {
     uint32_t  Label;
@@ -363,7 +363,7 @@ void setup()
   readLastStatus(); // place it in actTimestamp
   // set the time to actTimestamp!
   actT = epoch(actTimestamp, strlen(actTimestamp), true);
-  DebugTf("===>actTimestamp[%s]=nrReboots[%u]=Errors[%u]<======\r\n\n", actTimestamp
+  DebugTf("===>actTimestamp[%s]-> nrReboots[%u]-> Errors[%u]<======\r\n\n", actTimestamp
                                                                     , nrReboots++
                                                                     , slotErrors);
 
@@ -448,29 +448,12 @@ void setup()
 
 //===========================================================================================
 
-//--- read most recent data from SPIFFS -----
-  monthData = fileReadData(MONTHS, 1);
-  dayData   = fileReadData(DAYS, 1);
-  hourData  = fileReadData(HOURS, 1);
-
 #if defined(USE_NTP_TIME)                                                           //USE_NTP
   time_t t = now(); // store the current time in time variable t                    //USE_NTP
   sprintf(cMsg, "%02d%02d%02d%02d%02d%02dW\0\0", (year(t) - 2000), month(t), day(t) //USE_NTP
                                                , hour(t), minute(t), second(t));    //USE_NTP
   pTimestamp = cMsg;                                                                //USE_NTP
   DebugTf("Time is set to [%s] from NTP\r\n", cMsg);                                //USE_NTP
-  thisYear  = (year(t) - 2000);                                                     //USE_NTP
-  thisMonth = month(t);                                                             //USE_NTP
-  thisDay   = day(t);                                                               //USE_NTP
-  thisHour  = hour(t);                                                              //USE_NTP
-                                                                                    //USE_NTP
-#else // not use_ntp_time
-  label2Fields(monthData.Label, thisYear, thisMonth);
-  label2Fields(dayData.Label,   thisYear, thisMonth, thisDay);
-  label2Fields(hourData.Label,  thisYear, thisMonth, thisDay, thisHour);
-  if (thisYear == 0) thisYear = 10;
-  sprintf(actTimestamp, "%02d%02d%02d%02d0101W", thisYear, thisMonth, thisDay, thisHour);
-  DebugTf("Time is set to [%s] from hourData\r\n", actTimestamp);
 #endif  // use_dsmr_30
 
 #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
