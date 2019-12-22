@@ -9,93 +9,27 @@
 ***************************************************************************      
 */
 
-//===========================================================================================
-void displayDaysHist(bool Telnet=true) 
-{
-  char EDT1[20], EDT2[20], ERT1[20], ERT2[20], GDT[20];
-  uint16_t YY, MM, DD;
-  int32_t  Label;
-  dataStruct tmpRec;
-
-  if (Telnet) Debugln(F("\r\n======== WeekDay History ==========\r\n\r"));
-
-  fileWriteData(DAYS, dayData);
-
-  for (int i=1; i<=DAYS_RECS; i++) 
-  {
-    tmpRec = fileReadData(DAYS, i);
-    Label = tmpRec.Label;
-    YY    = Label / 10000;
-    MM    = (Label - (YY * 10000)) / 100;
-    DD    = Label % 100;
-    dtostrf(tmpRec.EDT1, 12, 3, EDT1);
-    dtostrf(tmpRec.EDT2, 12, 3, EDT2);
-    dtostrf(tmpRec.ERT1, 12, 3, ERT1);
-    dtostrf(tmpRec.ERT2, 12, 3, ERT2);
-    dtostrf(tmpRec.GDT,  10, 3, GDT);
-    sprintf(cMsg, "[%02d][20%02d-%02d-%02d] EDT1[%s], EDT2[%s], ERT1[%s], ERT2[%s], GDT[%s]\r", i
-                                                                            , YY, MM, DD
-                                                                            , EDT1, EDT2, ERT1, ERT2, GDT);
-    if (Telnet) Debugln(cMsg);
-  }
-  if (Telnet) Debugln(F("-\r"));
-  
-} // displayDaysHist()
-
 
 //===========================================================================================
 void displayHoursHist(bool Telnet=true) 
 {
-  char EDT1[20], EDT2[20], ERT1[20], ERT2[20], GDT[20]; //, cHour;
-  //v1.0.3b int thisHourKey = HoursKeyTimestamp(pTimestamp);
-  uint32_t Label;
-  dataStruct tmpRec;
-
-  if (Telnet) Debugln(F("\r\n======== Hours History ==========\r\n\r"));
-  fileWriteData(HOURS, hourData);  
-  for (int i=1; i < HOURS_RECS; i++) 
-  {
-    tmpRec = fileReadData(HOURS, i);
-    Label = tmpRec.Label;
-    dtostrf(tmpRec.EDT1, 12, 3, EDT1);
-    dtostrf(tmpRec.ERT1, 12, 3, ERT1);
-    dtostrf(tmpRec.EDT2, 12, 3, EDT2);
-    dtostrf(tmpRec.ERT2, 12, 3, ERT2);
-    dtostrf(tmpRec.GDT, 10, 3, GDT);
-    sprintf(cMsg, "[%02d][%08d] EDT1[%s], EDT2[%s], ERT1[%s], ERT2[%s], GDT[%s]\r", i, Label
-                                                                          , EDT1, EDT2, ERT1, ERT2, GDT);
-    if (Telnet) Debugln(cMsg);
-
-  }
-  if (Telnet) Debugln(F("-\r"));
+  readDataFromFile(HOURS, HOURS_FILE, actTimestamp, false, "") ;
 
 } // displayHoursHist()
 
 
 //===========================================================================================
+void displayDaysHist(bool Telnet=true) 
+{
+  readDataFromFile(DAYS, DAYS_FILE, actTimestamp, false, "") ;
+
+} // displayDaysHist()
+
+
+//===========================================================================================
 void displayMonthsHist(bool Telnet=true) 
 {
-  char EDT1[20], EDT2[20], ERT1[20], ERT2[20], GDT[20];
-  dataStruct tmpRec;
-
-  if (Telnet) Debugln(F("\r\n======== Months History ==========\r\n\r"));
-  fileWriteData(MONTHS, monthData);
-  
-  for (int i=1; i <= MONTHS_RECS; i++) 
-  {
-    tmpRec = fileReadData(MONTHS, i);
-    dtostrf(tmpRec.EDT1, 12, 3, EDT1);
-    dtostrf(tmpRec.ERT1, 12, 3, ERT1);
-    dtostrf(tmpRec.EDT2, 12, 3, EDT2);
-    dtostrf(tmpRec.ERT2, 12, 3, ERT2);
-    dtostrf(tmpRec.GDT,  10, 3, GDT);
-    sprintf(cMsg, "[%02d][%04d] EDT1[%s], EDT2[%s], ERT1[%s], ERT2[%s], GDT[%s]\r", i
-                                                                          , tmpRec.Label
-                                                                          , EDT1, EDT2, ERT1, ERT2, GDT);
-    if (Telnet) Debugln(cMsg);
-
-  }
-  if (Telnet) Debugln(F("-\r"));
+  readDataFromFile(MONTHS, MONTHS_FILE, actTimestamp, false, "") ;
 
 } // displayMonthsHist()
 
@@ -230,8 +164,8 @@ void handleKeyInput()
       case 'b':
       case 'B':     displayBoardInfo();
                     break;
-      case 'c':
-      case 'C':     readColors(true);
+      case 'C':     slotErrors  = 0;
+                    nrReboots   = 0;
                     break;
       case 's':
       case 'S':     readSettings(true);
@@ -305,7 +239,6 @@ void handleKeyInput()
                     break;
       default:      Debugln(F("\r\nCommands are:\r\n"));
                     Debugln(F("   B - Board Info\r"));
-                    Debugln(F("   C - list GUI Colors\r"));
                     Debugln(F("   S - list Settings\r"));
                     Debugln(F("   D - Display Day table from SPIFFS\r"));
                     Debugln(F("   H - Display Hour table from SPIFFS\r"));
@@ -320,6 +253,7 @@ void handleKeyInput()
                       Debugln(F("   P - No Parsing (show RAW data from Smart Meter)\r"));
                       showRawCount = 0;
                     }
+                    Debugln(F("  *C - Clear counters\r"));
                     Debugln(F("  *W - Force Re-Config WiFi\r"));
                     Debugln(F("  *R - Reboot\r"));
                     Debugln(F("   F - File info on SPIFFS\r"));

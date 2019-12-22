@@ -2,7 +2,7 @@
 ***************************************************************************  
 **  Program  : DSMRfirmwareAPI (restAPI)
 */
-#define _FW_VERSION "v0.0.2 (18-12-2019)"
+#define _FW_VERSION "v0.0.3 (18-12-2019)"
 /*
 **  Copyright (c) 2019 Willem Aandewiel
 **
@@ -64,38 +64,31 @@
     #define DTR_ENABLE  12
   #endif
 #endif  // arduino_esp8266_generic
-  #define HOURS_FILE     "/PRDhours.csv"
-  #define DAYS_FILE      "/PRDdays.csv"
-  #define MONTHS_FILE    "/PRDmonths.csv"
+
 #define SETTINGS_FILE      "/DSMRsettings.ini"
 #define GUI_COLORS_FILE    "/DSMRchartColors.ini"
-//-------------------------.........1....1....2....2....3....3....4....4....5....5....6....6....7....7
-//-------------------------1...5....0....5....0....5....0....5....0....5....0....5....0....5....0....5
-#define MONTHS_FORMAT     "%04d;%10s;%10s;%10s;%10s;%10s;\n"
-#define MONTHS_CSV_HEADER "YYMM;      EDT1;      EDT2;      ERT1;      ERT2;       GDT;"
-#define MONTHS_RECLEN      65
-#define MONTHS_RECS        25
-#define DAYS_FORMAT       "%06d;%10s;%10s;%10s;%10s;%10s;\n"
-#define DAYS_CSV_HEADER   "YYMMDD;      EDT1;      EDT2;      ERT1;      ERT2;       GDT;"  
-#define DAYS_RECLEN        67
-#define DAYS_RECS          15
-#define HOURS_FORMAT      "%08d;%10s;%10s;%10s;%10s;%10s;\n"
-#define HOURS_CSV_HEADER  "YYMMDDHH;      EDT1;      EDT2;      ERT1;      ERT2;       GDT;"
-#define HOURS_RECLEN       69
-#define HOURS_RECS         49
+
 #define LED_ON            LOW
 #define LED_OFF          HIGH
 #define FLASH_BUTTON        0
 #define MAXCOLORNAME       15
 
-
+//-------------------------.........1....1....2....2....3....3....4....4....5....5....6....6....7....7
+//-------------------------1...5....0....5....0....5....0....5....0....5....0....5....0....5....0....5
+#define DATA_FORMAT       "%-8.8s;%10.3f;%10.3f;%10.3f;%10.3f;%10.3f;\n"
+#define DATA_CSV_HEADER   "YYMMDDHH;      EDT1;      EDT2;      ERT1;      ERT2;       GDT;"
+#define DATA_RECLEN       75
 #define KEEP_DAYS_HOURS   3
+#define HOURS_FILE        "/RINGhours.csv"
 #define _NO_HOUR_SLOTS_   (KEEP_DAYS_HOURS * 24)
-#define KEEP_DAYS         14  
-#define _NO_DAY_SLOTS_    (KEEP_DAYS * 7)
-#define KEEP_MONTS        24  
-#define _NO_MONT_SLOTS_   (KEEP_MONTHS * 12)
+#define DAYS_FILE         "/RINGdays.csv"
+#define KEEP_WEEK_DAYS    2  
+#define _NO_DAY_SLOTS_    (KEEP_WEEK_DAYS * 7)
+#define MONTHS_FILE       "/RINGmonths.csv"
+#define KEEP_YEAR_MONTHS  1  
+#define _NO_MONTH_SLOTS_  (KEEP_YEAR_MONTHS * 12)
 
+enum    { PERIOD_UNKNOWN, HOURS, DAYS, MONTHS, YEARS };
 
 #include "Debug.h"
 uint8_t   settingSleepTime; // needs to be declared before the oledStuff.h include
@@ -173,7 +166,6 @@ using MyData = ParsedData<
 >;
 
 enum    { TAB_UNKNOWN, TAB_ACTUEEL, TAB_LAST24HOURS, TAB_LAST7DAYS, TAB_LAST24MONTHS, TAB_GRAPHICS, TAB_SYSINFO, TAB_EDITOR };
-enum    { PERIOD_UNKNOWN, HOURS, MONTHS, DAYS };
 
 typedef struct {
     uint32_t  Label;
@@ -219,7 +211,6 @@ struct FSInfo {
   time_t      actT, newT;
   char        actTimestamp[20] = "";
   char        newTimestamp[20] = "";
-  //int         hr = 1;
   uint32_t    slotErrors = 0;
   uint32_t    nrReboots  = 0;
 
@@ -255,11 +246,6 @@ float     settingEDT1, settingEDT2, settingERT1, settingERT2, settingGDT;
 float     settingENBK, settingGNBK;
 uint8_t   settingInterval;
 char      settingBgColor[MAXCOLORNAME], settingFontColor[MAXCOLORNAME];
-char      iniBordEDC[MAXCOLORNAME],    iniBordERC[MAXCOLORNAME],  iniBordGDC[MAXCOLORNAME],    iniBordED2C[MAXCOLORNAME];
-char      iniBordER2C[MAXCOLORNAME],   iniBordGD2C[MAXCOLORNAME], iniBordPR123C[MAXCOLORNAME], iniBordPD1C[MAXCOLORNAME];
-char      iniBordPD2C[MAXCOLORNAME],   iniBordPD3C[MAXCOLORNAME], iniFillEDC[MAXCOLORNAME],    iniFillERC[MAXCOLORNAME];
-char      iniFillGDC[MAXCOLORNAME],    iniFillED2C[MAXCOLORNAME], iniFillER2C[MAXCOLORNAME],   iniFillGD2C[MAXCOLORNAME];
-char      iniFillPR123C[MAXCOLORNAME], iniFillPD1C[MAXCOLORNAME], iniFillPD2C[MAXCOLORNAME],   iniFillPD3C[MAXCOLORNAME];
 char      settingMQTTbroker[101], settingMQTTuser[40], settingMQTTpasswd[30], settingMQTTtopTopic[21];
 uint32_t  settingMQTTinterval;
 
@@ -377,7 +363,7 @@ void setup()
   readLastStatus(); // place it in actTimestamp
   // set the time to actTimestamp!
   actT = epoch(actTimestamp, strlen(actTimestamp), true);
-  DebugTf("===>actTimestamp[%s]=nrReboots[%u]=Errors[%u]<======\r\n\n", actTimestamp
+  DebugTf("===>actTimestamp[%s]-> nrReboots[%u]-> Errors[%u]<======\r\n\n", actTimestamp
                                                                     , nrReboots++
                                                                     , slotErrors);
 
@@ -462,30 +448,12 @@ void setup()
 
 //===========================================================================================
 
-//--- read most recent data from SPIFFS -----
-  monthData = fileReadData(MONTHS, 1);
-  dayData   = fileReadData(DAYS, 1);
-  hourData  = fileReadData(HOURS, 1);
-
 #if defined(USE_NTP_TIME)                                                           //USE_NTP
   time_t t = now(); // store the current time in time variable t                    //USE_NTP
   sprintf(cMsg, "%02d%02d%02d%02d%02d%02dW\0\0", (year(t) - 2000), month(t), day(t) //USE_NTP
                                                , hour(t), minute(t), second(t));    //USE_NTP
   pTimestamp = cMsg;                                                                //USE_NTP
   DebugTf("Time is set to [%s] from NTP\r\n", cMsg);                                //USE_NTP
-  thisYear  = (year(t) - 2000);                                                     //USE_NTP
-  thisMonth = month(t);                                                             //USE_NTP
-  thisDay   = day(t);                                                               //USE_NTP
-  thisHour  = hour(t);                                                              //USE_NTP
-                                                                                    //USE_NTP
-#else // not use_ntp_time
-  //label2Fields(monthData.Label, thisYear, thisMonth);
-  //label2Fields(dayData.Label,   thisYear, thisMonth, thisDay);
-  //label2Fields(hourData.Label,  thisYear, thisMonth, thisDay, thisHour);
-  //if (thisYear == 0) thisYear = 10;
-  //sprintf(cMsg, "%02d%02d%02d%02d0101W", thisYear, thisMonth, thisDay, thisHour);
-  //pTimestamp = cMsg;
-  //DebugTf("Time is set to [%s] from hourData\r\n", cMsg);
 #endif  // use_dsmr_30
 
 #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
@@ -646,7 +614,7 @@ void loop ()
         DebugTln(F("\r\n[Time----][FreeHeap/mBlck][Function----(line):\r"));
         // Voorbeeld: [21:00:11][   9880/  8960] loop        ( 997): read telegram [28] => [140307210001S]
         telegramCount++;
-        DebugTf("read telegram [%d] => [%s]\r\n", telegramCount, actTimestamp);
+        
         DSMRdata = {};
         String    DSMRerror;
         

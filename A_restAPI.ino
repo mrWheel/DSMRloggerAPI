@@ -28,6 +28,11 @@ void processAPI()
   {
     sendDeviceInfo();
   }
+  else if (!strncmp(URI, "/api/v1/dev/hist/", strlen("/api/v1/dev/hist/")) )
+  {
+    strCopy(fName, sizeof(fName), URI, strlen("/api/v1/dev/hist/"), strlen(URI));
+    sendJsonHist("hist", fName);
+  }
   else if (!strcasecmp(URI, "/api/v1/sm/actual") )
   {
     sendActual();
@@ -36,10 +41,10 @@ void processAPI()
   {
     if (strlen(URI) > strlen("/api/v1/sm/fields") ) 
     {
-      strnCopy(fName, sizeof(fName), URI, strlen("/api/v1/sm/fields/"), strlen(URI));
+      strCopy(fName, sizeof(fName), URI, strlen("/api/v1/sm/fields/"), strlen(URI));
       DebugTf("fName is [%s]\r\n", fName);
     }
-    sendJson("fields", fName);
+    sendJsonFields("fields", fName);
   }
   else 
   {
@@ -63,6 +68,9 @@ void sendApiInfo()
     <h1>API Reference</h1>\
     <ul>\
     <li><b>/api/v1/dev/info</b> - Device information in JSON format</li>\
+    <li><b>/api/v1/dev/hist/hours</b> - Readings from hours table in JSON format</li>\
+    <li><b>/api/v1/dev/hist/days</b> - Readings from days table in JSON format</li>\
+    <li><b>/api/v1/dev/hist/months</b> - Readings from months table in JSON format</li>\
     <li><b>/api/v1/sm/actual</b> - Actual data from Slimme Meter in JSON format</li>\
     <li><b>/api/v1/sm/fields</b> - All available fields from the Slimme Meter in JSON format</li>\
     <li><b>/api/v1/sm/fields/{fieldName}</b> - Only the requested field from the Slimme Meter in JSON format</li>\
@@ -257,7 +265,7 @@ struct buildJsonApi {
 };
 
 //=======================================================================
-void sendJson(const char *Name, const char *fName) 
+void sendJsonFields(const char *Name, const char *fName) 
 {
   jsonDoc.clear();
 
@@ -272,7 +280,33 @@ void sendJson(const char *Name, const char *fName)
 
   _returnJSON( jsonDoc.as<JsonObject>() );
 
-} // sendJson()
+} // sendJsonFields()
+
+
+//=======================================================================
+void sendJsonHist(const char *Name, const char *fName) 
+{
+  jsonDoc.clear();
+
+  strcpy(rootName, Name);
+  if (strlen(fName) > 0)
+  {
+    strCopy(fieldName, sizeof(fieldName), fName);
+  }
+  else fieldName[0] = '\0';
+
+  if (strcmp(fieldName, "hours") == 0)
+        readDataFromFile(HOURS, HOURS_FILE, actTimestamp, true, rootName);
+  else if (strcmp(fieldName, "days") == 0)
+        readDataFromFile(DAYS, DAYS_FILE, actTimestamp, true, rootName);
+  else if (strcmp(fieldName, "months") == 0)
+        readDataFromFile(MONTHS, MONTHS_FILE, actTimestamp, true, rootName);
+  else
+        return;
+        
+  _returnJSON( jsonDoc.as<JsonObject>() );
+
+} // sendJsonHist()
 
 /***************************************************************************
 *

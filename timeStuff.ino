@@ -56,51 +56,80 @@ String getDayName(int weekDayNr)
 
 
 //===========================================================================================
-int8_t SecondFromTimestamp(String timeStamp) 
+int8_t SecondFromTimestamp(const char *timeStamp) 
 {
-  return timeStamp.substring(10, 12).toInt();
+  char aSS[4] = "";
+  // 0123456789ab
+  // YYMMDDHHmmss SS = 4-5
+  strCopy(aSS, 4, timeStamp, 10, 11);
+  return String(aSS).toInt();
     
 } // SecondFromTimestamp()
 
 //===========================================================================================
-int8_t MinuteFromTimestamp(String timeStamp) 
+int8_t MinuteFromTimestamp(const char *timeStamp) 
 {
-  return timeStamp.substring(8, 10).toInt();
+  char aMM[4] = "";
+  // 0123456789ab
+  // YYMMDDHHmmss MM = 8-9
+  strCopy(aMM, 4, timeStamp, 8, 9);
+  return String(aMM).toInt();
     
 } // MinuteFromTimestamp()
 
 //===========================================================================================
-int8_t HourFromTimestamp(String timeStamp) 
+int8_t HourFromTimestamp(const char *timeStamp) 
 {
-  return timeStamp.substring(6, 8).toInt();
+  char aHH[4] = "";
+  //DebugTf("timeStamp[%s] => \r\n", timeStamp); // YYMMDDHHmmss HH = 5-6
+  strCopy(aHH, 4, timeStamp, 6, 7);
+  //Debugf("aHH[%s], nHH[%02d]\r\n", aHH, String(aHH).toInt()); 
+  return String(aHH).toInt();
     
 } // HourFromTimestamp()
 
 //===========================================================================================
-int8_t DayFromTimestamp(String timeStamp) 
+int8_t DayFromTimestamp(const char *timeStamp) 
 {
-  return timeStamp.substring(4, 6).toInt();
+  char aDD[4] = "";
+  // 0123456789ab
+  // YYMMDDHHmmss DD = 4-5
+  strCopy(aDD, 4, timeStamp, 4, 5);
+  return String(aDD).toInt();
     
 } // DayFromTimestamp()
 
 //===========================================================================================
-int8_t MonthFromTimestamp(String timeStamp) 
+int8_t MonthFromTimestamp(const char *timeStamp) 
 {
-  return timeStamp.substring(2, 4).toInt();
+  char aMM[4] = "";
+  // 0123456789ab
+  // YYMMDDHHmmss MM = 2-3
+  strCopy(aMM, 4, timeStamp, 2, 3);
+  return String(aMM).toInt();
     
 } // MonthFromTimestamp()
 
 //===========================================================================================
-int8_t YearFromTimestamp(String timeStamp) 
+int8_t YearFromTimestamp(const char *timeStamp) 
 {
-  return timeStamp.substring(0, 2).toInt();
+  char aYY[4] = "";
+  // 0123456789ab
+  // YYMMDDHHmmss YY = 0-1
+  strCopy(aYY, 4, timeStamp, 0, 1);
+  return String(aYY).toInt();
     
 } // YearFromTimestamp()
 
 //===========================================================================================
-int32_t HoursKeyTimestamp(String timeStamp) 
+int32_t HoursKeyTimestamp(const char *timeStamp) 
 {
-  return timeStamp.substring(0, 8).toInt();
+  char aHK[10] = "";
+  // 0123456789ab
+  // YYMMDDHHmmss YY = 0-1
+  strCopy(aHK, 4, timeStamp, 0, 7);
+  //return timeStamp.substring(0, 8).toInt();
+  return String(aHK).toInt();
     
 } // HourFromTimestamp()
 
