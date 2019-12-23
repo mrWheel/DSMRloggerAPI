@@ -13,7 +13,16 @@
 //===========================================================================================
 void displayHoursHist(bool Telnet=true) 
 {
-  readDataFromFile(HOURS, HOURS_FILE, actTimestamp, false, "") ;
+    int16_t startSlot = timestampToHourSlot(actTimestamp, strlen(actTimestamp));
+    DebugTf("readingHours start with slot [%02d]\r\n", startSlot);
+    for( int p=1; p<(_NO_HOUR_SLOTS_ / HOURS_PER_PERIOD); p++)
+    {
+      DebugTf("readingHours start with slot [%02d]\r\n", startSlot);
+      readDataFromFile(HOURS, HOURS_FILE
+                          , startSlot, p
+                          , false, "") ;
+      startSlot -= HOURS_PER_PERIOD;
+    }
 
 } // displayHoursHist()
 
@@ -21,7 +30,16 @@ void displayHoursHist(bool Telnet=true)
 //===========================================================================================
 void displayDaysHist(bool Telnet=true) 
 {
-  readDataFromFile(DAYS, DAYS_FILE, actTimestamp, false, "") ;
+    int16_t startSlot = timestampToDaySlot(actTimestamp, strlen(actTimestamp));
+    DebugTf("readingDays start with slot [%02d]\r\n", startSlot);
+    for( int p=1; p<(_NO_DAY_SLOTS_ / DAYS_PER_PERIOD); p++)
+    {
+      DebugTf("readingDays start with slot [%02d]\r\n", startSlot);
+      readDataFromFile(DAYS, DAYS_FILE
+                          , startSlot, p
+                          , false, "") ;
+      startSlot -= DAYS_PER_PERIOD;
+    }
 
 } // displayDaysHist()
 
@@ -29,7 +47,16 @@ void displayDaysHist(bool Telnet=true)
 //===========================================================================================
 void displayMonthsHist(bool Telnet=true) 
 {
-  readDataFromFile(MONTHS, MONTHS_FILE, actTimestamp, false, "") ;
+    int16_t startSlot = timestampToMonthSlot(actTimestamp, strlen(actTimestamp));
+    DebugTf("readingMonths start with slot [%02d]\r\n", startSlot);
+    for( int p=1; p<(_NO_MONTH_SLOTS_ / MONTHS_PER_PERIOD); p++)
+    {
+      DebugTf("readingMonths start with slot [%02d]\r\n", startSlot);
+      readDataFromFile(MONTHS, MONTHS_FILE
+                          , startSlot, p
+                          , false, "") ;
+      startSlot -= MONTHS_PER_PERIOD;
+    }
 
 } // displayMonthsHist()
 

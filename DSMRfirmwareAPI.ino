@@ -78,14 +78,20 @@
 #define DATA_FORMAT       "%-8.8s;%10.3f;%10.3f;%10.3f;%10.3f;%10.3f;\n"
 #define DATA_CSV_HEADER   "YYMMDDHH;      EDT1;      EDT2;      ERT1;      ERT2;       GDT;"
 #define DATA_RECLEN       75
-#define KEEP_DAYS_HOURS   3
+
 #define HOURS_FILE        "/RINGhours.csv"
+#define HOURS_PER_PERIOD  24              // number of hours to show per request
+#define KEEP_DAYS_HOURS   3               // number of days to keep!
 #define _NO_HOUR_SLOTS_   (KEEP_DAYS_HOURS * 24)
+
 #define DAYS_FILE         "/RINGdays.csv"
-#define KEEP_WEEK_DAYS    2  
+#define DAYS_PER_PERIOD   7               // number of days to show per request
+#define KEEP_WEEK_DAYS    3               // number of weeks to keep!  
 #define _NO_DAY_SLOTS_    (KEEP_WEEK_DAYS * 7)
+
 #define MONTHS_FILE       "/RINGmonths.csv"
-#define KEEP_YEAR_MONTHS  1  
+#define MONTHS_PER_PERIOD 12              // number of months to show per request
+#define KEEP_YEAR_MONTHS  1               // number of years to keep!
 #define _NO_MONTH_SLOTS_  (KEEP_YEAR_MONTHS * 12)
 
 enum    { PERIOD_UNKNOWN, HOURS, DAYS, MONTHS, YEARS };
@@ -358,7 +364,7 @@ void setup()
   }
 
 //------ read status file for last Timestamp --------------------
-  //strcpy(actTimestamp, "010101010101X");
+  //strcpy(actTimestamp, "040302010101X");
   //writeLastStatus();  // only for firsttime initialization
   readLastStatus(); // place it in actTimestamp
   // set the time to actTimestamp!

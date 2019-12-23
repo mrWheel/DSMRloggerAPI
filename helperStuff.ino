@@ -70,6 +70,8 @@ boolean isValidIP(IPAddress ip)
   return _isValidIP;
 } //  isValidIP()
 
+
+//===========================================================================================
 bool isNumericp(const char *timeStamp, int8_t len)
 {
   for (int i=0; (i<len && i<12);i++)
@@ -82,21 +84,7 @@ bool isNumericp(const char *timeStamp, int8_t len)
   return true;
   
 } // isNumericp()
-/****
-//===========================================================================================
-String macToStr(const uint8_t* mac) 
-{
-  String result;
-  for (int i = 0; i < 6; ++i) 
-  {
-    result += String(mac[i], 16);
-    if (i < 5)
-      result += ':';
-  }
-  return result;
-  
-} // macToStr()
-****/
+
 
 //===========================================================================================
 int8_t splitString(String inStrng, char delimiter, String wOut[], uint8_t maxWords) 

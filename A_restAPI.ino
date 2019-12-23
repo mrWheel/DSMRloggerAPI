@@ -20,6 +20,8 @@ void processAPI()
 {
   char *URI = (char*)httpServer.uri().c_str();
   char fName[40] = "";
+  String words[10];
+
   
   strToLower(URI);
   DebugTf("incomming URL is [%s] \r\n", URI);
@@ -31,7 +33,16 @@ void processAPI()
   else if (!strncmp(URI, "/api/v1/dev/hist/", strlen("/api/v1/dev/hist/")) )
   {
     strCopy(fName, sizeof(fName), URI, strlen("/api/v1/dev/hist/"), strlen(URI));
-    sendJsonHist("hist", fName);
+    int8_t wc = splitString(fName, '/', words, 10);
+    for(int i=0; i<wc; i++)
+    {
+      DebugTf("Found word[%s] @indx[%d]\r\n", words[i].c_str(), i);
+    }
+    strCopy(fName, sizeof(fName), words[0].c_str());
+    //if (wc > 0)
+    if (words[1].toInt() >= 1)
+          sendJsonHist("hist", fName, words[1].toInt());
+    else  sendJsonHist("hist", fName, 1);
   }
   else if (!strcasecmp(URI, "/api/v1/sm/actual") )
   {
@@ -66,15 +77,15 @@ void sendApiInfo()
   </head>\
   <body>\
     <h1>API Reference</h1>\
-    <ul>\
-    <li><b>/api/v1/dev/info</b> - Device information in JSON format</li>\
-    <li><b>/api/v1/dev/hist/hours</b> - Readings from hours table in JSON format</li>\
-    <li><b>/api/v1/dev/hist/days</b> - Readings from days table in JSON format</li>\
-    <li><b>/api/v1/dev/hist/months</b> - Readings from months table in JSON format</li>\
-    <li><b>/api/v1/sm/actual</b> - Actual data from Slimme Meter in JSON format</li>\
-    <li><b>/api/v1/sm/fields</b> - All available fields from the Slimme Meter in JSON format</li>\
-    <li><b>/api/v1/sm/fields/{fieldName}</b> - Only the requested field from the Slimme Meter in JSON format</li>\
-    </ul>\
+    <table>\
+    <tr><td><b>/api/v1/dev/info</b></td><td>Device information in JSON format</td></tr>\
+    <tr><b>/api/v1/dev/hist/hours/{period}</b></td><td>Readings from hours table in JSON format</td></tr>\
+    <tr><b>/api/v1/dev/hist/days</b></td><td>Readings from days table in JSON format</td></tr>\
+    <tr><b>/api/v1/dev/hist/months</b></td><td>Readings from months table in JSON format</td></tr>\
+    <tr><b>/api/v1/sm/actual</b></td><td>Actual data from Slimme Meter in JSON format</td></tr>\
+    <tr><b>/api/v1/sm/fields</b></td><td>All available fields from the Slimme Meter in JSON format</td></tr>\
+    <tr><b>/api/v1/sm/fields/{fieldName}</b></td><td>Only the requested field from the Slimme Meter in JSON format</td></tr>\
+    </table>\
     <br>\
     JSON format: {\"fields\":[{\"name\":\"&lt;fieldName&gt;\",\"value\":&lt;value&gt;,\"unit\":\"&lt;unit&gt;\"}]}\
     <br>\
@@ -284,7 +295,7 @@ void sendJsonFields(const char *Name, const char *fName)
 
 
 //=======================================================================
-void sendJsonHist(const char *Name, const char *fName) 
+void sendJsonHist(const char *Name, const char *fName, uint8_t period) 
 {
   jsonDoc.clear();
 
@@ -295,12 +306,14 @@ void sendJsonHist(const char *Name, const char *fName)
   }
   else fieldName[0] = '\0';
 
+  DebugTf("sendJsonHist [%s]/[%d]\r\n", fieldName, period);
+
   if (strcmp(fieldName, "hours") == 0)
-        readDataFromFile(HOURS, HOURS_FILE, actTimestamp, true, rootName);
+        readDataFromFile(HOURS,  HOURS_FILE,  actTimestamp, period, true, rootName);
   else if (strcmp(fieldName, "days") == 0)
-        readDataFromFile(DAYS, DAYS_FILE, actTimestamp, true, rootName);
+        readDataFromFile(DAYS,   DAYS_FILE,   actTimestamp, period, true, rootName);
   else if (strcmp(fieldName, "months") == 0)
-        readDataFromFile(MONTHS, MONTHS_FILE, actTimestamp, true, rootName);
+        readDataFromFile(MONTHS, MONTHS_FILE, actTimestamp, period, true, rootName);
   else
         return;
         

@@ -9,7 +9,9 @@
 ***************************************************************************      
 */
 
-int16_t  bytesWritten;
+int16_t   bytesWritten;
+
+//static    FSInfo SPIFFSinfo;
 
 
 //====================================================================
@@ -68,18 +70,24 @@ void writeLastStatus()
 //===========================================================================================
 bool buildDataRecord(char *recIn) 
 {
+  static float GG = 1;
   char record[DATA_RECLEN + 1] = "";
   char key[10] = "";
  
   uint16_t recSlot = timestampToHourSlot(actTimestamp, strlen(actTimestamp));
   strCopy(key, 10, actTimestamp, 0, 8);
 
+  int HH = HourFromTimestamp(actTimestamp);
+  int DD = DayFromTimestamp(actTimestamp);
+  int MM = MonthFromTimestamp(actTimestamp);
+  int YY = YearFromTimestamp(actTimestamp);
+  GG = GG + 0.1;
 
-    sprintf(record, (char*)DATA_FORMAT, key , (float)DSMRdata.energy_delivered_tariff1
-                                            , (float)DSMRdata.energy_delivered_tariff2
-                                            , (float)DSMRdata.energy_returned_tariff1
-                                            , (float)DSMRdata.energy_returned_tariff2
-                                            , (float)DSMRdata.gas_delivered);
+    sprintf(record, (char*)DATA_FORMAT, key , (float)YY
+                                            , (float)MM
+                                            , (float)DD
+                                            , (float)HH
+                                            , (float)GG);
     // DATA + \n + \0                                        
     fillRecord(record, DATA_RECLEN);
 
@@ -159,14 +167,134 @@ void writeDataToFiles()
 } // writeDataToFiles(fileType, dataStruct newDat, int8_t slotNr)
 
 
+
+//===========================================================================================
+void readDataFromFile(int8_t fileType, const char *fileName
+                          , int16_t fromSlot, int16_t period
+                          , bool doJson, const char *rName) 
+{
+  uint16_t  slot = 0, maxSlots = 0, periodSlots = 0, offset = 0;
+  char      buffer[DATA_RECLEN +2] = "";
+  char      recID[10]  = "";
+  float     EDT1, EDT2, ERT1, ERT2, GDT;
+  JsonArray root;
+    
+  switch(fileType) {
+    case HOURS:   maxSlots    = _NO_HOUR_SLOTS_;
+                  periodSlots = HOURS_PER_PERIOD;
+                  break;
+    case DAYS:    maxSlots    = _NO_DAY_SLOTS_;
+                  periodSlots =  DAYS_PER_PERIOD;
+                  break;
+    case MONTHS:  maxSlots    = _NO_MONTH_SLOTS_;
+                  periodSlots = MONTHS_PER_PERIOD;
+                  break;
+  }
+
+
+  if (!SPIFFS.exists(fileName))
+  {
+    DebugTf("File [%s] does not excist!\r\n", fileName);
+    return;
+  }
+
+  if (doJson)
+  {
+      root = jsonDoc.createNestedArray("hist");
+  }
+
+  File dataFile = SPIFFS.open(fileName, "r+");  // read and write ..
+  if (!dataFile) 
+  {
+    DebugTf("Error opening [%s]\r\n", fileName);
+    return;
+  }
+
+  uint16_t recNr = (period -1) * periodSlots;
+  
+  DebugTf("for (s=[%d]; s>[%d]p[%d]; s--)\r\n", maxSlots, 0, periodSlots);
+  for(int16_t s = maxSlots; s > 0, periodSlots > 0; s--, periodSlots--)
+  { 
+    int16_t nextSlot = (s + fromSlot) -1;
+    if (nextSlot < 0) nextSlot += maxSlots;
+    slot    = (nextSlot % maxSlots) +1;
+    Debugf("Inx[%02d]: ", s);
+    offset  = (slot * DATA_RECLEN);
+    dataFile.seek(offset, SeekSet); 
+    int l = dataFile.readBytesUntil('\n', buffer, sizeof(buffer));
+    buffer[l] = 0;
+    if (l >= (DATA_RECLEN -1))  // '\n' is skipped by readBytesUntil()
+    {
+      if (!isNumericp(buffer, 8)) // first 8 bytes is YYMMDDHH
+      {
+        {
+          Debugf("slot[%02d]==>timeStamp [%-13.13s] not valid!!\r\n", slot, buffer);
+        }
+      }
+      else
+      {
+        if (doJson)
+        {
+          sscanf(buffer, "%[^;];%f;%f;%f;%f;%f", recID
+                                               , &EDT1, &EDT2, &ERT1, &ERT2, &GDT);
+          JsonObject nested = root.createNestedObject();
+          nested["rec"]  = recNr++;
+          nested["date"] = recID;
+          nested["edt1"] = (float)EDT1;
+          nested["edt2"] = (float)EDT2;
+          nested["ert1"] = (float)ERT1;
+          nested["ert2"] = (float)ERT2;
+          nested["gdt"]  = (float)EDT1;
+        }
+        else
+        {
+          Debugf("slot[%02d]->[%s]\r\n", slot, buffer);
+        }
+      }
+    }
+
+    
+  }
+  dataFile.close();
+
+} // readDatafromFile()
+
+
+//===========================================================================================
+void readDataFromFile(int8_t fileType, const char *fileName, const char *timeStamp
+                          , uint8_t period, bool doJson, const char *rName) 
+{
+  uint16_t recsPerCall = 0, firstSlot = 0;
+
+  DebugTf("timeStamp[%s]\r\n", timeStamp);
+  recNr = 0;  // reset recNr counter!
+  
+  switch(fileType) {
+    case HOURS:   firstSlot = timestampToHourSlot(actTimestamp, strlen(actTimestamp));
+                  recsPerCall = HOURS_PER_PERIOD;
+                  break;
+    case DAYS:    firstSlot = timestampToDaySlot(actTimestamp, strlen(actTimestamp));
+                  recsPerCall = DAYS_PER_PERIOD;
+                  break;
+    case MONTHS:  firstSlot = timestampToMonthSlot(actTimestamp, strlen(actTimestamp));
+                  recsPerCall = MONTHS_PER_PERIOD;
+                  break;
+  }
+
+  firstSlot = firstSlot + (recsPerCall * (period - 1));
+  readDataFromFile(fileType, fileName, firstSlot, period, doJson, rName);
+
+} // readDatafromFile()
+
+/****
 //===========================================================================================
 void readDataFromFile(int8_t fileType, const char *fileName, const char *timeStamp
                           , bool doJson, const char *rName) 
 {
-  uint16_t maxSlots, slot = 0, slotLast = 0, offset = 0;
-  char buffer[DATA_RECLEN +2] = "";
-  char recID[10]  = "";
-  float EDT1, EDT2, ERT1, ERT2, GDT;
+  uint16_t  maxSlots, slot = 0, slotLast = 0, offset = 0;
+  char      buffer[DATA_RECLEN +2] = "";
+  char      recID[10]  = "";
+  float     EDT1, EDT2, ERT1, ERT2, GDT;
   JsonArray root;
 
   DebugTf("timeStamp[%s]\r\n", timeStamp);
@@ -237,12 +365,12 @@ void readDataFromFile(int8_t fileType, const char *fileName, const char *timeSta
         }
       }
     }
-
     
   }
   dataFile.close();
 
 } // readDatafromFile()
+***/
 
 //===========================================================================================
 bool createFile(const char *fileName, uint16_t noSlots) 
