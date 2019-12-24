@@ -443,10 +443,10 @@ uint16_t timestampToHourSlot(const char * TS, int8_t len)
 {
   char      aSlot[5];
   time_t    t1 = epoch((char*)TS, strlen(TS), false);
-  uint32_t  nrDays = t1 / SECS_PER_DAY;
-  sprintf(aSlot, "%d", ((nrDays % KEEP_DAYS_HOURS) *24) + hour(t1));
-  uint8_t   uSlot  = String(aSlot).toInt();
-  uint8_t   recSlot = (uSlot % _NO_HOUR_SLOTS_) +1;
+  uint32_t  nrhours = t1 / SECS_PER_HOUR;
+  //sprintf(aSlot, "%d", ((nrDays % KEEP_DAYS_HOURS) *24) + hour(t1));
+  //uint8_t   uSlot  = String(aSlot).toInt();
+  uint8_t   recSlot = (nrHours % _NO_HOUR_SLOTS_) +1;
   
   DebugTf("===>>>>>  HOUR[%02d] => recSlot[%02d]\r\n", hour(t1), recSlot);
 
