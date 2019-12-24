@@ -1,7 +1,7 @@
 <!--
 ***************************************************************************  
 **  Program  : DSMRindex.html, part of DSMRloggerAPI
-**  Version  : v0.0.1
+**  Version  : v0.1.3
 **
 **  Copyright (c) 2019 Willem Aandewiel
 **
@@ -26,12 +26,13 @@
         <span id="sysName">DSMR-logger(API)</span> &nbsp; &nbsp; &nbsp;
         <span id="devName" style='font-size: small;'>-</span> &nbsp;
         <span id="devVersion" style='font-size: small;'>[version]</span>
+        <span id='theTime' class='nav-item nav-clock'>00:00</span>
       </h1>
    </div>
 <!--  <div style="clear:both"></div> -->
   </font>
 
-  <!-- <div class="clock" id="theTime">-</div> -->
+  <!-- <div class="clock" id="theTime">1234567890</div> -->
   <!-- START Tabbladen -->
   <div class="nav-container">
     <div class='nav-left'>
@@ -39,14 +40,18 @@
       <a id='bLastHours'  class='nav-item tabButton'>per Uur</a>
       <a id='bLastDays'   class='nav-item tabButton'>per Dag</a>
       <a id='bLastMonths' class='nav-item tabButton'>per Maand</a>
-      <a id='bGraphics'   class='nav-item tabButton'>Charts</a>
+      <a id='bTelegram'   class='nav-item tabButton'>Telegram</a>
+      <a id='bFields'     class='nav-item tabButton'>all Fields</a>
       <a id='bSysInfo'    class='nav-item tabButton'>Systeem Info</a>
+      <a id='restAPI'    class='nav-item tabButton'>restAPI</a>
       <a id='FSexplorer'  class='nav-img'>
                       <img src='/FSexplorer.png' alt='FSexplorer'></a>
     </div>
+<!--
     <div class='nav-right'>
       <div id='theTime' class='nav-item nav-clock'>00:00</div>
     </div>
+-->
   </div>
   <!-- END Tabbladen -->
   
@@ -55,110 +60,205 @@
   <!-- START Actual Tab -->
   <div id="Actual" class="tabName" style="display:block">
     <!-- START actueelTab Dummy -->
-    <h1>Authors</h1>
-    <ul id="jsonFields"></ul>
-      <div class="container-card">
-        <div class="container-box">
-          <div class="flex-item">
-            <div class="flexLabel200">Energie Verbruikt (kWh)</div>
-            <div id="aED" class="flexValue250">-</div>
-          </div>
-        </div>  <!-- container-box -->
-
-        <div class="container-box"> 
-        </div>  <!-- container-box -->
-      </div> <!-- container-card -->
+    <div>
+        <span style="font-size: 30px;">Actueel &nbsp; &nbsp; </span>
+        <span style="font-size: 20px;">/api/v1/sm/actual</span>
+    </div>
+    <div id='actual' style="margin-left: 50px; margin-right: 500px; background: lightblue;">
+      <table id="actualTable">
+      <thead>
+        <tr>
+            <th align='left'>Name</th><th align='left'>Value</th><th>Unit</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+      <tfoot>
+        <tr>
+            <td>---eof---</td>
+        </tr>
+      <tfoot>
+      </table>
+    </div>
   
   </div>  <!-- END Actual Tab -->
 
   <!-- START LastHoursTab -->
   <div id="LastHours" class="tabName" style="display:none">
-    <h2>/api/v1/fields</h2>
-    <div id='lastHours' style="margin-left: 50px; background: white;">
+    <div>
+        <span style="font-size: 30px;">Hours &nbsp; &nbsp; </span>
+        <span style="font-size: 20px;">/api/v1/hist/hours/asc</span>
+    </div>
+    <div id='lastHours' style="margin-left: 50px; margin-right: 250px; background: lightblue;">
     <table id="lastHoursTable">
     <thead>
         <tr>
-            <th align='left'>Name</th><th align='left'>Value</th><th>Unit</th>
+            <th align='left'>RecNr</th>
+            <th align='center'>Slot</th>
+            <th align='center'>Date/Time</th>
+            <th align='right'>Energie Verbruik</th>
+            <th align='right'>Energie Teruglevering</th>
+            <th align='right'>Gasverbruik</th>
+            <th align='right'>Kosten</th>
         </tr>
     </thead>
     <tbody>
     </tbody>
     <tfoot>
         <tr>
-            <td>nice table</td>
+            <td>---eof---</td>
         </tr>
     <tfoot>
-</table>
+    </table>
     </div>
+    
   </div> <!-- END LastHoursTab -->
 
   <!-- START LastDaysTab -->
   <div id="LastDays" class="tabName" style="display:none">
-    <h2>Afgelopen dagen</h2>
-    <div style="margin-left: 50px; background: white;">
-      <table id="lastDaysTable" border="1" bgcolor="deepskyblue">
-        <tbody>
-        </tbody>
+    <div>
+        <span style="font-size: 30px;">Days &nbsp; &nbsp; </span>
+        <span style="font-size: 20px;">/api/v1/hist/days/asc</span>
+    </div>
+    <div id='lastDays' style="margin-left: 50px; margin-right: 250px; background: lightblue;">
+      <table id="lastDaysTable">
+      <thead>
+        <tr>
+            <th align='left'>RecNr</th>
+            <th align='center'>Slot</th>
+            <th align='center'>Date/Time</th>
+            <th align='right'>Energie Verbruik</th>
+            <th align='right'>Energie Teruglevering</th>
+            <th align='right'>Gasverbruik</th>
+            <th align='right'>Kosten</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+      <tfoot>
+        <tr>
+            <td---eof---</td>
+        </tr>
+      <tfoot>
       </table>
     </div>
   </div> <!-- END LastDaysTab -->
 
   <!-- START LastMonthsTab -->
   <div id="LastMonths" class="tabName" style="display:none">
-    <h2>Afgelopen maanden</h2>
-    <div style="margin-left: 50px; background: white;">
-      <table id="lastMonthsTable" border="1" bgcolor="deepskyblue">
-        <tbody>
-        </tbody>
+    <div>
+        <span style="font-size: 30px;">Months &nbsp; &nbsp; </span>
+        <span style="font-size: 20px;">/api/v1/hist/months/asc</span>
+    </div>
+    <div id='lastMonths' style="margin-left: 50px; margin-right: 250px; background: lightblue;">
+      <table id="lastMonthsTable">
+      <thead>
+        <tr>
+            <th align='center'></th>
+            <th align='center'>|</th>
+            <th align='center' colspan=4>Verbruik</th>
+            <th align='center'>|</th>
+            <th align='center' colspan=4>Opgewekt</th>
+            <th align='center'>|</th>
+            <th align='center' colspan=4>Gasverbruik</th>
+        </tr>
+        <tr>
+            <th align='right'   width='80px'>Maand</th>
+            <th align='center'  width='10px'>|</th>
+            <th align='center'  width='50px'>Jaar</th>
+            <th align='right'   width='70px'>(kWh)</th>
+            <th align='center'  width='50px'>Jaar</th>
+            <th align='right'   width='70px'>(kWh)</th>
+            <th align='center'  width='10px'>|</th>
+            <th align='center'  width='50px'>Jaar</th>
+            <th align='right'   width='70px'>(kWh)</th>
+            <th align='center'  width='50px'>Jaar</th>
+            <th align='right'   width='70px'>(kWh)</th>
+            <th align='center'  width='10px'>|</th>
+            <th align='center'  width='50px'>Jaar</th>
+            <th align='right'   width='70px'>(m3)</th>
+            <th align='center'  width='50px'>Jaar</th>
+            <th align='right'   width='70px'>(m3)</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+      <tfoot>
+        <tr>
+            <td>---eof---</td>
+        </tr>
+      <tfoot>
       </table>
     </div>
   </div> <!-- END LastMonthsTab -->
 
   <!-- START SysInfo Tab -->
   <div id="SysInfo" class="tabName" style="display:none">
-      <div class="container-card"> 
-        <div class="container-box"> 
-        </div>  <!-- container-box -->
-
-        <div class="container-box"> 
-          <div class="flex-item">
-            <div class="flexLabel200">Telegrams Processed</div>
-            <div id="TelegramCount" class="flexValue250">-</div>
-          </div>
-        </div>  <!-- container-box -->
-      </div> <!-- container-card -->
+    <div>
+        <span style="font-size: 30px;">Device Info &nbsp; &nbsp; </span>
+        <span style="font-size: 20px;">/api/v1/dev/info</span>
+    </div>
+    <div id='devInfo' style="margin-left: 150px; margin-right: 500px; background: lightblue;">
+      <table id="devInfoTable">
+      <thead>
+        <tr>
+            <th align='left'>Name</th>
+            <th align='left'>Value</th>
+            <th align='left'>Unit</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+      <tfoot>
+        <tr>
+            <td>---eof---</td>
+        </tr>
+      <tfoot>
+      </table>
+    </div>
   
   </div>  <!-- END SysInfo Tab -->
 
-  <!-- START GraphicsTab -->
-  <div id="Graphics" class="tabName" style="display:none">
-    <h2>Energie Verbruik/Teruglevering</h2>
-      <label for="Period"><b>Chart: </b></label>
-      Jaar
-      <input type="radio" name="graphType" id="graphYear" onchange="setGraphType('Y')"/>
-      &nbsp;&nbsp;
-      Week
-      <input type="radio" name="graphType" id="graphWeek" onchange="setGraphType('W')" checked/>
-      &nbsp;&nbsp;
-      Dag
-      <input type="radio" name="graphType" id="graphDay" onchange="setGraphType('D')"/>
-      &nbsp;&nbsp;
-      Actueel
-      <input type="radio" name="graphType" id="graphActual" onchange="setGraphType('A')"/>
-      &nbsp;&nbsp;
-      Financieel
-      <input type="radio" name="graphType" id="graphFinancial" onchange="setGraphType('F')"/>
-      &nbsp; &nbsp; &nbsp;
-      <label for="graphType"><b>Type: </b></label>
-      Bar
-      <input type="radio" name="chartType" id="typeBar" onchange="setChartType('B')" checked/>
-      &nbsp;&nbsp;
-      Line
-      <input type="radio" name="chartType" id="typeLine" onchange="setChartType('L')"/>
-      
-    <canvas id="chartEnergy" height="80%">chart.js</canvas> 
-  </div> <!-- END GraphicsTab -->
+  <!-- START TelegramTab -->
+  <div id="Telegram" class="tabName" style="display:none">
+    <div>
+        <span style="font-size: 30px;">raw Telegram &nbsp; &nbsp; </span>
+        <span style="font-size: 20px;">/api/v1/sm/telegram</span>
+    </div>
+    <div id="rawTelegram" style="margin-left: 150px; margin-right: 500px; background: lightblue;">
+    </div>
+    ---eof---
+  </div> <!-- END TelegramTab -->
+
+  <!-- START Actual Tab -->
+  <div id="Fields" class="tabName" style="display:block">
+    <!-- START filedsTab Dummy -->
+    <div>
+        <span style="font-size: 30px;">all Fields &nbsp; &nbsp; </span>
+        <span style="font-size: 20px;">/api/v1/sm/fields</span>
+    </div>
+    <div id='fields' style="margin-left: 150px; margin-right: 500px; background: lightblue;">
+      <table id="fieldsTable">
+      <thead>
+        <tr>
+            <th align='left'>DSMR Name</th>
+            <th align='left'>Display Name</th>
+            <th align='left'>Value</th>
+            <th>Unit</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+      <tfoot>
+        <tr>
+            <td>EOF</td>
+        </tr>
+      <tfoot>
+      </table>
+    </div>
   
+  </div>  <!-- END fields Tab -->
+
   <!-- REST -->
   
   <div class="footer">

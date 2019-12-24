@@ -1,5 +1,5 @@
 /*
-**  Copyright (c) 2019 Robert van den Breemen
+**  Copyright (c) 2020 Robert van den Breemen
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
@@ -21,7 +21,6 @@
 #define WAIT_TIME           60000       // 60 seconden
 
 uint32_t  mindergasTime                 = millis();
-char      settingMindergasAuthtoken[21] = "";
 
 //=======================================================================
 void handleMindergas()
@@ -90,38 +89,6 @@ void processMindergas()
   time_t t;
   File   minderGasFile;
 
-/*  
-  DebugT(F("Processing Mindergas Finite State Machine .. state is "));
-  switch(stateMindergas) {
-    case MG_INIT:
-          Debugln(F("MG_INIT"));  
-          break;
-    case MG_WAIT_FOR_FIRST_TELEGRAM:
-          Debugln(F("WAIT_FOR_FIRST_TELEGRAM"));  
-          break;
-    case MG_WAIT_FOR_MIDNIGHT:
-          Debugln(F("MG_WAIT_FOR_MIDNIGHT"));  
-          break;
-    case MG_WRITE_TO_FILE:
-          Debugln(F("MG_WRITE_TO_FILE"));  
-          break;
-    case MG_DO_COUNTDOWN:
-          Debugln(F("MG_DO_COUNTDOWN"));  
-          break;
-    case MG_SEND_MINDERGAS:
-          Debugln(F("MG_SEND_MINDERGAS"));  
-          break;
-    case MG_NO_AUTHTOKEN:
-          Debugln(F("MG_NO_AUTHTOKEN"));  
-          break;
-    case MG_ERROR:
-          Debugln(F("MG_ERROR"));  
-          break;
-    default:
-          Debugln(F("Some unknown state!?"));  
-          break;
-  } // switch()..
-*/  
   if (handleMindergasSemaphore) // if already running ? then return...
   {
     DebugTln(F("already running .. bailing out!"));
@@ -142,22 +109,22 @@ void processMindergas()
         strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "found Mindergas.post");
         validToken     = true;
         stateMindergas = MG_SEND_MINDERGAS;
-        DebugTln(F("Next State: MG_SEND_MINDERGAS"));
+        //DebugTln(F("Next State: MG_SEND_MINDERGAS"));
         break;
       } 
       // check to see if there is a authtoken
-      validToken = (strlen(settingMindergasAuthtoken) > 5); // Assume there is a valid token, if there is a string. To be proven later.
+      validToken = (strlen(settingMindergasToken) > 5); // Assume there is a valid token, if there is a string. To be proven later.
       if  (validToken) 
       {
         //Next state is wait for first telegram
-        DebugTln(F("Next State: MG_WAIT_FOR_FIRST_TELEGRAM"));
+        //DebugTln(F("Next State: MG_WAIT_FOR_FIRST_TELEGRAM"));
         stateMindergas = MG_WAIT_FOR_FIRST_TELEGRAM; 
       }
       else
       {
         // No AuthToken
         DebugTln(F("MinderGas Authtoken is not set, no update can be done."));
-        DebugTln(F("Next State: MG_NO_AUTHTOKEN"));
+        //DebugTln(F("Next State: MG_NO_AUTHTOKEN"));
         stateMindergas = MG_NO_AUTHTOKEN; // no token, no mindergas
       } // end-if 
       break;
@@ -169,7 +136,7 @@ void processMindergas()
       {
         // Now you know what day it is, do setup MG_Today. This to enable day change detection.
         MG_Today = thisDay; 
-        DebugTln(F("Next State: MG_WAIT_FOR_MIDNIGHT"));
+        //DebugTln(F("Next State: MG_WAIT_FOR_MIDNIGHT"));
         stateMindergas = MG_WAIT_FOR_MIDNIGHT;
       }
       break;
@@ -180,7 +147,7 @@ void processMindergas()
       if (thisDay != MG_Today)              // It is no longer the same day, so it must be midnight
       {
         MG_Today = thisDay;                 // make it thisDay...
-        DebugTln(F("Next State: MG_WRITE_TO_FILE"));
+        //DebugTln(F("Next State: MG_WRITE_TO_FILE"));
         stateMindergas = MG_WRITE_TO_FILE;  // write file is next state
       }
       break;
@@ -195,7 +162,7 @@ void processMindergas()
         // cannot create file, thus error
         DebugTf("open(%s, 'w') FAILED!!! --> Bailout\r\n", MG_FILENAME);
         // now in failure mode
-        DebugTln(F("Next State: MG_ERROR"));
+        //DebugTln(F("Next State: MG_ERROR"));
         stateMindergas = MG_ERROR;
         break;
       } 
@@ -204,10 +171,14 @@ void processMindergas()
       DebugTln(F("Start writing POST data "));
       t = now() - SECS_PER_DAY;  // we want to upload the gas usage of yesterday so rewind the clock for 1 day
       char dataString[80];
-      sprintf(dataString,"{ \"date\": \"%04d-%02d-%02d\", \"reading\": \"%.3f\" }", year(t), month(t), day(t), GasDelivered);
+      sprintf(dataString,"{ \"date\": \"%04d-%02d-%02d\", \"reading\": \"%.3f\" }"
+                                                          , year(t)
+                                                          , month(t)
+                                                          , day(t)
+                                                          , DSMRdata.gas_delivered.val());
       // write the POST to a file...
       minderGasFile.println(F("POST /api/gas_meter_readings HTTP/1.1"));
-      minderGasFile.print(F("AUTH-TOKEN:")); minderGasFile.println(settingMindergasAuthtoken);
+      minderGasFile.print(F("AUTH-TOKEN:")); minderGasFile.println(settingMindergasToken);
       minderGasFile.println(F("Host: mindergas.nl"));
       minderGasFile.println(F("User-Agent: DSMRWS"));
       minderGasFile.println(F("Content-Type: application/json"));
@@ -226,7 +197,7 @@ void processMindergas()
 
       DebugTf("MinderGas update in [%d] minute(s)\r\n", MGminuten);
       // Lets'do the countdown
-      DebugTln(F("Next State: MG_DO_COUNTDOWN"));
+      //DebugTln(F("Next State: MG_DO_COUNTDOWN"));
       stateMindergas = MG_DO_COUNTDOWN;
       break;
       
@@ -242,7 +213,7 @@ void processMindergas()
       else 
       {
         // when waitime is done, then it's time to send the POST string
-        DebugTln(F("Next State: MG_SEND_MINDERGAS"));
+        //DebugTln(F("Next State: MG_SEND_MINDERGAS"));
         intStatuscodeMindergas = 0;
         stateMindergas = MG_SEND_MINDERGAS;
       }
@@ -297,7 +268,7 @@ void processMindergas()
                     switch (intStatuscodeMindergas) {
                       case 401:
                         validToken = false;
-                        strCopy(settingMindergasAuthtoken, sizeof(settingMindergasAuthtoken), "Invalid token"); 
+                        strCopy(settingMindergasToken, sizeof(settingMindergasToken), "Invalid token"); 
                         strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "Unauthorized, token invalid!"); // report error back to see in settings page
                         DebugTln(F("Invalid Mindergas Authenication Token"));
                         stateMindergas = MG_NO_AUTHTOKEN;

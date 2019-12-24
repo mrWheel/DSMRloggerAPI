@@ -1,9 +1,9 @@
 /* 
 ***************************************************************************  
-**  Program  : helperStuff, part of DSMRfirmwareAPI
-**  Version  : v0.0.1
+**  Program  : helperStuff, part of DSMRloggerAPI
+**  Version  : v0.1.2
 **
-**  Copyright (c) 2019 Willem Aandewiel
+**  Copyright (c) 2020 Willem Aandewiel
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
@@ -89,11 +89,12 @@ bool isNumericp(const char *timeStamp, int8_t len)
 //===========================================================================================
 int8_t splitString(String inStrng, char delimiter, String wOut[], uint8_t maxWords) 
 {
-  uint16_t inxS = 0, inxE = 0, wordCount = 0;
+  int16_t inxS = 0, inxE = 0, wordCount = 0;
+  
     inStrng.trim();
     while(inxE < inStrng.length() && wordCount < maxWords) 
     {
-      inxE  = inStrng.indexOf(delimiter, inxS);             //finds location of first ,
+      inxE  = inStrng.indexOf(delimiter, inxS);         //finds location of first ,
       wOut[wordCount] = inStrng.substring(inxS, inxE);  //captures first data String
       wOut[wordCount].trim();
       //DebugTf("[%d] => [%c] @[%d] found[%s]\r\n", wordCount, delimiter, inxE, wOut[wordCount].c_str());
@@ -101,10 +102,15 @@ int8_t splitString(String inStrng, char delimiter, String wOut[], uint8_t maxWor
       inxS++;
       wordCount++;
     }
+    // zero rest of the words
+    for(int i=wordCount; i< maxWords; i++)
+    {
+      wOut[wordCount][0] = 0;
+    }
+    // if not whole string processed place rest in last word
     if (inxS < inStrng.length()) 
     {
-      wOut[wordCount] = inStrng.substring(inxS, inStrng.length());  //captures first data String      
-      //DebugTf("[%d] rest => [%s]\r\n", wordCount, wOut[wordCount].c_str());
+      wOut[maxWords-1] = inStrng.substring(inxS, inStrng.length());  // store rest of String      
     }
 
     return wordCount;
@@ -223,6 +229,16 @@ void strCopy(char *dest, int maxLen, const char *src)
     
 } // strCopy()
 
+
+//===========================================================================================
+int stricmp(const char *a, const char *b)
+{
+    for (;; a++, b++) {
+        int d = tolower((unsigned char)*a) - tolower((unsigned char)*b);
+        if (d != 0 || !*a)
+            return d;
+    }
+} // stricmp()
 
 //===========================================================================================
 char *intToStr(int32_t v)

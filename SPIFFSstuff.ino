@@ -1,9 +1,9 @@
 /* 
 ***************************************************************************  
-**  Program  : SPIFFSstuff, part of DSMRfirmwareAPI
-**  Version  : v0.0.1
+**  Program  : SPIFFSstuff, part of DSMRloggerAPI
+**  Version  : v0.1.2
 **
-**  Copyright (c) 2019 Willem Aandewiel
+**  Copyright (c) 2020 Willem Aandewiel
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
@@ -77,21 +77,15 @@ bool buildDataRecord(char *recIn)
   uint16_t recSlot = timestampToHourSlot(actTimestamp, strlen(actTimestamp));
   strCopy(key, 10, actTimestamp, 0, 8);
 
-  int HH = HourFromTimestamp(actTimestamp);
-  int DD = DayFromTimestamp(actTimestamp);
-  int MM = MonthFromTimestamp(actTimestamp);
-  int YY = YearFromTimestamp(actTimestamp);
-  GG = GG + 0.1;
+  sprintf(record, (char*)DATA_FORMAT, key , (float)DSMRdata.energy_delivered_tariff1
+                                          , (float)DSMRdata.energy_delivered_tariff2
+                                          , (float)DSMRdata.energy_returned_tariff1
+                                          , (float)DSMRdata.energy_returned_tariff2
+                                          , (float)DSMRdata.gas_delivered);
+  // DATA + \n + \0                                        
+  fillRecord(record, DATA_RECLEN);
 
-    sprintf(record, (char*)DATA_FORMAT, key , (float)YY
-                                            , (float)MM
-                                            , (float)DD
-                                            , (float)HH
-                                            , (float)GG);
-    // DATA + \n + \0                                        
-    fillRecord(record, DATA_RECLEN);
-
-    strcpy(recIn, record);
+  strcpy(recIn, record);
 
 } // buildDataRecord()
 
@@ -126,7 +120,9 @@ void writeDataToFile(const char *fileName, const char *record, uint16_t slot, in
     DebugTf("Error opening [%s]\r\n", fileName);
     return;
   }
-  offset = (slot * DATA_RECLEN);
+  // slot goes from 0 to _NO_OF_SLOTS_
+  // we need to add 1 to slot to skip header record!
+  offset = ((slot + 1) * DATA_RECLEN);
   dataFile.seek(offset, SeekSet); 
   int32_t bytesWritten = dataFile.print(record);
   if (bytesWritten != DATA_RECLEN) 
@@ -145,7 +141,7 @@ void writeDataToFiles()
   uint16_t recSlot;
 
   buildDataRecord(record);
-  DebugTf(">%s\r", record); // record ends in a \n
+  DebugTf(">%s\r\n", record); // record ends in a \n
 
   // update HOURS
   recSlot = timestampToHourSlot(actTimestamp, strlen(actTimestamp));
@@ -167,40 +163,28 @@ void writeDataToFiles()
 } // writeDataToFiles(fileType, dataStruct newDat, int8_t slotNr)
 
 
-
 //===========================================================================================
-void readDataFromFile(int8_t fileType, const char *fileName
-                          , int16_t fromSlot, int16_t period
-                          , bool doJson, const char *rName) 
+void readOneSlot(int8_t fileType, const char *fileName, uint8_t recNr
+                          , uint8_t readSlot, bool doJson, const char *rName) 
 {
-  uint16_t  slot = 0, maxSlots = 0, periodSlots = 0, offset = 0;
+  uint16_t  slot, maxSlots = 0, offset;
   char      buffer[DATA_RECLEN +2] = "";
   char      recID[10]  = "";
   float     EDT1, EDT2, ERT1, ERT2, GDT;
-  JsonArray root;
-    
+
   switch(fileType) {
     case HOURS:   maxSlots    = _NO_HOUR_SLOTS_;
-                  periodSlots = HOURS_PER_PERIOD;
                   break;
     case DAYS:    maxSlots    = _NO_DAY_SLOTS_;
-                  periodSlots =  DAYS_PER_PERIOD;
                   break;
     case MONTHS:  maxSlots    = _NO_MONTH_SLOTS_;
-                  periodSlots = MONTHS_PER_PERIOD;
                   break;
   }
-
 
   if (!SPIFFS.exists(fileName))
   {
     DebugTf("File [%s] does not excist!\r\n", fileName);
     return;
-  }
-
-  if (doJson)
-  {
-      root = jsonDoc.createNestedArray("hist");
   }
 
   File dataFile = SPIFFS.open(fileName, "r+");  // read and write ..
@@ -210,16 +194,10 @@ void readDataFromFile(int8_t fileType, const char *fileName
     return;
   }
 
-  uint16_t recNr = (period -1) * periodSlots;
-  
-  DebugTf("for (s=[%d]; s>[%d]p[%d]; s--)\r\n", maxSlots, 0, periodSlots);
-  for(int16_t s = maxSlots; s > 0, periodSlots > 0; s--, periodSlots--)
-  { 
-    int16_t nextSlot = (s + fromSlot) -1;
-    if (nextSlot < 0) nextSlot += maxSlots;
-    slot    = (nextSlot % maxSlots) +1;
-    Debugf("Inx[%02d]: ", s);
-    offset  = (slot * DATA_RECLEN);
+    slot    = (readSlot % maxSlots);
+    // slot goes from 0 to _NO_OF_SLOTS_
+    // we need to add 1 to slot to skip header record!
+    offset  = ((slot +1) * DATA_RECLEN);
     dataFile.seek(offset, SeekSet); 
     int l = dataFile.readBytesUntil('\n', buffer, sizeof(buffer));
     buffer[l] = 0;
@@ -237,140 +215,76 @@ void readDataFromFile(int8_t fileType, const char *fileName
         {
           sscanf(buffer, "%[^;];%f;%f;%f;%f;%f", recID
                                                , &EDT1, &EDT2, &ERT1, &ERT2, &GDT);
-          JsonObject nested = root.createNestedObject();
-          nested["rec"]  = recNr++;
-          nested["date"] = recID;
-          nested["edt1"] = (float)EDT1;
-          nested["edt2"] = (float)EDT2;
-          nested["ert1"] = (float)ERT1;
-          nested["ert2"] = (float)ERT2;
-          nested["gdt"]  = (float)EDT1;
+          sendNestedJsonObj(recNr++, recID, slot, EDT1, EDT2, ERT1, ERT2, GDT);
+
         }
         else
         {
           Debugf("slot[%02d]->[%s]\r\n", slot, buffer);
         }
       }
-    }
 
-    
   }
   dataFile.close();
 
-} // readDatafromFile()
+} // readOneSlot()
 
 
 //===========================================================================================
-void readDataFromFile(int8_t fileType, const char *fileName, const char *timeStamp
-                          , uint8_t period, bool doJson, const char *rName) 
-{
-  uint16_t recsPerCall = 0, firstSlot = 0;
-
-  DebugTf("timeStamp[%s]\r\n", timeStamp);
-  recNr = 0;  // reset recNr counter!
-  
-  switch(fileType) {
-    case HOURS:   firstSlot = timestampToHourSlot(actTimestamp, strlen(actTimestamp));
-                  recsPerCall = HOURS_PER_PERIOD;
-                  break;
-    case DAYS:    firstSlot = timestampToDaySlot(actTimestamp, strlen(actTimestamp));
-                  recsPerCall = DAYS_PER_PERIOD;
-                  break;
-    case MONTHS:  firstSlot = timestampToMonthSlot(actTimestamp, strlen(actTimestamp));
-                  recsPerCall = MONTHS_PER_PERIOD;
-                  break;
-  }
-
-  firstSlot = firstSlot + (recsPerCall * (period - 1));
-  readDataFromFile(fileType, fileName, firstSlot, period, doJson, rName);
-
-} // readDatafromFile()
-
-/****
-//===========================================================================================
-void readDataFromFile(int8_t fileType, const char *fileName, const char *timeStamp
+void readSlotFromTimestamp(int8_t fileType, const char *fileName, const char *timeStamp
                           , bool doJson, const char *rName) 
 {
-  uint16_t  maxSlots, slot = 0, slotLast = 0, offset = 0;
-  char      buffer[DATA_RECLEN +2] = "";
-  char      recID[10]  = "";
-  float     EDT1, EDT2, ERT1, ERT2, GDT;
-  JsonArray root;
+  uint16_t firstSlot = 0, maxSlots = 0;
 
   DebugTf("timeStamp[%s]\r\n", timeStamp);
   
   switch(fileType) {
-    case HOURS:   slotLast = timestampToHourSlot(actTimestamp, strlen(actTimestamp));
-                  maxSlots = _NO_HOUR_SLOTS_;
+    case HOURS:   firstSlot   = timestampToHourSlot(timeStamp, strlen(timeStamp));
+                  maxSlots    = _NO_HOUR_SLOTS_;
                   break;
-    case DAYS:    slotLast = timestampToDaySlot(actTimestamp, strlen(actTimestamp));
-                  maxSlots = _NO_DAY_SLOTS_;
+    case DAYS:    firstSlot   = timestampToDaySlot(timeStamp, strlen(timeStamp));
+                  maxSlots    = _NO_DAY_SLOTS_;
                   break;
-    case MONTHS:  slotLast = timestampToMonthSlot(actTimestamp, strlen(actTimestamp));
-                  maxSlots = _NO_MONTH_SLOTS_;
+    case MONTHS:  firstSlot   = timestampToMonthSlot(timeStamp, strlen(timeStamp));
+                  maxSlots    = _NO_MONTH_SLOTS_;
                   break;
   }
-  //slotLast -= 1;
+
+  firstSlot += maxSlots;
+  DebugTf("firstSlot[%d] -> slot[%d]\r\n", firstSlot, (firstSlot % maxSlots));
+  readOneSlot(fileType, fileName, firstSlot, 0, doJson, rName);
+
+} // readSlotFromTimestamp()
+
+
+//===========================================================================================
+void readAllSlots(int8_t fileType, const char *fileName, const char *timeStamp
+                          , bool doJson, const char *rName) 
+{
+  int16_t startSlot, endSlot, nrSlots, recNr = 0;
   
-  if (!SPIFFS.exists(fileName))
-  {
-    DebugTf("File [%s] does not excist!\r\n", fileName);
-    return;
+  switch(fileType) {
+    case HOURS:   startSlot       = timestampToHourSlot(timeStamp, strlen(timeStamp));
+                  nrSlots         = _NO_HOUR_SLOTS_;
+                  break;
+    case DAYS:    startSlot       = timestampToDaySlot(timeStamp, strlen(timeStamp));
+                  nrSlots         = _NO_DAY_SLOTS_;
+                  break;
+    case MONTHS:  startSlot       = timestampToMonthSlot(timeStamp, strlen(timeStamp));
+                  nrSlots         = _NO_MONTH_SLOTS_;
+                  break;
   }
 
-  if (doJson)
+  endSlot   = nrSlots + startSlot;
+  //startSlot += nrSlots;
+  DebugTf("start[%02d], endSlot[%02d]\r\n", (startSlot%nrSlots), endSlot);
+  for( uint16_t s=startSlot; s<endSlot; s++ )
   {
-      root = jsonDoc.createNestedArray("hist");
+    readOneSlot(fileType, fileName, s, recNr++, false, "");
   }
+  
+} // readAllSlots()
 
-  File dataFile = SPIFFS.open(fileName, "r+");  // read and write ..
-  if (!dataFile) 
-  {
-    DebugTf("Error opening [%s]\r\n", fileName);
-    return;
-  }
-  DebugTf("for (s=[%d]; s<[%d]; s++)\r\n", slotLast, (maxSlots + slotLast));
-  for(int16_t s = slotLast; s < (maxSlots + slotLast); s++)
-  { 
-    slot    = (s % maxSlots) +1;
-    offset  = (slot * DATA_RECLEN);
-    dataFile.seek(offset, SeekSet); 
-    int l = dataFile.readBytesUntil('\n', buffer, sizeof(buffer));
-    buffer[l] = 0;
-    if (l >= (DATA_RECLEN -1))  // '\n' is skipped by readBytesUntil()
-    {
-      if (!isNumericp(buffer, 8)) // first 8 bytes is YYMMDDHH
-      {
-        {
-          DebugTf("slot[%02d]==>timeStamp [%-13.13s] not valid!!\r\n", slot, buffer);
-        }
-      }
-      else
-      {
-        if (doJson)
-        {
-          sscanf(buffer, "%[^;];%f;%f;%f;%f;%f", recID
-                                               , &EDT1, &EDT2, &ERT1, &ERT2, &GDT);
-          JsonObject nested = root.createNestedObject();
-          nested["date"] = recID;
-          nested["edt1"] = (float)EDT1;
-          nested["edt2"] = (float)EDT2;
-          nested["ert1"] = (float)ERT1;
-          nested["ert2"] = (float)ERT2;
-          nested["gdt"]  = (float)EDT1;
-        }
-        else
-        {
-          DebugTf("slot[%02d]->[%s]\r\n", slot, buffer);
-        }
-      }
-    }
-    
-  }
-  dataFile.close();
-
-} // readDatafromFile()
-***/
 
 //===========================================================================================
 bool createFile(const char *fileName, uint16_t noSlots) 
@@ -441,19 +355,19 @@ void fillRecord(char *record, int8_t len)
 //====================================================================
 uint16_t timestampToHourSlot(const char * TS, int8_t len)
 {
-  char      aSlot[5];
+  //char      aSlot[5];
   time_t    t1 = epoch((char*)TS, strlen(TS), false);
-  uint32_t  nrDays = t1 / SECS_PER_DAY;
-  sprintf(aSlot, "%d", ((nrDays % KEEP_DAYS_HOURS) *24) + hour(t1));
-  uint8_t   uSlot  = String(aSlot).toInt();
-  uint8_t   recSlot = (uSlot % _NO_HOUR_SLOTS_) +1;
+  uint32_t  nrHours = t1 / SECS_PER_HOUR;
+  //sprintf(aSlot, "%d", ((nrDays % KEEP_DAYS_HOURS) *24) + hour(t1));
+  //uint8_t   uSlot  = String(aSlot).toInt();
+  uint8_t   recSlot = (nrHours % _NO_HOUR_SLOTS_);
   
-  DebugTf("===>>>>>  HOUR[%02d] => recSlot[%02d]\r\n", hour(t1), recSlot);
+  if (Verbose1) DebugTf("===>>>>>  HOUR[%02d] => recSlot[%02d]\r\n", hour(t1), recSlot);
 
-  if (recSlot < 1 || recSlot > _NO_HOUR_SLOTS_)
+  if (recSlot < 0 || recSlot >= _NO_HOUR_SLOTS_)
   {
     DebugTf("HOUR: Some serious error! Slot is [%d]\r\n", recSlot);
-    recSlot = _NO_HOUR_SLOTS_ + 1;
+    recSlot = _NO_HOUR_SLOTS_;
     slotErrors++;
   }
   return recSlot;
@@ -464,19 +378,17 @@ uint16_t timestampToHourSlot(const char * TS, int8_t len)
 //====================================================================
 uint16_t timestampToDaySlot(const char * TS, int8_t len)
 {
-  char      aSlot[5];
+  //char      aSlot[5];
   time_t    t1 = epoch((char*)TS, strlen(TS), false);
   uint32_t  nrDays = t1 / SECS_PER_DAY;
-  //sprintf(aSlot, "%d", (nrDays % KEEP_WEEK_DAYS));
-  //uint8_t   uSlot  = String(aSlot).toInt();
-  uint16_t  recSlot = (nrDays % _NO_DAY_SLOTS_) +1;
+  uint16_t  recSlot = (nrDays % _NO_DAY_SLOTS_);
   
-  DebugTf("===>>>>>   DAY[%02d] => recSlot[%02d]\r\n", day(t1), recSlot);
+  if (Verbose1) DebugTf("===>>>>>   DAY[%02d] => recSlot[%02d]\r\n", day(t1), recSlot);
 
-  if (recSlot < 1 || recSlot > _NO_DAY_SLOTS_)
+  if (recSlot < 0 || recSlot >= _NO_DAY_SLOTS_)
   {
     DebugTf("DAY: Some serious error! Slot is [%d]\r\n", recSlot);
-    recSlot = _NO_DAY_SLOTS_ + 1;
+    recSlot = _NO_DAY_SLOTS_;
     slotErrors++;
   }
   return recSlot;
@@ -487,17 +399,17 @@ uint16_t timestampToDaySlot(const char * TS, int8_t len)
 //====================================================================
 uint16_t timestampToMonthSlot(const char * TS, int8_t len)
 {
-  char      aSlot[5];
+  //char      aSlot[5];
   time_t    t1 = epoch((char*)TS, strlen(TS), false);
   uint32_t  nrMonths = ( (year(t1) -1) * 12) + month(t1);    // eg: year(2023) * 12 = 24276 + month(9) = 202309
-  uint16_t  recSlot = (nrMonths % _NO_MONTH_SLOTS_) +1; // eg: 24285 % _NO_MONTH_SLOT_
+  uint16_t  recSlot = (nrMonths % _NO_MONTH_SLOTS_); // eg: 24285 % _NO_MONTH_SLOT_
   
-  DebugTf("===>>>>> MONTH[%02d] => recSlot[%02d]\r\n", month(t1), recSlot);
+  if (Verbose1) DebugTf("===>>>>> MONTH[%02d] => recSlot[%02d]\r\n", month(t1), recSlot);
 
-  if (recSlot < 1 || recSlot > _NO_MONTH_SLOTS_)
+  if (recSlot < 0 || recSlot >= _NO_MONTH_SLOTS_)
   {
     DebugTf("MONTH: Some serious error! Slot is [%d]\r\n", recSlot);
-    recSlot = _NO_MONTH_SLOTS_ + 1;
+    recSlot = _NO_MONTH_SLOTS_;
     slotErrors++;
   }
   return recSlot;

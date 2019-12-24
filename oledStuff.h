@@ -1,9 +1,9 @@
 /*
 ***************************************************************************  
-**  Program  : oledStuff.h, part of DSMRfirmwareAPI
-**  Version  : v0.0.1
+**  Program  : oledStuff.h, part of DSMRloggerAPI
+**  Version  : v0.1.2
 **
-**  Copyright (c) 2019 Willem Aandewiel
+**  Copyright (c) 2020 Willem Aandewiel
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
@@ -51,7 +51,7 @@ void checkFlashButton()
       oledSleepTimer = millis() + (settingSleepTime * 60000);
       //Serial.println("Switching display on..");
       oled.clear();
-      oled_Print_Msg(0, "<DSMRfirmwareAPI>", 0);
+      oled_Print_Msg(0, "<DSMRloggerAPI>", 0);
       oled_Print_Msg(2, "Wacht ...", 5);
       msgMode = 1;
   }   

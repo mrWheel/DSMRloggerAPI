@@ -1,9 +1,9 @@
 /* 
 ***************************************************************************  
-**  Program  : menuStuff, part of DSMRfirmwareAPI
-**  Version  : v0.0.1
+**  Program  : menuStuff, part of DSMRloggerAPI
+**  Version  : v0.1.2
 **
-**  Copyright (c) 2019 Willem Aandewiel
+**  Copyright (c) 2020 Willem Aandewiel
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
@@ -13,16 +13,7 @@
 //===========================================================================================
 void displayHoursHist(bool Telnet=true) 
 {
-    int16_t startSlot = timestampToHourSlot(actTimestamp, strlen(actTimestamp));
-    DebugTf("readingHours start with slot [%02d]\r\n", startSlot);
-    for( int p=1; p<(_NO_HOUR_SLOTS_ / HOURS_PER_PERIOD); p++)
-    {
-      DebugTf("readingHours start with slot [%02d]\r\n", startSlot);
-      readDataFromFile(HOURS, HOURS_FILE
-                          , startSlot, p
-                          , false, "") ;
-      startSlot -= HOURS_PER_PERIOD;
-    }
+    readAllSlots(HOURS, HOURS_FILE, actTimestamp, false, "");
 
 } // displayHoursHist()
 
@@ -30,16 +21,7 @@ void displayHoursHist(bool Telnet=true)
 //===========================================================================================
 void displayDaysHist(bool Telnet=true) 
 {
-    int16_t startSlot = timestampToDaySlot(actTimestamp, strlen(actTimestamp));
-    DebugTf("readingDays start with slot [%02d]\r\n", startSlot);
-    for( int p=1; p<(_NO_DAY_SLOTS_ / DAYS_PER_PERIOD); p++)
-    {
-      DebugTf("readingDays start with slot [%02d]\r\n", startSlot);
-      readDataFromFile(DAYS, DAYS_FILE
-                          , startSlot, p
-                          , false, "") ;
-      startSlot -= DAYS_PER_PERIOD;
-    }
+    readAllSlots(DAYS, DAYS_FILE, actTimestamp, false, "");
 
 } // displayDaysHist()
 
@@ -47,16 +29,7 @@ void displayDaysHist(bool Telnet=true)
 //===========================================================================================
 void displayMonthsHist(bool Telnet=true) 
 {
-    int16_t startSlot = timestampToMonthSlot(actTimestamp, strlen(actTimestamp));
-    DebugTf("readingMonths start with slot [%02d]\r\n", startSlot);
-    for( int p=1; p<(_NO_MONTH_SLOTS_ / MONTHS_PER_PERIOD); p++)
-    {
-      DebugTf("readingMonths start with slot [%02d]\r\n", startSlot);
-      readDataFromFile(MONTHS, MONTHS_FILE
-                          , startSlot, p
-                          , false, "") ;
-      startSlot -= MONTHS_PER_PERIOD;
-    }
+    readAllSlots(MONTHS, MONTHS_FILE, actTimestamp, false, "");
 
 } // displayMonthsHist()
 
@@ -191,15 +164,17 @@ void handleKeyInput()
       case 'b':
       case 'B':     displayBoardInfo();
                     break;
-      case 'C':     slotErrors  = 0;
-                    nrReboots   = 0;
-                    break;
-      case 's':
-      case 'S':     readSettings(true);
+      case 'l':
+      case 'L':     readSettings(true);
                     break;
       case 'd':
       case 'D':     displayDaysHist(true);
                     break;
+#if defined(HAS_NO_SLIMMEMETER)
+      case 'F':     forceBuildRingFiles = true;
+                    runMode = SInit;
+                    break;
+#endif
       case 'h':
       case 'H':     displayHoursHist(true);
                     break;
@@ -242,8 +217,8 @@ void handleKeyInput()
                     DebugFlush();
                     ESP.reset();
                     break;
-      case 'f':
-      case 'F':     listSPIFFS();
+      case 's':
+      case 'S':     listSPIFFS();
                     break;
       case 'v':
       case 'V':     if (Verbose2) 
@@ -264,12 +239,18 @@ void handleKeyInput()
                       Verbose2 = false;
                     }
                     break;
+      case 'Z':     slotErrors  = 0;
+                    nrReboots   = 0;
+                    break;
       default:      Debugln(F("\r\nCommands are:\r\n"));
                     Debugln(F("   B - Board Info\r"));
-                    Debugln(F("   S - list Settings\r"));
+                    Debugln(F("   L - list Settings\r"));
                     Debugln(F("   D - Display Day table from SPIFFS\r"));
                     Debugln(F("   H - Display Hour table from SPIFFS\r"));
                     Debugln(F("   M - Display Month table from SPIFFS\r"));
+                  #if defined(HAS_NO_SLIMMEMETER)
+                    Debugln(F("  *F - Force build RING files\r"));
+                  #endif
                     Debugf ("   I - Identify by blinking LED on GPIO[%02d]\r\n", LED_BUILTIN);
                     if (showRaw) 
                     {
@@ -280,11 +261,11 @@ void handleKeyInput()
                       Debugln(F("   P - No Parsing (show RAW data from Smart Meter)\r"));
                       showRawCount = 0;
                     }
-                    Debugln(F("  *C - Clear counters\r"));
                     Debugln(F("  *W - Force Re-Config WiFi\r"));
                     Debugln(F("  *R - Reboot\r"));
-                    Debugln(F("   F - File info on SPIFFS\r"));
+                    Debugln(F("   S - File info on SPIFFS\r"));
                     Debugln(F("  *U - Update SPIFFS (save Data-files)\r"));
+                    Debugln(F("  *Z - Zero counters\r\n"));
                     if (Verbose1 & Verbose2)  Debugln(F("   V - Toggle Verbose Off\r"));
                     else if (Verbose1)        Debugln(F("   V - Toggle Verbose 2\r"));
                     else                      Debugln(F("   V - Toggle Verbose 1\r"));

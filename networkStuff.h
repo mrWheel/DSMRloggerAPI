@@ -1,9 +1,9 @@
 /*
 ***************************************************************************  
-**  Program  : networkStuff.h, part of DSMRfirmwareAPI
-**  Version  : v0.0.1
+**  Program  : networkStuff.h, part of DSMRloggerAPI
+**  Version  : v0.1.2
 **
-**  Copyright (c) 2019 Willem Aandewiel
+**  Copyright (c) 2020 Willem Aandewiel
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
@@ -42,7 +42,7 @@ void configModeCallback (WiFiManager *myWiFiManager)
   DebugTln(myWiFiManager->getConfigPortalSSID());
 #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
     oled_Clear();
-    oled_Print_Msg(0, "<DSMRfirmwareAPI>", 0);
+    oled_Print_Msg(0, "<DSMRloggerAPI>", 0);
     oled_Print_Msg(1, "AP mode active", 0);
     oled_Print_Msg(2, "Connect to:", 0);
     oled_Print_Msg(3, myWiFiManager->getConfigPortalSSID(), 0);
@@ -76,7 +76,7 @@ void startWiFi()
     DebugTln(F("failed to connect and hit timeout"));
 #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
     oled_Clear();
-    oled_Print_Msg(0, "<DSMRfirmwareAPI>", 0);
+    oled_Print_Msg(0, "<DSMRloggerAPI>", 0);
     oled_Print_Msg(1, "Failed to connect", 0);
     oled_Print_Msg(2, "and hit TimeOut", 0);
     oled_Print_Msg(3, "***** RESET *****", 0);
