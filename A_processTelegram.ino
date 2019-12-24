@@ -1,7 +1,4 @@
 
-// Eigenlijk is dit ook een FSM van maken ;-)
-// States: INIT, PROCESS_TIMESTAMP, WAIT_FOR_THIRD_TELEGRAM, WAIT_FOR_CHANGE_HOUR_OR_DAY, WRITE_TO_FILE_AND_STATUS)
-// Echter met wat kleine wijzigingen kan het volgens mij ook, veel eenvoudiger.
 
 void processTelegram()
 {
@@ -12,7 +9,8 @@ void processTelegram()
   actT = epoch(actTimestamp, strlen(actTimestamp), false);
   newT = epoch(newTimestamp, strlen(newTimestamp), true); // update system time
   
-  // Skip first 3 telegrams .. just to settle down a bit ;-) ==> omdat je anders altijd begint met uur/dag change.
+  // Skip first 3 telegrams .. just to settle down a bit ;-)
+  
   if ((telegramCount - telegramErrors) < 3) 
   {
     return;
