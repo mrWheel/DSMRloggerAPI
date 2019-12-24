@@ -45,7 +45,7 @@
   let settingBackPD3C   = "lime";
   let settingLinePD3C   = "black";
 
-  var requestDevInfo = new XMLHttpRequest();
+  //var requestDevInfo = new XMLHttpRequest();
   //var requestSmFields = new XMLHttpRequest();
   
   window.onload=bootsTrap;
@@ -68,8 +68,8 @@
                                                 {openTab('LastDays');});
     document.getElementById('bLastMonths').addEventListener('click',function() 
                                                 {openTab('LastMonths');});
-    document.getElementById('bGraphics').addEventListener('click',function() 
-                                                {openTab('Graphics');});
+    document.getElementById('bTelegram').addEventListener('click',function() 
+                                                {openTab('Telegram');});
     document.getElementById('bSysInfo').addEventListener('click',function() 
                                                 {openTab('SysInfo');});
     document.getElementById('FSexplorer').addEventListener('click',function() 
@@ -110,6 +110,7 @@
     	});     
   }	// refreshDevInfo()
   
+  
   function refreshSmFields()
   {
     fetch(APIGW+"sm/fields")
@@ -123,11 +124,11 @@
       						console.log(">>"+ json.fields[i].name + ": " + json.fields[i].value +", "+json.fields[i].unit);
 						else	console.log(">>"+ json.fields[i].name + ": " + json.fields[i].value);
 					*/	
-      			var tableRef = document.getElementById('lastHoursTable').getElementsByTagName('tbody')[0];
-      			if( ( document.getElementById("hoursTable_"+json.fields[i].name)) == null )
+      			var tableRef = document.getElementById('actualTable').getElementsByTagName('tbody')[0];
+      			if( ( document.getElementById("actualTable_"+json.fields[i].name)) == null )
       			{
       				var newRow   = tableRef.insertRow();
-							newRow.setAttribute("id", "hoursTable_"+json.fields[i].name, 0);
+							newRow.setAttribute("id", "actualTable_"+json.fields[i].name, 0);
 							// Insert a cell in the row at index 0
 							var newCell  = newRow.insertCell(0);
 						  var newText  = document.createTextNode('');
@@ -137,7 +138,7 @@
 							newCell  = newRow.insertCell(2);
 							newCell.appendChild(newText);
 						}
-						tableCells = document.getElementById("hoursTable_"+json.fields[i].name).cells;
+						tableCells = document.getElementById("actualTable_"+json.fields[i].name).cells;
 						tableCells[0].innerHTML = json.fields[i].name;
 						tableCells[1].innerHTML = json.fields[i].value;
 	     			if (json.fields[i].hasOwnProperty('unit'))
@@ -153,6 +154,117 @@
     	});     
   };	// refreshSmFields()
   
+  
+  function refreshHours()
+  {
+    fetch(APIGW+"hist/hours/1")
+      .then(response => response.json())
+      .then(json => {
+      		//console.log("parsed .., fields is ["+ JSON.stringify(json)+"]");
+      		
+      		for (var i in json.hist) {
+      		  //console.log("["+json.hist[i].rec+"]");
+      			var tableRef = document.getElementById('lastHoursTable').getElementsByTagName('tbody')[0];
+      			if( ( document.getElementById("hoursTable_"+json.hist[i].rec)) == null )
+      			{
+      				var newRow   = tableRef.insertRow();
+							newRow.setAttribute("id", "hoursTable_"+json.hist[i].rec, 0);
+							// Insert a cell in the row at index 0
+							var newCell  = newRow.insertCell(0);
+						  var newText  = document.createTextNode('-');
+							newCell.appendChild(newText);
+							newCell  = newRow.insertCell(1);
+							newCell.appendChild(newText);
+							newCell  = newRow.insertCell(2);
+							newCell.appendChild(newText);
+							newCell  = newRow.insertCell(3);
+							newCell.appendChild(newText);
+							newCell  = newRow.insertCell(4);
+							newCell.appendChild(newText);
+						}
+						tableCells = document.getElementById("hoursTable_"+json.hist[i].rec).cells;
+						tableCells[0].innerHTML = json.hist[i].date;
+	     			tableCells[1].style.textAlign = "right";
+						tableCells[1].innerHTML = json.hist[i].edt1;
+	     			tableCells[2].style.textAlign = "right";
+						tableCells[2].innerHTML = json.hist[i].ert1;
+	     			tableCells[3].style.textAlign = "right";
+						tableCells[3].innerHTML = json.hist[i].gdt;
+      		}
+      		//console.log("-->done..");
+      })
+      .catch(function(error) {
+  		  console.log(error);
+    	});     
+    	
+    fetch(APIGW+"hist/hours/2")
+      .then(response => response.json())
+      .then(json => {
+      		//console.log("parsed .., fields is ["+ JSON.stringify(json)+"]");
+      		
+      		for (var i in json.hist) {
+      		  //console.log("["+json.hist[i].rec+"]");
+      			var tableRef = document.getElementById('lastHoursTable').getElementsByTagName('tbody')[0];
+      			if( ( document.getElementById("hoursTable_"+json.hist[i].rec)) == null )
+      			{
+      				var newRow   = tableRef.insertRow();
+							newRow.setAttribute("id", "hoursTable_"+json.hist[i].rec, 0);
+							// Insert a cell in the row at index 0
+							var newCell  = newRow.insertCell(0);
+						  var newText  = document.createTextNode('-');
+							newCell.appendChild(newText);
+							newCell  = newRow.insertCell(1);
+							newCell.appendChild(newText);
+							newCell  = newRow.insertCell(2);
+							newCell.appendChild(newText);
+							newCell  = newRow.insertCell(3);
+							newCell.appendChild(newText);
+							newCell  = newRow.insertCell(4);
+							newCell.appendChild(newText);
+						}
+						tableCells = document.getElementById("hoursTable_"+json.hist[i].rec).cells;
+						tableCells[0].innerHTML = json.hist[i].date;
+	     			tableCells[1].style.textAlign = "right";
+						tableCells[1].innerHTML = json.hist[i].edt1;
+	     			tableCells[2].style.textAlign = "right";
+						tableCells[2].innerHTML = json.hist[i].ert1;
+	     			tableCells[3].style.textAlign = "right";
+						tableCells[3].innerHTML = json.hist[i].gdt;
+      		}
+      		//console.log("-->done..");
+      })
+      .catch(function(error) {
+  		  console.log(error);
+    	});     
+  };	// refreshHours()
+
+    
+  function refreshSmTelegram()
+  {
+    fetch(APIGW+"sm/telegram")
+      .then(response => response.text())
+      .then(response => {
+        //console.log("parsed .., data is ["+ response+"]");
+        //console.log('-------------------');
+   			var divT = document.getElementById('rawTelegram');
+   			if ( document.getElementById("TelData") == null )
+      	{
+      			var preT = document.createElement('pre');
+						preT.setAttribute("id", "TelData", 0);
+            preT.setAttribute('class', 'telegram');
+            preT.textContent = response;
+            divT.appendChild(preT);
+				}
+				preT = document.getElementById("TelData");
+        preT.textContent = response;
+      })
+
+      .catch(function(error) {
+  		console.log(error);
+    	});     
+  }	// refreshDevInfo()
+
+    
   function openTab(tabName) {
     
     activeTab = tabName;
@@ -180,11 +292,13 @@
     document.getElementById(tabName).style.display = "block";  
     if (tabName == "Actual") {
       console.log("newTab: Actual");
+      refreshSmFields();
+      var TimerTab = setInterval(refreshSmFields, 60 * 1000); // repeat every 60s
 
     } else if (tabName == "LastHours") {
       console.log("newTab: LastHours");
-      refreshSmFields();
-      var TimerTab = setInterval(refreshSmFields, 60 * 1000); // repeat every 60s
+      refreshHours();
+      var TimerTab = setInterval(refreshHours, 60 * 1000); // repeat every 60s
 
     } else if (tabName == "LastDays") {
       console.log("newTab: LastDays");
@@ -205,10 +319,10 @@
       refreshDevInfo();
       var TimerTab = setInterval(refreshDevInfo, 60 * 1000); // repeat every 30s
 
-    } else if (tabName == "Graphics") {
-      console.log("newTab: Graphics");
-//      webSocketConn.send("tabGraphics");
-//      //TimerChart = setInterval(plotChart, 1000, chart);
+    } else if (tabName == "Telegram") {
+      console.log("newTab: Telegram");
+      refreshSmTelegram();
+      var TimerTab = setInterval(refreshSmTelegram, 60 * 1000); // repeat every 60s
     }
   } // openTab()
 

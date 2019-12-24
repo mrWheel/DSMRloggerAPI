@@ -89,11 +89,12 @@ bool isNumericp(const char *timeStamp, int8_t len)
 //===========================================================================================
 int8_t splitString(String inStrng, char delimiter, String wOut[], uint8_t maxWords) 
 {
-  uint16_t inxS = 0, inxE = 0, wordCount = 0;
+  int16_t inxS = 0, inxE = 0, wordCount = 0;
+  
     inStrng.trim();
     while(inxE < inStrng.length() && wordCount < maxWords) 
     {
-      inxE  = inStrng.indexOf(delimiter, inxS);             //finds location of first ,
+      inxE  = inStrng.indexOf(delimiter, inxS);         //finds location of first ,
       wOut[wordCount] = inStrng.substring(inxS, inxE);  //captures first data String
       wOut[wordCount].trim();
       //DebugTf("[%d] => [%c] @[%d] found[%s]\r\n", wordCount, delimiter, inxE, wOut[wordCount].c_str());
@@ -101,10 +102,15 @@ int8_t splitString(String inStrng, char delimiter, String wOut[], uint8_t maxWor
       inxS++;
       wordCount++;
     }
+    // zero rest of the words
+    for(int i=wordCount; i< maxWords; i++)
+    {
+      wOut[wordCount][0] = 0;
+    }
+    // if not whole string processed place rest in last word
     if (inxS < inStrng.length()) 
     {
-      wOut[wordCount] = inStrng.substring(inxS, inStrng.length());  //captures first data String      
-      //DebugTf("[%d] rest => [%s]\r\n", wordCount, wOut[wordCount].c_str());
+      wOut[maxWords-1] = inStrng.substring(inxS, inStrng.length());  // store rest of String      
     }
 
     return wordCount;

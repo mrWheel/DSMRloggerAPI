@@ -39,7 +39,7 @@
       <a id='bLastHours'  class='nav-item tabButton'>per Uur</a>
       <a id='bLastDays'   class='nav-item tabButton'>per Dag</a>
       <a id='bLastMonths' class='nav-item tabButton'>per Maand</a>
-      <a id='bGraphics'   class='nav-item tabButton'>Charts</a>
+      <a id='bTelegram'   class='nav-item tabButton'>Telegram</a>
       <a id='bSysInfo'    class='nav-item tabButton'>Systeem Info</a>
       <a id='FSexplorer'  class='nav-img'>
                       <img src='/FSexplorer.png' alt='FSexplorer'></a>
@@ -55,27 +55,10 @@
   <!-- START Actual Tab -->
   <div id="Actual" class="tabName" style="display:block">
     <!-- START actueelTab Dummy -->
-    <h1>Authors</h1>
-    <ul id="jsonFields"></ul>
-      <div class="container-card">
-        <div class="container-box">
-          <div class="flex-item">
-            <div class="flexLabel200">Energie Verbruikt (kWh)</div>
-            <div id="aED" class="flexValue250">-</div>
-          </div>
-        </div>  <!-- container-box -->
-
-        <div class="container-box"> 
-        </div>  <!-- container-box -->
-      </div> <!-- container-card -->
-  
-  </div>  <!-- END Actual Tab -->
-
-  <!-- START LastHoursTab -->
-  <div id="LastHours" class="tabName" style="display:none">
+    <h1>Actueel</h1>
     <h2>/api/v1/fields</h2>
-    <div id='lastHours' style="margin-left: 50px; background: white;">
-    <table id="lastHoursTable">
+    <div id='actual' style="margin-left: 50px; background: white;">
+    <table id="actualTable">
     <thead>
         <tr>
             <th align='left'>Name</th><th align='left'>Value</th><th>Unit</th>
@@ -88,8 +71,34 @@
             <td>nice table</td>
         </tr>
     <tfoot>
-</table>
+		</table>
     </div>
+  
+  </div>  <!-- END Actual Tab -->
+
+  <!-- START LastHoursTab -->
+  <div id="LastHours" class="tabName" style="display:none">
+    <h2>/api/v1/dev/hist/hours/1</h2>
+    <div id='lastHours' style="margin-left: 50px; background: white;">
+    <table id="lastHoursTable">
+    <thead>
+        <tr>
+            <th align='left'>Uur</th><th align='left'>Energie Verbruik</th>
+                                     <th>Energie Teruglevering</th>
+                                     <th>Gasverbruik</th>
+                                     <th>Kosten</th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+    <tfoot>
+        <tr>
+            <td>---------</td>
+        </tr>
+    <tfoot>
+		</table>
+    </div>
+    
   </div> <!-- END LastHoursTab -->
 
   <!-- START LastDaysTab -->
@@ -130,34 +139,12 @@
   
   </div>  <!-- END SysInfo Tab -->
 
-  <!-- START GraphicsTab -->
-  <div id="Graphics" class="tabName" style="display:none">
-    <h2>Energie Verbruik/Teruglevering</h2>
-      <label for="Period"><b>Chart: </b></label>
-      Jaar
-      <input type="radio" name="graphType" id="graphYear" onchange="setGraphType('Y')"/>
-      &nbsp;&nbsp;
-      Week
-      <input type="radio" name="graphType" id="graphWeek" onchange="setGraphType('W')" checked/>
-      &nbsp;&nbsp;
-      Dag
-      <input type="radio" name="graphType" id="graphDay" onchange="setGraphType('D')"/>
-      &nbsp;&nbsp;
-      Actueel
-      <input type="radio" name="graphType" id="graphActual" onchange="setGraphType('A')"/>
-      &nbsp;&nbsp;
-      Financieel
-      <input type="radio" name="graphType" id="graphFinancial" onchange="setGraphType('F')"/>
-      &nbsp; &nbsp; &nbsp;
-      <label for="graphType"><b>Type: </b></label>
-      Bar
-      <input type="radio" name="chartType" id="typeBar" onchange="setChartType('B')" checked/>
-      &nbsp;&nbsp;
-      Line
-      <input type="radio" name="chartType" id="typeLine" onchange="setChartType('L')"/>
-      
-    <canvas id="chartEnergy" height="80%">chart.js</canvas> 
-  </div> <!-- END GraphicsTab -->
+  <!-- START TelegramTab -->
+  <div id="Telegram" class="tabName" style="display:none">
+    <h2>raw Telegram</h2>
+    <div id="rawTelegram">
+    </div>
+  </div> <!-- END TelegramTab -->
   
   <!-- REST -->
   

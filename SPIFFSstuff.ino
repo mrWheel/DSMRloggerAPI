@@ -77,17 +77,17 @@ bool buildDataRecord(char *recIn)
   uint16_t recSlot = timestampToHourSlot(actTimestamp, strlen(actTimestamp));
   strCopy(key, 10, actTimestamp, 0, 8);
 
-  int HH = HourFromTimestamp(actTimestamp);
-  int DD = DayFromTimestamp(actTimestamp);
-  int MM = MonthFromTimestamp(actTimestamp);
-  int YY = YearFromTimestamp(actTimestamp);
-  GG = GG + 0.1;
+  //int HH = HourFromTimestamp(actTimestamp);
+  //int DD = DayFromTimestamp(actTimestamp);
+  //int MM = MonthFromTimestamp(actTimestamp);
+  //int YY = YearFromTimestamp(actTimestamp);
+  //GG = GG + 0.1;
 
-    sprintf(record, (char*)DATA_FORMAT, key , (float)YY
-                                            , (float)MM
-                                            , (float)DD
-                                            , (float)HH
-                                            , (float)GG);
+    sprintf(record, (char*)DATA_FORMAT, key , (float)DSMRdata.energy_delivered_tariff1
+                                            , (float)DSMRdata.energy_delivered_tariff2
+                                            , (float)DSMRdata.energy_returned_tariff1
+                                            , (float)DSMRdata.energy_returned_tariff2
+                                            , (float)DSMRdata.gas_delivered);
     // DATA + \n + \0                                        
     fillRecord(record, DATA_RECLEN);
 
@@ -218,7 +218,7 @@ void readDataFromFile(int8_t fileType, const char *fileName
     int16_t nextSlot = (s + fromSlot) -1;
     if (nextSlot < 0) nextSlot += maxSlots;
     slot    = (nextSlot % maxSlots) +1;
-    Debugf("Inx[%02d]: ", s);
+    //Debugf("Inx[%02d]: ", s);
     offset  = (slot * DATA_RECLEN);
     dataFile.seek(offset, SeekSet); 
     int l = dataFile.readBytesUntil('\n', buffer, sizeof(buffer));
@@ -267,7 +267,7 @@ void readDataFromFile(int8_t fileType, const char *fileName, const char *timeSta
   uint16_t recsPerCall = 0, firstSlot = 0;
 
   DebugTf("timeStamp[%s]\r\n", timeStamp);
-  recNr = 0;  // reset recNr counter!
+  //recNr = 0;  // reset recNr counter!
   
   switch(fileType) {
     case HOURS:   firstSlot = timestampToHourSlot(actTimestamp, strlen(actTimestamp));
@@ -286,91 +286,37 @@ void readDataFromFile(int8_t fileType, const char *fileName, const char *timeSta
 
 } // readDatafromFile()
 
-/****
+
 //===========================================================================================
 void readDataFromFile(int8_t fileType, const char *fileName, const char *timeStamp
                           , bool doJson, const char *rName) 
 {
-  uint16_t  maxSlots, slot = 0, slotLast = 0, offset = 0;
-  char      buffer[DATA_RECLEN +2] = "";
-  char      recID[10]  = "";
-  float     EDT1, EDT2, ERT1, ERT2, GDT;
-  JsonArray root;
-
-  DebugTf("timeStamp[%s]\r\n", timeStamp);
+  int16_t startSlot, nrSlots, slotsPerPeriod;
   
   switch(fileType) {
-    case HOURS:   slotLast = timestampToHourSlot(actTimestamp, strlen(actTimestamp));
-                  maxSlots = _NO_HOUR_SLOTS_;
+    case HOURS:   startSlot = timestampToHourSlot(actTimestamp, strlen(actTimestamp));
+                  slotsPerPeriod = HOURS_PER_PERIOD;
+                  nrSlots = _NO_HOUR_SLOTS_;
                   break;
-    case DAYS:    slotLast = timestampToDaySlot(actTimestamp, strlen(actTimestamp));
-                  maxSlots = _NO_DAY_SLOTS_;
+    case DAYS:    startSlot = timestampToDaySlot(actTimestamp, strlen(actTimestamp));
+                  slotsPerPeriod = DAYS_PER_PERIOD;
+                  nrSlots = _NO_DAY_SLOTS_;
                   break;
-    case MONTHS:  slotLast = timestampToMonthSlot(actTimestamp, strlen(actTimestamp));
-                  maxSlots = _NO_MONTH_SLOTS_;
+    case MONTHS:  startSlot = timestampToMonthSlot(actTimestamp, strlen(actTimestamp));
+                  slotsPerPeriod = MONTHS_PER_PERIOD;
+                  nrSlots = _NO_MONTH_SLOTS_;
                   break;
   }
-  //slotLast -= 1;
+  DebugTf("start[%d], perPeriod[%d], nrSlots[%d]\r\n", startSlot, slotsPerPeriod, nrSlots);
+  for( int p=1; p<=(nrSlots / slotsPerPeriod); p++)
+  {
+    DebugTf("start[%d], perPeriod[%d], nrSlots[%d]\r\n", startSlot, slotsPerPeriod, nrSlots);
+    readDataFromFile(fileType, fileName, startSlot, p, false, "") ;
+    startSlot -= slotsPerPeriod;
+  }
   
-  if (!SPIFFS.exists(fileName))
-  {
-    DebugTf("File [%s] does not excist!\r\n", fileName);
-    return;
-  }
+} // readDataFromFile()
 
-  if (doJson)
-  {
-      root = jsonDoc.createNestedArray("hist");
-  }
-
-  File dataFile = SPIFFS.open(fileName, "r+");  // read and write ..
-  if (!dataFile) 
-  {
-    DebugTf("Error opening [%s]\r\n", fileName);
-    return;
-  }
-  DebugTf("for (s=[%d]; s<[%d]; s++)\r\n", slotLast, (maxSlots + slotLast));
-  for(int16_t s = slotLast; s < (maxSlots + slotLast); s++)
-  { 
-    slot    = (s % maxSlots) +1;
-    offset  = (slot * DATA_RECLEN);
-    dataFile.seek(offset, SeekSet); 
-    int l = dataFile.readBytesUntil('\n', buffer, sizeof(buffer));
-    buffer[l] = 0;
-    if (l >= (DATA_RECLEN -1))  // '\n' is skipped by readBytesUntil()
-    {
-      if (!isNumericp(buffer, 8)) // first 8 bytes is YYMMDDHH
-      {
-        {
-          DebugTf("slot[%02d]==>timeStamp [%-13.13s] not valid!!\r\n", slot, buffer);
-        }
-      }
-      else
-      {
-        if (doJson)
-        {
-          sscanf(buffer, "%[^;];%f;%f;%f;%f;%f", recID
-                                               , &EDT1, &EDT2, &ERT1, &ERT2, &GDT);
-          JsonObject nested = root.createNestedObject();
-          nested["date"] = recID;
-          nested["edt1"] = (float)EDT1;
-          nested["edt2"] = (float)EDT2;
-          nested["ert1"] = (float)ERT1;
-          nested["ert2"] = (float)ERT2;
-          nested["gdt"]  = (float)EDT1;
-        }
-        else
-        {
-          DebugTf("slot[%02d]->[%s]\r\n", slot, buffer);
-        }
-      }
-    }
-    
-  }
-  dataFile.close();
-
-} // readDatafromFile()
-***/
 
 //===========================================================================================
 bool createFile(const char *fileName, uint16_t noSlots) 
@@ -441,9 +387,9 @@ void fillRecord(char *record, int8_t len)
 //====================================================================
 uint16_t timestampToHourSlot(const char * TS, int8_t len)
 {
-  char      aSlot[5];
+  //char      aSlot[5];
   time_t    t1 = epoch((char*)TS, strlen(TS), false);
-  uint32_t  nrhours = t1 / SECS_PER_HOUR;
+  uint32_t  nrHours = t1 / SECS_PER_HOUR;
   //sprintf(aSlot, "%d", ((nrDays % KEEP_DAYS_HOURS) *24) + hour(t1));
   //uint8_t   uSlot  = String(aSlot).toInt();
   uint8_t   recSlot = (nrHours % _NO_HOUR_SLOTS_) +1;
@@ -464,7 +410,7 @@ uint16_t timestampToHourSlot(const char * TS, int8_t len)
 //====================================================================
 uint16_t timestampToDaySlot(const char * TS, int8_t len)
 {
-  char      aSlot[5];
+  //char      aSlot[5];
   time_t    t1 = epoch((char*)TS, strlen(TS), false);
   uint32_t  nrDays = t1 / SECS_PER_DAY;
   //sprintf(aSlot, "%d", (nrDays % KEEP_WEEK_DAYS));
@@ -487,7 +433,7 @@ uint16_t timestampToDaySlot(const char * TS, int8_t len)
 //====================================================================
 uint16_t timestampToMonthSlot(const char * TS, int8_t len)
 {
-  char      aSlot[5];
+  //char      aSlot[5];
   time_t    t1 = epoch((char*)TS, strlen(TS), false);
   uint32_t  nrMonths = ( (year(t1) -1) * 12) + month(t1);    // eg: year(2023) * 12 = 24276 + month(9) = 202309
   uint16_t  recSlot = (nrMonths % _NO_MONTH_SLOTS_) +1; // eg: 24285 % _NO_MONTH_SLOT_

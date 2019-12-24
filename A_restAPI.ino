@@ -22,47 +22,129 @@ void processAPI()
   char fName[40] = "";
   String words[10];
 
-  
   strToLower(URI);
-  DebugTf("incomming URL is [%s] \r\n", URI);
+  DebugTf("incomming URI is [%s] \r\n", URI);
+
+  int8_t wc = splitString(URI, '/', words, 10);
+
+  /**
+  DebugT(">");
+  for(int i=0; i<wc; i++)
+  {
+    Debugf("word[%d]=>[%s] ", i, words[i].c_str());
+  }
+  Debugln();
+  **/
   
-  if (!strcasecmp(URI, "/api/v1/dev/info") )
+  if (words[1] != "api" || words[2] != "v1")
+  {
+    sendApiInfo();
+  }
+
+  if (words[3] == "dev")
+  {
+    handleDevApi(words[4].c_str(), words[5].c_str(), words[6].c_str());
+  }
+  else if (words[3] == "hist")
+  {
+    handleHistApi(words[4].c_str(), words[5].c_str(), words[6].c_str());
+  }
+  else if (words[3] == "sm")
+  {
+    handleSmApi(words[4].c_str(), words[5].c_str(), words[6].c_str());
+  }
+  else sendApiInfo();
+  
+} // processAPI()
+
+
+//====================================================
+void handleDevApi(const char *word4, const char *word5, const char *word6)
+{
+  DebugTf("word4[%s], word5[%s], word6[%s]\r\n", word4, word5, word6);
+  if (strcmp(word4, "info") == 0)
   {
     sendDeviceInfo();
   }
-  else if (!strncmp(URI, "/api/v1/dev/hist/", strlen("/api/v1/dev/hist/")) )
+  else sendApiInfo();
+  
+} // handleDevApi()
+
+
+//====================================================
+void handleHistApi(const char *word4, const char *word5, const char *word6)
+{
+  int8_t maxPeriod = 0;
+
+  DebugTf("word4[%s], word5[%s], word6[%s]\r\n", word4, word5, word6);
+  if (   strcmp(word4, "hours") == 0 )
   {
-    strCopy(fName, sizeof(fName), URI, strlen("/api/v1/dev/hist/"), strlen(URI));
-    int8_t wc = splitString(fName, '/', words, 10);
-    for(int i=0; i<wc; i++)
-    {
-      DebugTf("Found word[%s] @indx[%d]\r\n", words[i].c_str(), i);
-    }
-    strCopy(fName, sizeof(fName), words[0].c_str());
-    //if (wc > 0)
-    if (words[1].toInt() >= 1)
-          sendJsonHist("hist", fName, words[1].toInt());
-    else  sendJsonHist("hist", fName, 1);
+    maxPeriod = _NO_HOUR_SLOTS_ / HOURS_PER_PERIOD;
   }
-  else if (!strcasecmp(URI, "/api/v1/sm/actual") )
+  else if (strcmp(word4, "days") == 0 )
   {
-    sendActual();
+    maxPeriod = _NO_DAY_SLOTS_ / DAYS_PER_PERIOD;
   }
-  else if (!strncmp(URI, "/api/v1/sm/fields", strlen("/api/v1/sm/fields")) )
+  else if (strcmp(word4, "months") == 0)
   {
-    if (strlen(URI) > strlen("/api/v1/sm/fields") ) 
-    {
-      strCopy(fName, sizeof(fName), URI, strlen("/api/v1/sm/fields/"), strlen(URI));
-      DebugTf("fName is [%s]\r\n", fName);
-    }
-    sendJsonFields("fields", fName);
+    maxPeriod = _NO_MONTH_SLOTS_ / MONTHS_PER_PERIOD;
   }
   else 
   {
     sendApiInfo();
+    return;
   }
   
-} // processAPI()
+  if (String(word5).toInt() >= 1 && String(word5).toInt() <= maxPeriod)
+        sendJsonHist("hist", word4, String(word5).toInt());
+  else  sendJsonHist("hist", word4, 1);
+
+} // handleHistApi()
+
+
+//====================================================
+void handleSmApi(const char *word4, const char *word5, const char *word6)
+{
+  char    tlgrm[1200] = "";
+  uint8_t p=0;  
+  bool    stopParsingTelegram = false;
+
+  DebugTf("word4[%s], word5[%s], word6[%s]\r\n", word4, word5, word6);
+  if (strcmp(word4, "actual") == 0)
+  {
+    sendActual();
+  }
+  else if (strcmp(word4, "fields") == 0)
+  {
+    sendJsonFields(word4, word5);
+  }
+  else if (strcmp(word4, "telegram") == 0)
+  {
+    slimmeMeter.enable(true);
+
+    Serial.setTimeout(5000);
+    // The terminator character is discarded from the serial buffer.
+    int l = Serial.readBytesUntil('/', tlgrm, sizeof(tlgrm));
+    // now read from '/' to '!'
+    // The terminator character is discarded from the serial buffer.
+    l = Serial.readBytesUntil('!', tlgrm, sizeof(tlgrm));
+    DebugTf("read [%d] bytes\r\n", l);
+    tlgrm[l++] = '!';
+    // next 6 bytes are "<CRC>\r\n"
+    for (int i=l; (i<l+6) && (i<sizeof(tlgrm)); i++)
+    {
+      tlgrm[i] = (char)Serial.read();
+    }
+    for (int i=strlen(tlgrm); i>=0; i--) tlgrm[i+1] = tlgrm[i];
+    tlgrm[0] = '/'; 
+    Serial.setTimeout(1000);  // seems to be the default ..
+    if (Verbose1) Debugf("Telegram (%d chars):\r\n/%s", strlen(tlgrm), tlgrm);
+    httpServer.send(200, "application/plain", tlgrm);
+
+  }
+  else sendApiInfo();
+  
+} // handleSmApi()
 
 //====================================================
 void sendApiInfo()
@@ -79,12 +161,13 @@ void sendApiInfo()
     <h1>API Reference</h1>\
     <table>\
     <tr><td><b>/api/v1/dev/info</b></td><td>Device information in JSON format</td></tr>\
-    <tr><b>/api/v1/dev/hist/hours/{period}</b></td><td>Readings from hours table in JSON format</td></tr>\
-    <tr><b>/api/v1/dev/hist/days</b></td><td>Readings from days table in JSON format</td></tr>\
-    <tr><b>/api/v1/dev/hist/months</b></td><td>Readings from months table in JSON format</td></tr>\
-    <tr><b>/api/v1/sm/actual</b></td><td>Actual data from Slimme Meter in JSON format</td></tr>\
-    <tr><b>/api/v1/sm/fields</b></td><td>All available fields from the Slimme Meter in JSON format</td></tr>\
-    <tr><b>/api/v1/sm/fields/{fieldName}</b></td><td>Only the requested field from the Slimme Meter in JSON format</td></tr>\
+    <tr><td><b>/api/v1/hist/hours/{period}</b></td><td>Readings from hours table in JSON format</td></tr>\
+    <tr><td><b>/api/v1/hist/days/{period}</b></td><td>Readings from days table in JSON format</td></tr>\
+    <tr><td><b>/api/v1/hist/months/{period}</b></td><td>Readings from months table in JSON format</td></tr>\
+    <tr><td><b>/api/v1/sm/actual</b></td><td>Actual data from Slimme Meter in JSON format</td></tr>\
+    <tr><td><b>/api/v1/sm/fields</b></td><td>All available fields from the Slimme Meter in JSON format</td></tr>\
+    <tr><td><b>/api/v1/sm/fields/{fieldName}</b></td><td>Only the requested field from the Slimme Meter in JSON format</td></tr>\
+    <tr><td><b>/api/v1/sm/telegram</b></td><td>raw telegram including all \\r\\n line endings</td></tr>\
     </table>\
     <br>\
     JSON format: {\"fields\":[{\"name\":\"&lt;fieldName&gt;\",\"value\":&lt;value&gt;,\"unit\":\"&lt;unit&gt;\"}]}\
