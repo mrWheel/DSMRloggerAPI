@@ -78,15 +78,18 @@
 
   <!-- START LastHoursTab -->
   <div id="LastHours" class="tabName" style="display:none">
-    <h2>/api/v1/dev/hist/hours/1</h2>
+    <h2>/api/v1/dev/hist/hours/{p}</h2>
     <div id='lastHours' style="margin-left: 50px; background: white;">
     <table id="lastHoursTable">
     <thead>
         <tr>
-            <th align='left'>Uur</th><th align='left'>Energie Verbruik</th>
-                                     <th>Energie Teruglevering</th>
-                                     <th>Gasverbruik</th>
-                                     <th>Kosten</th>
+            <th align='left'>Rec</th>
+            <th align='left'>Slot</th>
+            <th align='left'>Uur</th>
+            <th align='left'>Energie Verbruik</th>
+            <th>Energie Teruglevering</th>
+            <th>Gasverbruik</th>
+            <th>Kosten</th>
         </tr>
     </thead>
     <tbody>
@@ -103,13 +106,28 @@
 
   <!-- START LastDaysTab -->
   <div id="LastDays" class="tabName" style="display:none">
-    <h2>Afgelopen dagen</h2>
-    <div style="margin-left: 50px; background: white;">
-      <table id="lastDaysTable" border="1" bgcolor="deepskyblue">
-        <tbody>
-        </tbody>
-      </table>
-    </div>
+    <h2>/api/v1/dev/hist/days/{p}</h2>
+    <div id='lastDays' style="margin-left: 50px; background: white;">
+    <table id="lastDaysTable">
+    <thead>
+        <tr>
+            <th align='left'>Rec</th>
+            <th align='left'>Slot</th>
+            <th align='left'>Uur</th>
+            <th align='left'>Energie Verbruik</th>
+            <th>Energie Teruglevering</th>
+            <th>Gasverbruik</th>
+            <th>Kosten</th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+    <tfoot>
+        <tr>
+            <td>---------</td>
+        </tr>
+    <tfoot>
+		</table>
   </div> <!-- END LastDaysTab -->
 
   <!-- START LastMonthsTab -->

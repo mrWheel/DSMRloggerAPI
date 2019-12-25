@@ -13,7 +13,7 @@
 //===========================================================================================
 void displayHoursHist(bool Telnet=true) 
 {
-    readDataFromFile(HOURS, HOURS_FILE, actTimestamp, false, "");
+    readAllPeriods(HOURS, HOURS_FILE, actTimestamp, false, "");
 
 } // displayHoursHist()
 
@@ -21,7 +21,7 @@ void displayHoursHist(bool Telnet=true)
 //===========================================================================================
 void displayDaysHist(bool Telnet=true) 
 {
-    readDataFromFile(DAYS, DAYS_FILE, actTimestamp, false, "");
+    readAllPeriods(DAYS, DAYS_FILE, actTimestamp, false, "");
 
 } // displayDaysHist()
 
@@ -29,7 +29,7 @@ void displayDaysHist(bool Telnet=true)
 //===========================================================================================
 void displayMonthsHist(bool Telnet=true) 
 {
-    readDataFromFile(MONTHS, MONTHS_FILE, actTimestamp, false, "");
+    readAllPeriods(MONTHS, MONTHS_FILE, actTimestamp, false, "");
 
 } // displayMonthsHist()
 

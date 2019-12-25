@@ -11,9 +11,11 @@
 
 // global vars
 static  DynamicJsonDocument jsonDoc(4000);  // generic doc to return, clear() before use!
+JsonObject root;
+
 char    rootName[20] = "";
 char    fieldName[40] = "";
-
+volatile bool histApiSemafore = false;
 
 //=======================================================================
 void processAPI() 
@@ -75,6 +77,13 @@ void handleDevApi(const char *word4, const char *word5, const char *word6)
 void handleHistApi(const char *word4, const char *word5, const char *word6)
 {
   int8_t maxPeriod = 0;
+  uint32_t overruleSemafore = millis() + 2000;
+  
+  while (histApiSemafore && ((millis() - overruleSemafore) < 0))
+  {
+    yield();
+  }
+  histApiSemafore = true;
 
   DebugTf("word4[%s], word5[%s], word6[%s]\r\n", word4, word5, word6);
   if (   strcmp(word4, "hours") == 0 )
@@ -92,12 +101,16 @@ void handleHistApi(const char *word4, const char *word5, const char *word6)
   else 
   {
     sendApiInfo();
+    histApiSemafore = false;
     return;
   }
-  
+  DebugTf("==> word5 is [%d]\r\n", String(word5).toInt());
   if (String(word5).toInt() >= 1 && String(word5).toInt() <= maxPeriod)
         sendJsonHist("hist", word4, String(word5).toInt());
   else  sendJsonHist("hist", word4, 1);
+
+  histApiSemafore = false;
+
 
 } // handleHistApi()
 
@@ -184,7 +197,7 @@ void sendApiInfo()
 
 //=======================================================================
 // some helper functions
-void _returnJSON(JsonObject obj);
+//void _returnJSON(JsonObject obj);
 void _returnJSON(JsonObject obj)
 {
   String jsonString;
@@ -380,7 +393,8 @@ void sendJsonFields(const char *Name, const char *fName)
 //=======================================================================
 void sendJsonHist(const char *Name, const char *fName, uint8_t period) 
 {
-  jsonDoc.clear();
+  uint8_t slotNr = timestampToHourSlot(actTimestamp, strlen(actTimestamp));  
+  uint8_t recNr  = 0;
 
   strcpy(rootName, Name);
   if (strlen(fName) > 0)
@@ -389,18 +403,56 @@ void sendJsonHist(const char *Name, const char *fName, uint8_t period)
   }
   else fieldName[0] = '\0';
 
-  DebugTf("sendJsonHist [%s]/[%d]\r\n", fieldName, period);
+  DebugTf("sendJsonHist [%s]/[%d] startSlot[%02d]\r\n", fieldName, period, slotNr);
 
+/*
   if (strcmp(fieldName, "hours") == 0)
-        readDataFromFile(HOURS,  HOURS_FILE,  actTimestamp, period, true, rootName);
+        readPeriodFromTimestamp(HOURS,  HOURS_FILE,  actTimestamp, period, true, rootName);
   else if (strcmp(fieldName, "days") == 0)
-        readDataFromFile(DAYS,   DAYS_FILE,   actTimestamp, period, true, rootName);
+        readPeriodFromTimestamp(DAYS,   DAYS_FILE,   actTimestamp, period, true, rootName);
   else if (strcmp(fieldName, "months") == 0)
-        readDataFromFile(MONTHS, MONTHS_FILE, actTimestamp, period, true, rootName);
+        readPeriodFromTimestamp(MONTHS, MONTHS_FILE, actTimestamp, period, true, rootName);
   else
         return;
-        
-  _returnJSON( jsonDoc.as<JsonObject>() );
+*/        
+  String jsonString;
+  httpServer.setContentLength(CONTENT_LENGTH_UNKNOWN);
+
+  jsonDoc.clear();
+ //root = jsonDoc.createNestedArray("hours");
+  httpServer.send(200, "application/json", "{\"hist\":[\r\n");
+
+  slotNr += _NO_HOUR_SLOTS_ +1; // <==== voorbij actuele slot!
+
+  DebugTf("sendJsonHist [%s]/[%d] startSlot[%02d]\r\n", fieldName, period, (slotNr % _NO_HOUR_SLOTS_));
+
+  for (uint8_t s = 0; s < _NO_HOUR_SLOTS_; s++)
+  {
+    jsonDoc.clear();
+
+    if (s == 0)
+          jsonString = "";    
+    else  jsonString = ",\r\n";    
+    
+    root = jsonDoc.to<JsonObject>();
+    readOneSlot(HOURS, HOURS_FILE, s, s+slotNr, true, "hist") ;
+    serializeJson(jsonDoc, jsonString);         // machine readable
+    httpServer.sendContent(jsonString);
+  }
+  httpServer.sendContent("\r\n]}\r\n");
+  
+  //httpServer.sendHeader( "Content-Length", "0");
+  //httpServer.send ( 200, "application/json", "");
+  //_returnJSON( jsonDoc.as<JsonObject>() );
+
+  //serializeJson(jsonDoc, jsonString);         // machine readable
+  //DebugTf("JSON String is %s \r\n", jsonString.c_str());
+  //DebugTf("JSON String is %d chars\r\n", jsonString.length());
+  //DebugTln(jsonString);
+  //httpServer.setContentLength(CONTENT_LENGTH_UNKNOWN);
+  //httpServer.send(200, "application/json", jsonString);
+  //httpServer.sendContent(jsonString);
+  //httpServer.sendContent(jsonString);
 
 } // sendJsonHist()
 

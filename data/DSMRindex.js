@@ -13,37 +13,8 @@
 "use strict";
 
   let needReload  = true;
-  let validJson   = false;
   let activeTab   = "none";
-  let jsonMessage;   
-  let singlePair;
-  let onePair;
-  let daysMaxRows, hoursMaxRows, monthsMaxRows;
   let TimerTab;
-  let chartType         = 'bar';
-  let graphType         = 'W';
-  let settingBgColor    = 'deepskyblue';
-  let settingFontColor  = 'white'
-  let settingBackEDC    = "red";
-  let settingLineEDC    = "red";
-  let settingBackERC    = "green";
-  let settingLineERC    = "green";
-  let settingBackGDC    = "blue";
-  let settingLineGDC    = "blue";
-  let settingBackED2C   = "tomato";
-  let settingLineED2C   = "tomato";
-  let settingBackER2C   = "lightgreen";
-  let settingLineER2C   = "lightgreen";
-  let settingBackGD2C   = "lightblue";
-  let settingLineGD2C   = "lightblue";
-  let settingBackPR123C = "green";
-  let settingLinePR123C = "black";
-  let settingBackPD1C   = "yellow";
-  let settingLinePD1C   = "black";
-  let settingBackPD2C   = "lightgreen";
-  let settingLinePD2C   = "black";
-  let settingBackPD3C   = "lime";
-  let settingLinePD3C   = "black";
 
   //var requestDevInfo = new XMLHttpRequest();
   //var requestSmFields = new XMLHttpRequest();
@@ -154,89 +125,169 @@
     	});     
   };	// refreshSmFields()
   
+
+	
+	let maxI = 0;
+ 	let minI = 999;
+	let id=[];
+	let slot=[];
+ 	let date=[];
+ 	let edt1=[];
+ 	let edt2=[];
+ 	let ert1=[];
+ 	let ert2=[];
+ 	let gdt=[];
+ /** 
+  async function exampleFetch(url, type) {
+    const response = await fetch(url)
+      .then(response => response.json())
+      .then(json => {
+       console.log(json);
+       processJson(json, type);
+       });
+	}
+ **/
   
   function refreshHours()
   {
-    fetch(APIGW+"hist/hours/1")
+		maxI = 0;
+ 		minI = 999;
+  	id.length   = 0;
+  	slot.length = 0;
+ 		date.length = 0;
+ 		edt1.length = 0;
+ 		edt2.length = 0;
+ 		ert1.length = 0;
+ 		ert2.length = 0;
+ 		gdt.length  = 0;
+
+ 		console.log("fetch("+APIGW+"hist/hours/1)");
+    fetch(APIGW+"hist/hours/1", {"setTimeout": 2000})
       .then(response => response.json())
-      .then(json => {
-      		//console.log("parsed .., fields is ["+ JSON.stringify(json)+"]");
-      		
-      		for (var i in json.hist) {
+      .then(response => {
+      	console.log("Ok, now processJson()");
+      	console.log(response);
+	      processJson(response, "Hours");
+  		//})
+  		//.catch(function(error) {
+      //	var p = document.createElement('p');
+      //	p.appendChild(
+      //  	document.createTextNode('Error: ' + error.message)
+      //	);
+      });	
+  }	// resfreshHours()
+  
+	
+  function refreshDays()
+  {
+		maxI = 0;
+ 		minI = 999;
+  	id.length   = 0;
+  	slot.length = 0;
+ 		date.length = 0;
+ 		edt1.length = 0;
+ 		edt2.length = 0;
+ 		ert1.length = 0;
+ 		ert2.length = 0;
+ 		gdt.length  = 0;
+
+  	//for(let p=1; p<=3;p++)
+  	//{
+  		console.log("fetch("+APIGW+"hist/days/1)");
+  		json = exampleFetch(APIGW+"hist/days/1", "Days");
+  		console.log("fetch("+APIGW+"hist/days/2)");
+  		json = exampleFetch(APIGW+"hist/days/2", "Days");
+  		console.log("fetch("+APIGW+"hist/days/3)");
+  		json = exampleFetch(APIGW+"hist/days/3", "Days");
+  		
+	}	// resfreshDays()
+  		
+	
+  function processJson(json, type)
+  {
+      		for (var i in json.hist) 
+      		{
+      		  if (json.hist[i].rec > maxI)
+      		  {
+      		  	maxI = json.hist[i].rec;
+      		  	//console.log("rec["+json.hist[i].rec+"] -> maxI["+maxI+"]");
+      		  }
+      		  if (json.hist[i].rec < minI)
+      		  {
+      		  	minI = json.hist[i].rec;
+      		  	console.log("rec["+json.hist[i].rec+"] -> maxI["+minI+"]");
+      		  }
+      			id[json.hist[i].rec]   = json.hist[i].rec;
+      			slot[json.hist[i].rec]   = json.hist[i].slot;
+      			date[json.hist[i].rec] = json.hist[i].date;
+      			edt1[json.hist[i].rec] = json.hist[i].edt1;
+      			edt2[json.hist[i].rec] = json.hist[i].edt2;
+      			ert1[json.hist[i].rec] = json.hist[i].ert1;
+      			ert2[json.hist[i].rec] = json.hist[i].ert2;
+      			gdt[json.hist[i].rec]  = json.hist[i].gdt;
+      			//console.log("rec["+json.hist[i].rec+"] -> id["+id[json.hist[i].rec]+"] Date["+date[json.hist[i].rec]+"]");
       		  //console.log("["+json.hist[i].rec+"]");
-      			var tableRef = document.getElementById('lastHoursTable').getElementsByTagName('tbody')[0];
-      			if( ( document.getElementById("hoursTable_"+json.hist[i].rec)) == null )
-      			{
-      				var newRow   = tableRef.insertRow();
-							newRow.setAttribute("id", "hoursTable_"+json.hist[i].rec, 0);
-							// Insert a cell in the row at index 0
-							var newCell  = newRow.insertCell(0);
-						  var newText  = document.createTextNode('-');
-							newCell.appendChild(newText);
-							newCell  = newRow.insertCell(1);
-							newCell.appendChild(newText);
-							newCell  = newRow.insertCell(2);
-							newCell.appendChild(newText);
-							newCell  = newRow.insertCell(3);
-							newCell.appendChild(newText);
-							newCell  = newRow.insertCell(4);
-							newCell.appendChild(newText);
+      		}	// for i ..
+	    		console.log(type+", minI["+minI+"], maxI["+maxI+"]");
+	    		if (type == 'Hours')
+	    		{
+		    		if (minI == 0 && maxI > 70)
+		    		{
+				  		showTable(type, minI, maxI);
 						}
-						tableCells = document.getElementById("hoursTable_"+json.hist[i].rec).cells;
-						tableCells[0].innerHTML = json.hist[i].date;
-	     			tableCells[1].style.textAlign = "right";
-						tableCells[1].innerHTML = json.hist[i].edt1;
-	     			tableCells[2].style.textAlign = "right";
-						tableCells[2].innerHTML = json.hist[i].ert1;
-	     			tableCells[3].style.textAlign = "right";
-						tableCells[3].innerHTML = json.hist[i].gdt;
-      		}
-      		//console.log("-->done..");
-      })
-      .catch(function(error) {
-  		  console.log(error);
-    	});     
+					}
+					else if (type == 'Days')
+					{
+		    		if (minI == 0 && maxI > 14)
+		    		{
+				  		showTable(type, minI, maxI);
+						}
+					}
     	
-    fetch(APIGW+"hist/hours/2")
-      .then(response => response.json())
-      .then(json => {
-      		//console.log("parsed .., fields is ["+ JSON.stringify(json)+"]");
-      		
-      		for (var i in json.hist) {
-      		  //console.log("["+json.hist[i].rec+"]");
-      			var tableRef = document.getElementById('lastHoursTable').getElementsByTagName('tbody')[0];
-      			if( ( document.getElementById("hoursTable_"+json.hist[i].rec)) == null )
-      			{
-      				var newRow   = tableRef.insertRow();
-							newRow.setAttribute("id", "hoursTable_"+json.hist[i].rec, 0);
-							// Insert a cell in the row at index 0
-							var newCell  = newRow.insertCell(0);
-						  var newText  = document.createTextNode('-');
-							newCell.appendChild(newText);
-							newCell  = newRow.insertCell(1);
-							newCell.appendChild(newText);
-							newCell  = newRow.insertCell(2);
-							newCell.appendChild(newText);
-							newCell  = newRow.insertCell(3);
-							newCell.appendChild(newText);
-							newCell  = newRow.insertCell(4);
-							newCell.appendChild(newText);
-						}
-						tableCells = document.getElementById("hoursTable_"+json.hist[i].rec).cells;
-						tableCells[0].innerHTML = json.hist[i].date;
-	     			tableCells[1].style.textAlign = "right";
-						tableCells[1].innerHTML = json.hist[i].edt1;
-	     			tableCells[2].style.textAlign = "right";
-						tableCells[2].innerHTML = json.hist[i].ert1;
-	     			tableCells[3].style.textAlign = "right";
-						tableCells[3].innerHTML = json.hist[i].gdt;
-      		}
-      		//console.log("-->done..");
-      })
-      .catch(function(error) {
-  		  console.log(error);
-    	});     
-  };	// refreshHours()
+  }	// processJson()
+  
+  function showTable(type, minI, maxI)
+  {	
+  	console.log("showTable("+type+", "+minI+", "+maxI+")");
+  	for (let i=minI; i<=maxI; i++)
+  	{
+  	  if (date[i] == null) continue;
+  		var tableRef = document.getElementById('last'+type+'Table').getElementsByTagName('tbody')[0];
+    	if( ( document.getElementById(type +"Table_"+id[i])) == null )
+     	{
+     		var newRow   = tableRef.insertRow();
+				newRow.setAttribute("id", type+"Table_"+id[i], 0);
+				// Insert a cell in the row at index 0
+				var newCell  = newRow.insertCell(0);
+			  var newText  = document.createTextNode('-');
+				newCell.appendChild(newText);
+				newCell  = newRow.insertCell(1);
+				newCell.appendChild(newText);
+				newCell  = newRow.insertCell(2);
+				newCell.appendChild(newText);
+				newCell  = newRow.insertCell(3);
+				newCell.appendChild(newText);
+				newCell  = newRow.insertCell(4);
+				newCell.appendChild(newText);
+				newCell  = newRow.insertCell(5);
+				newCell.appendChild(newText);
+				newCell  = newRow.insertCell(6);
+				newCell.appendChild(newText);
+			}
+			tableCells = document.getElementById(type+"Table_"+id[i]).cells;
+			tableCells[0].innerHTML = i;
+	    tableCells[1].style.textAlign = "right";
+			tableCells[1].innerHTML = slot[i];
+			tableCells[2].innerHTML = date[i];
+	   	tableCells[3].style.textAlign = "right";
+			tableCells[3].innerHTML = edt1[i];
+	   	tableCells[4].style.textAlign = "right";
+			tableCells[4].innerHTML = ert1[i];
+	    tableCells[5].style.textAlign = "right";
+			tableCells[5].innerHTML = gdt[i];
+    };
+  }	// showTable()
+  
 
     
   function refreshSmTelegram()
@@ -275,7 +326,7 @@
     //---- update buttons in navigation bar ---
     let x = document.getElementsByClassName("tabButton");
     for (i = 0; i < x.length; i++) {
-      x[i].style.background     = settingBgColor;
+      x[i].style.background     = 'deepskyblue';
       x[i].style.border         = 'none';
       x[i].style.textDecoration = 'none';  
       x[i].style.outline        = 'none';  
@@ -293,19 +344,17 @@
     if (tabName == "Actual") {
       console.log("newTab: Actual");
       refreshSmFields();
-      var TimerTab = setInterval(refreshSmFields, 60 * 1000); // repeat every 60s
+      TimerTab = setInterval(refreshSmFields, 60 * 1000); // repeat every 60s
 
     } else if (tabName == "LastHours") {
       console.log("newTab: LastHours");
       refreshHours();
-      var TimerTab = setInterval(refreshHours, 60 * 1000); // repeat every 60s
+      TimerTab = setInterval(refreshHours, 60 * 1000); // repeat every 60s
 
     } else if (tabName == "LastDays") {
       console.log("newTab: LastDays");
-//      webSocketConn.send("tabLastDays");
-//      TimerTab=setInterval(function(){
-//                    webSocketConn.send("tabLastDays");
-//                  },120000);
+      refreshDays();
+      TimerTab = setInterval(refreshDays, 60 * 1000); // repeat every 60s
 
     } else if (tabName == "LastMonths") {
       console.log("newTab: LastMonths");
@@ -317,12 +366,12 @@
     } else if (tabName == "SysInfo") {
       console.log("newTab: SysInfo");
       refreshDevInfo();
-      var TimerTab = setInterval(refreshDevInfo, 60 * 1000); // repeat every 30s
+      TimerTab = setInterval(refreshDevInfo, 60 * 1000); // repeat every 30s
 
     } else if (tabName == "Telegram") {
       console.log("newTab: Telegram");
       refreshSmTelegram();
-      var TimerTab = setInterval(refreshSmTelegram, 60 * 1000); // repeat every 60s
+      TimerTab = setInterval(refreshSmTelegram, 60 * 1000); // repeat every 60s
     }
   } // openTab()
 
