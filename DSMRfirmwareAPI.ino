@@ -2,7 +2,7 @@
 ***************************************************************************  
 **  Program  : DSMRfirmwareAPI (restAPI)
 */
-#define _FW_VERSION "v0.0.6 (25-12-2019)"
+#define _FW_VERSION "v0.0.7 (26-12-2019)"
 /*
 **  Copyright (c) 2019 Willem Aandewiel
 **

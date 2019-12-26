@@ -31,7 +31,7 @@
 <!--  <div style="clear:both"></div> -->
   </font>
 
-  <!-- <div class="clock" id="theTime">-</div> -->
+  <!-- <div class="clock" id="theTime">1234567890</div> -->
   <!-- START Tabbladen -->
   <div class="nav-container">
     <div class='nav-left'>
@@ -45,7 +45,8 @@
                       <img src='/FSexplorer.png' alt='FSexplorer'></a>
     </div>
     <div class='nav-right'>
-      <div id='theTime' class='nav-item nav-clock'>00:00</div>
+   <!--   <div id='theTime' class='nav-item nav-clock'>00:00</div> -->
+		  <div class="nav-clock" id="theTime">1234567890</div>
     </div>
   </div>
   <!-- END Tabbladen -->
@@ -57,29 +58,29 @@
     <!-- START actueelTab Dummy -->
     <h1>Actueel</h1>
     <h2>/api/v1/fields</h2>
-    <div id='actual' style="margin-left: 50px; background: white;">
-    <table id="actualTable">
-    <thead>
+    <div id='actual' style="margin-left: 50px; background: lightblue;">
+    	<table id="actualTable">
+    	<thead>
         <tr>
             <th align='left'>Name</th><th align='left'>Value</th><th>Unit</th>
         </tr>
-    </thead>
-    <tbody>
-    </tbody>
-    <tfoot>
+    	</thead>
+    	<tbody>
+    	</tbody>
+    	<tfoot>
         <tr>
             <td>nice table</td>
         </tr>
-    <tfoot>
-		</table>
+    	<tfoot>
+			</table>
     </div>
   
   </div>  <!-- END Actual Tab -->
 
   <!-- START LastHoursTab -->
   <div id="LastHours" class="tabName" style="display:none">
-    <h2>/api/v1/dev/hist/hours/{p}</h2>
-    <div id='lastHours' style="margin-left: 50px; background: white;">
+    <h2>/api/v1/dev/hist/hours</h2>
+    <div id='lastHours' style="margin-left: 50px; background: lightblue;">
     <table id="lastHoursTable">
     <thead>
         <tr>
@@ -106,10 +107,10 @@
 
   <!-- START LastDaysTab -->
   <div id="LastDays" class="tabName" style="display:none">
-    <h2>/api/v1/dev/hist/days/{p}</h2>
-    <div id='lastDays' style="margin-left: 50px; background: white;">
-    <table id="lastDaysTable">
-    <thead>
+    <h2>/api/v1/dev/hist/days</h2>
+    <div id='lastDays' style="margin-left: 50px; background: lightblue;">
+    	<table id="lastDaysTable">
+    	<thead>
         <tr>
             <th align='left'>Rec</th>
             <th align='left'>Slot</th>
@@ -119,48 +120,73 @@
             <th>Gasverbruik</th>
             <th>Kosten</th>
         </tr>
-    </thead>
-    <tbody>
-    </tbody>
-    <tfoot>
+    	</thead>
+    	<tbody>
+    	</tbody>
+    	<tfoot>
         <tr>
             <td>---------</td>
         </tr>
-    <tfoot>
-		</table>
+    	<tfoot>
+			</table>
+		</div>
   </div> <!-- END LastDaysTab -->
 
   <!-- START LastMonthsTab -->
   <div id="LastMonths" class="tabName" style="display:none">
-    <h2>Afgelopen maanden</h2>
-    <div style="margin-left: 50px; background: white;">
-      <table id="lastMonthsTable" border="1" bgcolor="deepskyblue">
-        <tbody>
-        </tbody>
-      </table>
-    </div>
+    <h2>/api/v1/dev/hist/months</h2>
+    <div id='lastMonths' style="margin-left: 50px; background: lightblue;">
+    	<table id="lastMonthsTable">
+    	<thead>
+        <tr>
+            <th align='left'>Rec</th>
+            <th align='left'>Slot</th>
+            <th align='left'>Uur</th>
+            <th align='left'>Energie Verbruik</th>
+            <th>Energie Teruglevering</th>
+            <th>Gasverbruik</th>
+            <th>Kosten</th>
+        </tr>
+    	</thead>
+    	<tbody>
+    	</tbody>
+    	<tfoot>
+        <tr>
+            <td>---------</td>
+        </tr>
+    	<tfoot>
+			</table>
+		</div>
   </div> <!-- END LastMonthsTab -->
 
   <!-- START SysInfo Tab -->
   <div id="SysInfo" class="tabName" style="display:none">
-      <div class="container-card"> 
-        <div class="container-box"> 
-        </div>  <!-- container-box -->
-
-        <div class="container-box"> 
-          <div class="flex-item">
-            <div class="flexLabel200">Telegrams Processed</div>
-            <div id="TelegramCount" class="flexValue250">-</div>
-          </div>
-        </div>  <!-- container-box -->
-      </div> <!-- container-card -->
+    <h1>Device Info</h1>
+    <h2>/api/v1/dev/info</h2>
+    <div id='devInfo' style="margin-left: 50px; background: lightblue;">
+    	<table id="devInfoTable">
+    	<thead>
+        <tr>
+            <th align='left'>Name</th><th align='left'>Value</th><th>Unit</th>
+        </tr>
+    	</thead>
+    	<tbody>
+    	</tbody>
+    	<tfoot>
+        <tr>
+            <td>==========</td>
+        </tr>
+    	<tfoot>
+			</table>
+    </div>
   
   </div>  <!-- END SysInfo Tab -->
 
   <!-- START TelegramTab -->
   <div id="Telegram" class="tabName" style="display:none">
-    <h2>raw Telegram</h2>
+    <h2>/api/v1/sm/telegram</h2>
     <div id="rawTelegram">
+    ------------
     </div>
   </div> <!-- END TelegramTab -->
   

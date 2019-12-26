@@ -1,4 +1,13 @@
-
+/*
+***************************************************************************  
+**  Program  : processTelegram - part of DSMRfirmwareAPI
+**  Version  : v0.0.7
+**
+**  Copyright (c) 2019 Willem Aandewiel
+**
+**  TERMS OF USE: MIT License. See bottom of file.                                                            
+***************************************************************************      
+*  
 
 void processTelegram()
 {

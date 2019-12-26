@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : restAPI, part of DSMRfirmwareAPI
-**  Version  : v0.0.1
+**  Version  : v0.0.7
 **
 **  Copyright (c) 2019 Willem Aandewiel
 **
@@ -28,15 +28,6 @@ void processAPI()
   DebugTf("incomming URI is [%s] \r\n", URI);
 
   int8_t wc = splitString(URI, '/', words, 10);
-
-  /**
-  DebugT(">");
-  for(int i=0; i<wc; i++)
-  {
-    Debugf("word[%d]=>[%s] ", i, words[i].c_str());
-  }
-  Debugln();
-  **/
   
   if (words[1] != "api" || words[2] != "v1")
   {
@@ -68,6 +59,10 @@ void handleDevApi(const char *word4, const char *word5, const char *word6)
   {
     sendDeviceInfo();
   }
+  else if (strcmp(word4, "time") == 0)
+  {
+    sendDeviceTime();
+  }
   else sendApiInfo();
   
 } // handleDevApi()
@@ -76,27 +71,31 @@ void handleDevApi(const char *word4, const char *word5, const char *word6)
 //====================================================
 void handleHistApi(const char *word4, const char *word5, const char *word6)
 {
-  int8_t maxPeriod = 0;
-  uint32_t overruleSemafore = millis() + 2000;
+  int8_t    fileType = 0;
+  uint32_t  overruleSemafore = millis() + 2000;
+  char      fileName[20] = "";
   
-  while (histApiSemafore && ((millis() - overruleSemafore) < 0))
-  {
-    yield();
-  }
+  //while (histApiSemafore && ((millis() - overruleSemafore) < 0))
+  //{
+  //  yield();
+  //}
   histApiSemafore = true;
 
   DebugTf("word4[%s], word5[%s], word6[%s]\r\n", word4, word5, word6);
   if (   strcmp(word4, "hours") == 0 )
   {
-    maxPeriod = _NO_HOUR_SLOTS_ / HOURS_PER_PERIOD;
+    fileType = HOURS;
+    strCopy(fileName, sizeof(fileName), HOURS_FILE);
   }
   else if (strcmp(word4, "days") == 0 )
   {
-    maxPeriod = _NO_DAY_SLOTS_ / DAYS_PER_PERIOD;
+    fileType = DAYS;
+    strCopy(fileName, sizeof(fileName), DAYS_FILE);
   }
   else if (strcmp(word4, "months") == 0)
   {
-    maxPeriod = _NO_MONTH_SLOTS_ / MONTHS_PER_PERIOD;
+    fileType = MONTHS;
+    strCopy(fileName, sizeof(fileName), MONTHS_FILE);
   }
   else 
   {
@@ -104,10 +103,7 @@ void handleHistApi(const char *word4, const char *word5, const char *word6)
     histApiSemafore = false;
     return;
   }
-  DebugTf("==> word5 is [%d]\r\n", String(word5).toInt());
-  if (String(word5).toInt() >= 1 && String(word5).toInt() <= maxPeriod)
-        sendJsonHist("hist", word4, String(word5).toInt());
-  else  sendJsonHist("hist", word4, 1);
+  sendJsonHist(fileType, fileName);
 
   histApiSemafore = false;
 
@@ -123,7 +119,11 @@ void handleSmApi(const char *word4, const char *word5, const char *word6)
   bool    stopParsingTelegram = false;
 
   DebugTf("word4[%s], word5[%s], word6[%s]\r\n", word4, word5, word6);
-  if (strcmp(word4, "actual") == 0)
+  if (strcmp(word4, "info") == 0)
+  {
+    sendSmInfo();
+  }
+  else if (strcmp(word4, "actual") == 0)
   {
     sendActual();
   }
@@ -174,9 +174,11 @@ void sendApiInfo()
     <h1>API Reference</h1>\
     <table>\
     <tr><td><b>/api/v1/dev/info</b></td><td>Device information in JSON format</td></tr>\
-    <tr><td><b>/api/v1/hist/hours/{period}</b></td><td>Readings from hours table in JSON format</td></tr>\
-    <tr><td><b>/api/v1/hist/days/{period}</b></td><td>Readings from days table in JSON format</td></tr>\
-    <tr><td><b>/api/v1/hist/months/{period}</b></td><td>Readings from months table in JSON format</td></tr>\
+    <tr><td><b>/api/v1/dev/time</b></td><td>Device time (epoch) in JSON format</td></tr>\
+    <tr><td><b>/api/v1/hist/hours/</b></td><td>Readings from hours table in JSON format</td></tr>\
+    <tr><td><b>/api/v1/hist/days/</b></td><td>Readings from days table in JSON format</td></tr>\
+    <tr><td><b>/api/v1/hist/months/</b></td><td>Readings from months table in JSON format</td></tr>\
+    <tr><td><b>/api/v1/sm/info</b></td><td>Information about the Slimme Meter in JSON format</td></tr>\
     <tr><td><b>/api/v1/sm/actual</b></td><td>Actual data from Slimme Meter in JSON format</td></tr>\
     <tr><td><b>/api/v1/sm/fields</b></td><td>All available fields from the Slimme Meter in JSON format</td></tr>\
     <tr><td><b>/api/v1/sm/fields/{fieldName}</b></td><td>Only the requested field from the Slimme Meter in JSON format</td></tr>\
@@ -218,71 +220,108 @@ void _returnJSON400(const char * message)
 
 
 //=======================================================================
-void sendDeviceInfo() 
+void sendSmInfo() 
 {
-  jsonDoc.clear();
+  char objSprtr[10] = "";
+  
+  httpServer.setContentLength(CONTENT_LENGTH_UNKNOWN);
+  httpServer.send(200, "application/json", "{\"sminfo\":[\r\n");
     
 //-Slimme Meter Info----------------------------------------------------------
+  sendNestedJsonObject(objSprtr, "Identification",      DSMRdata.identification.c_str());
+  sprintf(objSprtr, ",\r\n");
+  sendNestedJsonObject(objSprtr, "P1_Version",          DSMRdata.p1_version.c_str());
+  sendNestedJsonObject(objSprtr, "Equipment_Id",        DSMRdata.equipment_id.c_str());
+  sendNestedJsonObject(objSprtr, "Electricity_Tariff",  DSMRdata.electricity_tariff.c_str());
+  sendNestedJsonObject(objSprtr, "Gas_Device_Type",     DSMRdata.gas_device_type);
+  sendNestedJsonObject(objSprtr, "Gas_Equipment_Id",    DSMRdata.gas_equipment_id.c_str());
   
-  jsonDoc["Identification"]      = DSMRdata.identification;
-  jsonDoc["P1_Version"]          = DSMRdata.p1_version;
-  jsonDoc["Equipment_Id"]        = DSMRdata.equipment_id;
-  jsonDoc["Electricity_Tariff"]  = DSMRdata.electricity_tariff;
-  jsonDoc["Gas_Device_Type"]     = DSMRdata.gas_device_type;
-  jsonDoc["Gas_Equipment_Id"]    = DSMRdata.gas_equipment_id;
+  httpServer.sendContent("\r\n]}\r\n");
+
+} // sendSmInfo()
+
+
+//=======================================================================
+void sendDeviceInfo() 
+{
+  char objSprtr[10] = "";
   
+  httpServer.setContentLength(CONTENT_LENGTH_UNKNOWN);
+  httpServer.send(200, "application/json", "{\"devinfo\":[\r\n");
+
 //-Device Info-----------------------------------------------------------------
-  jsonDoc["Author"]              = "Willem Aandewiel (www.aandewiel.nl)";
-  jsonDoc["FwVersion"]           = String( _FW_VERSION );
-  jsonDoc["Compiled"]            = String( __DATE__ ) 
-                                      + String( "  " )
-                                      + String( __TIME__ );
-  jsonDoc["FreeHeap"]            = ESP.getFreeHeap();
-  jsonDoc["maxFreeBlock"]        = ESP.getMaxFreeBlockSize();
-  jsonDoc["ChipID"]              = String( ESP.getChipId(), HEX );
-  jsonDoc["CoreVersion"]         = String( ESP.getCoreVersion() );
-  jsonDoc["SdkVersion"]          = String( ESP.getSdkVersion() );
-  jsonDoc["CpuFreqMHz"]          = ESP.getCpuFreqMHz();
-  jsonDoc["SketchSize"]          = formatFloat( (ESP.getSketchSize() / 1024.0), 3);
-  jsonDoc["FreeSketchSpace"]     = formatFloat( (ESP.getFreeSketchSpace() / 1024.0), 3);
+  sendNestedJsonObject(objSprtr, "Author", "Willem Aandewiel (www.aandewiel.nl)");
+  sprintf(objSprtr, ",\r\n");
+  sendNestedJsonObject(objSprtr, "FwVersion", _FW_VERSION);
+
+  sprintf(cMsg, "%s %s", __DATE__, __TIME__);
+  sendNestedJsonObject(objSprtr, "Compiled", cMsg);
+  //String(__DATE__).c_str()
+  //                                 + String( "  " ).c_str()
+  //                                 + String( __TIME__ ).c_str());
+  sendNestedJsonObject(objSprtr, "maxFreeBlock", ESP.getMaxFreeBlockSize());
+  sendNestedJsonObject(objSprtr, "ChipID", String( ESP.getChipId(), HEX ).c_str());
+  sendNestedJsonObject(objSprtr, "CoreVersion", String( ESP.getCoreVersion() ).c_str() );
+  sendNestedJsonObject(objSprtr, "SdkVersion", String( ESP.getSdkVersion() ).c_str());
+  sendNestedJsonObject(objSprtr, "CpuFreq", ESP.getCpuFreqMHz(), "MHz");
+  sendNestedJsonObject(objSprtr, "SketchSize", formatFloat( (ESP.getSketchSize() / 1024.0), 3), "Bytes");
+  sendNestedJsonObject(objSprtr, "FreeSketchSpace", formatFloat( (ESP.getFreeSketchSpace() / 1024.0), 3), "Bytes");
 
   if ((ESP.getFlashChipId() & 0x000000ff) == 0x85) 
         sprintf(cMsg, "%08X (PUYA)", ESP.getFlashChipId());
   else  sprintf(cMsg, "%08X", ESP.getFlashChipId());
-  jsonDoc["FlashChipID"]         = cMsg;  // flashChipId
-  jsonDoc["FlashChipSize_MB"]    = formatFloat((ESP.getFlashChipSize() / 1024.0 / 1024.0), 3);
-  jsonDoc["FlashChipRealSize_MB"]= formatFloat((ESP.getFlashChipRealSize() / 1024.0 / 1024.0), 3);
-  jsonDoc["FlashChipSpeed_MHz"]  = formatFloat((ESP.getFlashChipSpeed() / 1000.0 / 1000.0), 0);
+  sendNestedJsonObject(objSprtr, "FlashChipID", cMsg);  // flashChipId
+  sendNestedJsonObject(objSprtr, "FlashChipSize", formatFloat((ESP.getFlashChipSize() / 1024.0 / 1024.0), 3), "MB");
+  sendNestedJsonObject(objSprtr, "FlashChipRealSize", formatFloat((ESP.getFlashChipRealSize() / 1024.0 / 1024.0), 3), "MB");
+  sendNestedJsonObject(objSprtr, "FlashChipSpeed", formatFloat((ESP.getFlashChipSpeed() / 1000.0 / 1000.0), 0), "MHz");
 
   FlashMode_t ideMode = ESP.getFlashChipMode();
-  jsonDoc["FlashChipMode"]       = flashMode[ideMode];
-  jsonDoc["BoardType"] = 
+  sendNestedJsonObject(objSprtr, "FlashChipMode", flashMode[ideMode]);
+  sendNestedJsonObject(objSprtr, "BoardType",
 #ifdef ARDUINO_ESP8266_NODEMCU
-     "ESP8266_NODEMCU";
+     "ESP8266_NODEMCU"
 #endif
 #ifdef ARDUINO_ESP8266_GENERIC
-     "ESP8266_GENERIC";
+     "ESP8266_GENERIC"
 #endif
 #ifdef ESP8266_ESP01
-     "ESP8266_ESP01";
+     "ESP8266_ESP01"
 #endif
 #ifdef ESP8266_ESP12
-     "ESP8266_ESP12";
+     "ESP8266_ESP12"
 #endif
-  jsonDoc["SSID"]                = WiFi.SSID();
-//jsonDoc["PskKey"]              = WiFi.psk();   // uncomment if you want to see this
-  jsonDoc["IpAddress"]           = WiFi.localIP().toString();
-  jsonDoc["WiFiRSSI"]            = WiFi.RSSI();
-  jsonDoc["Hostname"]            = _HOSTNAME;
-  jsonDoc["upTime"]              = upTime();
-  jsonDoc["TelegramCount"]       = telegramCount;
-  jsonDoc["TelegramErrors"]      = telegramErrors;
-  jsonDoc["lastReset"]           = lastReset;
-  
-  _returnJSON( jsonDoc.as<JsonObject>() );
+  );
+  sendNestedJsonObject(objSprtr, "SSID", WiFi.SSID().c_str());
+//sendNestedJsonObject(objSprtr, "PskKey", WiFi.psk());   // uncomment if you want to see this
+  sendNestedJsonObject(objSprtr, "IpAddress", WiFi.localIP().toString().c_str());
+  sendNestedJsonObject(objSprtr, "WiFiRSSI", WiFi.RSSI());
+  sendNestedJsonObject(objSprtr, "Hostname", _HOSTNAME);
+  sendNestedJsonObject(objSprtr, "upTime", upTime().c_str());
+  sendNestedJsonObject(objSprtr, "TelegramCount", telegramCount);
+  sendNestedJsonObject(objSprtr, "TelegramErrors", telegramErrors);
+  sendNestedJsonObject(objSprtr, "lastReset", lastReset.c_str());
+
+  httpServer.sendContent("\r\n]}\r\n");
 
 } // sendDeviceInfo()
 
+
+//=======================================================================
+void sendDeviceTime() 
+{
+  char objSprtr[10] = "";
+  
+  httpServer.setContentLength(CONTENT_LENGTH_UNKNOWN);
+  httpServer.send(200, "application/json", "{\"devtime\":[\r\n");
+
+//-Device Info-----------------------------------------------------------------
+  sendNestedJsonObject(objSprtr, "time", buildDateTimeString(actTimestamp, sizeof(actTimestamp)).c_str()); 
+  sprintf(objSprtr, ",\r\n");
+  sendNestedJsonObject(objSprtr, "epoch", now());
+
+  httpServer.sendContent("\r\n]}\r\n");
+
+} // sendDeviceTime()
 
 //=======================================================================
 void sendActual() 
@@ -391,42 +430,34 @@ void sendJsonFields(const char *Name, const char *fName)
 
 
 //=======================================================================
-void sendJsonHist(const char *Name, const char *fName, uint8_t period) 
+void sendJsonHist(int8_t fileType, const char *fileName) 
 {
   uint8_t slotNr = timestampToHourSlot(actTimestamp, strlen(actTimestamp));  
-  uint8_t recNr  = 0;
-
-  strcpy(rootName, Name);
-  if (strlen(fName) > 0)
-  {
-    strCopy(fieldName, sizeof(fieldName), fName);
+  uint8_t startSlot, nrSlots, recNr  = 0;
+    
+  switch(fileType) {
+    case HOURS:   startSlot       = timestampToHourSlot(actTimestamp, strlen(actTimestamp));
+                  nrSlots         = _NO_HOUR_SLOTS_;
+                  break;
+    case DAYS:    startSlot       = timestampToDaySlot(actTimestamp, strlen(actTimestamp));
+                  nrSlots         = _NO_DAY_SLOTS_;
+                  break;
+    case MONTHS:  startSlot       = timestampToMonthSlot(actTimestamp, strlen(actTimestamp));
+                  nrSlots         = _NO_MONTH_SLOTS_;
+                  break;
   }
-  else fieldName[0] = '\0';
 
-  DebugTf("sendJsonHist [%s]/[%d] startSlot[%02d]\r\n", fieldName, period, slotNr);
-
-/*
-  if (strcmp(fieldName, "hours") == 0)
-        readPeriodFromTimestamp(HOURS,  HOURS_FILE,  actTimestamp, period, true, rootName);
-  else if (strcmp(fieldName, "days") == 0)
-        readPeriodFromTimestamp(DAYS,   DAYS_FILE,   actTimestamp, period, true, rootName);
-  else if (strcmp(fieldName, "months") == 0)
-        readPeriodFromTimestamp(MONTHS, MONTHS_FILE, actTimestamp, period, true, rootName);
-  else
-        return;
-*/        
   String jsonString;
   httpServer.setContentLength(CONTENT_LENGTH_UNKNOWN);
 
   jsonDoc.clear();
- //root = jsonDoc.createNestedArray("hours");
   httpServer.send(200, "application/json", "{\"hist\":[\r\n");
 
-  slotNr += _NO_HOUR_SLOTS_ +1; // <==== voorbij actuele slot!
+  slotNr += nrSlots +1; // <==== voorbij actuele slot!
 
-  DebugTf("sendJsonHist [%s]/[%d] startSlot[%02d]\r\n", fieldName, period, (slotNr % _NO_HOUR_SLOTS_));
+  DebugTf("sendJsonHist startSlot[%02d]\r\n", (slotNr % nrSlots));
 
-  for (uint8_t s = 0; s < _NO_HOUR_SLOTS_; s++)
+  for (uint8_t s = 0; s < nrSlots; s++)
   {
     jsonDoc.clear();
 
@@ -435,7 +466,7 @@ void sendJsonHist(const char *Name, const char *fName, uint8_t period)
     else  jsonString = ",\r\n";    
     
     root = jsonDoc.to<JsonObject>();
-    readOneSlot(HOURS, HOURS_FILE, s, s+slotNr, true, "hist") ;
+    readOneSlot(fileType, fileName, s, s+slotNr, true, "hist") ;
     serializeJson(jsonDoc, jsonString);         // machine readable
     httpServer.sendContent(jsonString);
   }
@@ -443,18 +474,65 @@ void sendJsonHist(const char *Name, const char *fName, uint8_t period)
   
   //httpServer.sendHeader( "Content-Length", "0");
   //httpServer.send ( 200, "application/json", "");
-  //_returnJSON( jsonDoc.as<JsonObject>() );
-
-  //serializeJson(jsonDoc, jsonString);         // machine readable
-  //DebugTf("JSON String is %s \r\n", jsonString.c_str());
-  //DebugTf("JSON String is %d chars\r\n", jsonString.length());
-  //DebugTln(jsonString);
-  //httpServer.setContentLength(CONTENT_LENGTH_UNKNOWN);
-  //httpServer.send(200, "application/json", jsonString);
-  //httpServer.sendContent(jsonString);
-  //httpServer.sendContent(jsonString);
-
+  
 } // sendJsonHist()
+
+
+//=======================================================================
+void sendNestedJsonObject(const char *objSprtr, const char *fName, const char *fValue, const char *fUnit)
+{
+  char jsonBuff[200] = "";
+  
+  if (strlen(fUnit) == 0)
+  {
+    sprintf(jsonBuff, "%s{\"name\": \"%s\", \"value\": \"%s\"}"
+                                      , objSprtr, fName, fValue);
+  }
+  else
+  {
+    sprintf(jsonBuff, "%s{\"name\": \"%s\", \"value\": \"%s\", \"unit\": \"%s\"}"
+                                      , objSprtr, fName, fValue, fUnit);
+  }
+
+  httpServer.sendContent(jsonBuff);
+
+} // sendNestedJsonObject(a, b, c)
+
+void sendNestedJsonObject(const char *objSprtr, const char *fName, const char *fValue)
+{
+  char noUnit[] = {'\0'};
+
+  sendNestedJsonObject(objSprtr, fName, fValue, noUnit);
+  
+} // sendNestedJsonObject(a, b)
+
+
+void sendNestedJsonObject(const char *objSprtr, const char *fName, int32_t fValue, const char *fUnit)
+{
+  char jsonBuff[200] = "";
+  
+  if (strlen(fUnit) == 0)
+  {
+    sprintf(jsonBuff, "%s{\"name\": \"%s\", \"value\": %d}"
+                                      , objSprtr, fName, fValue);
+  }
+  else
+  {
+    sprintf(jsonBuff, "%s{\"name\": \"%s\", \"value\": %d, \"unit\": \"%s\"}"
+                                      , objSprtr, fName, fValue, fUnit);
+  }
+
+  httpServer.sendContent(jsonBuff);
+
+} // sendNestedJsonObject(a, n, c)
+
+void sendNestedJsonObject(const char *objSprtr, const char *fName, int32_t fValue)
+{
+  char noUnit[] = {'\0'};
+
+  sendNestedJsonObject(objSprtr, fName, fValue, noUnit);
+  
+} // sendNestedJsonObject(a, n)
 
 /***************************************************************************
 *

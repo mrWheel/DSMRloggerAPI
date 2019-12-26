@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : menuStuff, part of DSMRfirmwareAPI
-**  Version  : v0.0.1
+**  Version  : v0.0.7
 **
 **  Copyright (c) 2019 Willem Aandewiel
 **
@@ -13,7 +13,7 @@
 //===========================================================================================
 void displayHoursHist(bool Telnet=true) 
 {
-    readAllPeriods(HOURS, HOURS_FILE, actTimestamp, false, "");
+    readAllSlots(HOURS, HOURS_FILE, actTimestamp, false, "");
 
 } // displayHoursHist()
 
@@ -21,7 +21,7 @@ void displayHoursHist(bool Telnet=true)
 //===========================================================================================
 void displayDaysHist(bool Telnet=true) 
 {
-    readAllPeriods(DAYS, DAYS_FILE, actTimestamp, false, "");
+    readAllSlots(DAYS, DAYS_FILE, actTimestamp, false, "");
 
 } // displayDaysHist()
 
@@ -29,7 +29,7 @@ void displayDaysHist(bool Telnet=true)
 //===========================================================================================
 void displayMonthsHist(bool Telnet=true) 
 {
-    readAllPeriods(MONTHS, MONTHS_FILE, actTimestamp, false, "");
+    readAllSlots(MONTHS, MONTHS_FILE, actTimestamp, false, "");
 
 } // displayMonthsHist()
 
