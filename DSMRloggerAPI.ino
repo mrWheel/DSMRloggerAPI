@@ -1,6 +1,6 @@
 /*
 ***************************************************************************  
-**  Program  : DSMRfirmwareAPI (restAPI)
+**  Program  : DSMRloggerAPI (restAPI)
 */
 #define _FW_VERSION "v0.0.7 (26-12-2019)"
 /*
