@@ -2,7 +2,7 @@
 ***************************************************************************  
 **  Program  : DSMRloggerAPI (restAPI)
 */
-#define _FW_VERSION "v0.0.7 (26-12-2019)"
+#define _FW_VERSION "v0.0.8 (27-12-2019)"
 /*
 **  Copyright (c) 2019 Willem Aandewiel
 **
@@ -157,18 +157,18 @@ using MyData = ParsedData<
 #ifdef USE_PRE40_PROTOCOL                          //PRE40
   /* TimestampedFixedValue */ ,gas_delivered2      //PRE40
 #endif                                             //PRE40
-//  /* uint16_t */      ,thermal_device_type
-//  /* String */        ,thermal_equipment_id
-//  /* uint8_t */       ,thermal_valve_position
-//  /* TimestampedFixedValue */ ,thermal_delivered
-//  /* uint16_t */      ,water_device_type
-//  /* String */        ,water_equipment_id
-//  /* uint8_t */       ,water_valve_position
-//  /* TimestampedFixedValue */ ,water_delivered
-//  /* uint16_t */      ,slave_device_type
-//  /* String */        ,slave_equipment_id
-//  /* uint8_t */       ,slave_valve_position
-//  /* TimestampedFixedValue */ ,slave_delivered
+  /* uint16_t */      ,thermal_device_type
+  /* String */        ,thermal_equipment_id
+  /* uint8_t */       ,thermal_valve_position
+  /* TimestampedFixedValue */ ,thermal_delivered
+  /* uint16_t */      ,water_device_type
+  /* String */        ,water_equipment_id
+  /* uint8_t */       ,water_valve_position
+  /* TimestampedFixedValue */ ,water_delivered
+  /* uint16_t */      ,slave_device_type
+  /* String */        ,slave_equipment_id
+  /* uint8_t */       ,slave_valve_position
+  /* TimestampedFixedValue */ ,slave_delivered
 >;
 
 enum    { TAB_UNKNOWN, TAB_ACTUEEL, TAB_LAST24HOURS, TAB_LAST7DAYS, TAB_LAST24MONTHS, TAB_GRAPHICS, TAB_SYSINFO, TAB_EDITOR };

@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRindex.js, part of DSMRfirmwareAPI
-**  Version  : v0.0.1
+**  Version  : v0.0.8
 **
 **  Copyright (c) 2019 Willem Aandewiel
 **
@@ -15,17 +15,8 @@
   let needReload  = true;
   let activeTab   = "none";
   let TimerTab;
-	
-	let maxI = 0;
- 	let minI = 999;
-	let id=[];
-	let slot=[];
- 	let date=[];
- 	let edt1=[];
- 	let edt2=[];
- 	let ert1=[];
- 	let ert2=[];
- 	let gdt=[];
+ 	
+ 	var data = [];
   
   window.onload=bootsTrap;
   window.onfocus = function() {
@@ -129,13 +120,15 @@
     fetch(APIGW+"v1/dev/info")
       .then(response => response.json())
       .then(json => {
-        console.log("parsed .., data is ["+ JSON.stringify(json)+"]");
-    	  for( let i in json.devinfo ){
+        //console.log("parsed .., data is ["+ JSON.stringify(json)+"]");
+        data = json.devinfo;
+    	  for( let i in data ){
       			var tableRef = document.getElementById('devInfoTable').getElementsByTagName('tbody')[0];
-      			if( ( document.getElementById("devInfoTable_"+json.devinfo[i].name)) == null )
+      			if( ( document.getElementById("devInfoTable_"+data[i].name)) == null )
       			{
+      			  //console.log("data["+i+"] => name["+data[i].name+"]");
       				var newRow   = tableRef.insertRow();
-							newRow.setAttribute("id", "devInfoTable_"+json.devinfo[i].name, 0);
+							newRow.setAttribute("id", "devInfoTable_"+data[i].name, 0);
 							// Insert a cell in the row at index 0
 							var newCell  = newRow.insertCell(0);
 						  var newText  = document.createTextNode('');
@@ -145,20 +138,20 @@
 							newCell  = newRow.insertCell(2);
 							newCell.appendChild(newText);
 						}
-						tableCells = document.getElementById("devInfoTable_"+json.devinfo[i].name).cells;
-						tableCells[0].innerHTML = json.devinfo[i].name;
-						tableCells[1].innerHTML = json.devinfo[i].value;
-	     			if (json.devinfo[i].hasOwnProperty('unit'))
+						tableCells = document.getElementById("devInfoTable_"+data[i].name).cells;
+						tableCells[0].innerHTML = data[i].name;
+						tableCells[1].innerHTML = data[i].value;
+	     			if (data[i].hasOwnProperty('unit'))
 	     			{
 		     			tableCells[1].style.textAlign = "right";
-							tableCells[2].innerHTML = json.devinfo[i].unit;
+							tableCells[2].innerHTML = data[i].unit;
 						}
-						if (json.devinfo[i].name == "FwVersion")
+						if (data[i].name == "FwVersion")
 						{
 							document.getElementById('devVersion').innerHTML = json.devinfo[i].value;
-						} else if (json.devinfo[i].name == 'Hostname')
+						} else if (data[i].name == 'Hostname')
 						{
-							document.getElementById('devName').innerHTML = json.devinfo[i].value;
+							document.getElementById('devName').innerHTML = data[i].value;
 						}
       		}
      	})
@@ -202,13 +195,13 @@
       .then(response => response.json())
       .then(json => {
       		//console.log("parsed .., fields is ["+ JSON.stringify(json)+"]");
-      		
-      		for (var i in json.fields) {
+      		data = json.fields;
+      		for (var i in data) {
       			var tableRef = document.getElementById('actualTable').getElementsByTagName('tbody')[0];
-      			if( ( document.getElementById("actualTable_"+json.fields[i].name)) == null )
+      			if( ( document.getElementById("actualTable_"+data[i].name)) == null )
       			{
       				var newRow   = tableRef.insertRow();
-							newRow.setAttribute("id", "actualTable_"+json.fields[i].name, 0);
+							newRow.setAttribute("id", "actualTable_"+data[i].name, 0);
 							// Insert a cell in the row at index 0
 							var newCell  = newRow.insertCell(0);
 						  var newText  = document.createTextNode('');
@@ -218,13 +211,13 @@
 							newCell  = newRow.insertCell(2);
 							newCell.appendChild(newText);
 						}
-						tableCells = document.getElementById("actualTable_"+json.fields[i].name).cells;
-						tableCells[0].innerHTML = json.fields[i].name;
-						tableCells[1].innerHTML = json.fields[i].value;
-	     			if (json.fields[i].hasOwnProperty('unit'))
+						tableCells = document.getElementById("actualTable_"+data[i].name).cells;
+						tableCells[0].innerHTML = data[i].name;
+						tableCells[1].innerHTML = data[i].value;
+	     			if (data[i].hasOwnProperty('unit'))
 	     			{
 		     			tableCells[1].style.textAlign = "right";
-							tableCells[2].innerHTML = json.fields[i].unit;
+							tableCells[2].innerHTML = data[i].unit;
 						}
       		}
       		//console.log("-->done..");
@@ -241,24 +234,15 @@
   //============================================================================  
   function refreshHours()
   {
-		maxI = 0;
- 		minI = 999;
-  	id.length   = 0;
-  	slot.length = 0;
- 		date.length = 0;
- 		edt1.length = 0;
- 		edt2.length = 0;
- 		ert1.length = 0;
- 		ert2.length = 0;
- 		gdt.length  = 0;
-
  		console.log("fetch("+APIGW+"v1/hist/hours)");
     fetch(APIGW+"v1/hist/hours", {"setTimeout": 2000})
       .then(response => response.json())
       .then(json => {
       	console.log("Ok, now processJson() for Hours");
-      	console.log(json);
-	      processJson(json, "Hours");
+      	//console.log(json);
+      	data = json.hours;
+      	//console.log(data);
+	      processJson(data, "Hours");
   		})
   		.catch(function(error) {
       	var p = document.createElement('p');
@@ -272,26 +256,14 @@
   //============================================================================  
   function refreshDays()
   {
-		maxI = 0;
- 		minI = 999;
-  	id.length   = 0;
-  	slot.length = 0;
- 		date.length = 0;
- 		edt1.length = 0;
- 		edt2.length = 0;
- 		ert1.length = 0;
- 		ert2.length = 0;
- 		gdt.length  = 0;
-
-  	//for(let p=1; p<=3;p++)
-  	//{
  		console.log("fetch("+APIGW+"v1/hist/days)");
     fetch(APIGW+"v1/hist/days", {"setTimeout": 2000})
       .then(response => response.json())
-      .then(response => {
+      .then(json => {
       	console.log("Ok, now processJson() for Days");
-      	console.log(response);
-	      processJson(response, "Days");
+      	data = json.days;
+      	//console.log(data);
+	      processJson(data, "Days");
   		})
   		.catch(function(error) {
       	var p = document.createElement('p');
@@ -305,26 +277,14 @@
   //============================================================================  
   function refreshMonths()
   {
-		maxI = 0;
- 		minI = 999;
-  	id.length   = 0;
-  	slot.length = 0;
- 		date.length = 0;
- 		edt1.length = 0;
- 		edt2.length = 0;
- 		ert1.length = 0;
- 		ert2.length = 0;
- 		gdt.length  = 0;
-
-  	//for(let p=1; p<=3;p++)
-  	//{
  		console.log("fetch("+APIGW+"v1/hist/months)");
     fetch(APIGW+"v1/hist/months", {"setTimeout": 2000})
       .then(response => response.json())
-      .then(response => {
+      .then(json => {
       	console.log("Ok, now processJson() for Months");
-      	console.log(response);
-	      processJson(response, "Months");
+      	//console.log(response);
+      	data = json.months;
+	      processJson(data, "Months");
   		})
   		.catch(function(error) {
       	var p = document.createElement('p');
@@ -366,49 +326,32 @@
   		
 	
   //============================================================================  
-  function processJson(json, type)
+  function processJson(data, type)
   {
-      		for (var i in json.hist) 
-      		{
-      		  if (json.hist[i].rec > maxI)
-      		  {
-      		  	maxI = json.hist[i].rec;
-      		  	//console.log("rec["+json.hist[i].rec+"] -> maxI["+maxI+"]");
-      		  }
-      		  if (json.hist[i].rec < minI)
-      		  {
-      		  	minI = json.hist[i].rec;
-      		  	//console.log("rec["+json.hist[i].rec+"] -> maxI["+minI+"]");
-      		  }
-      			id[json.hist[i].rec]   = json.hist[i].rec;
-      			slot[json.hist[i].rec]   = json.hist[i].slot;
-      			date[json.hist[i].rec] = json.hist[i].date;
-      			edt1[json.hist[i].rec] = json.hist[i].edt1;
-      			edt2[json.hist[i].rec] = json.hist[i].edt2;
-      			ert1[json.hist[i].rec] = json.hist[i].ert1;
-      			ert2[json.hist[i].rec] = json.hist[i].ert2;
-      			gdt[json.hist[i].rec]  = json.hist[i].gdt;
-      			//console.log("rec["+json.hist[i].rec+"] -> id["+id[json.hist[i].rec]+"] Date["+date[json.hist[i].rec]+"]");
-      		  //console.log("["+json.hist[i].rec+"]");
-      		}	// for i ..
-	    		console.log(type+", minI["+minI+"], maxI["+maxI+"]");
-		  		showTable(type, minI, maxI);
+     for (var i in data) 
+     {
+     	console.log("processJson(): data["+i+"] => data["+i+"]name["+data[i].recid+"]");
+     }	// for i ..
+	   //console.log(type+", minI["+minI+"], maxI["+maxI+"]");
+		 showTable(type);
     	
   }	// processJson()
 
     
   //============================================================================  
-  function showTable(type, minI, maxI)
+  function showTable(type)
   {	
-  	console.log("showTable("+type+", "+minI+", "+maxI+")");
-  	for (let i=minI; i<=maxI; i++)
+  	console.log("showTable("+type+")");
+  	for (let i=0; i<data.length; i++)
   	{
-  	  if (date[i] == null) continue;
+ 			//console.log("showTable("+type+"): data["+i+"] => data["+i+"]name["+data[i].recid+"]");
   		var tableRef = document.getElementById('last'+type+'Table').getElementsByTagName('tbody')[0];
-    	if( ( document.getElementById(type +"Table_"+id[i])) == null )
+    	//if( ( document.getElementById(type +"Table_"+data[i].recid)) == null )
+    	if( ( document.getElementById(type +"Table_"+type+"_R"+i)) == null )
      	{
      		var newRow   = tableRef.insertRow();
-				newRow.setAttribute("id", type+"Table_"+id[i], 0);
+				//newRow.setAttribute("id", type+"Table_"+data[i].recid, 0);
+				newRow.setAttribute("id", type+"Table_"+type+"_R"+i, 0);
 				// Insert a cell in the row at index 0
 				var newCell  = newRow.insertCell(0);
 			  var newText  = document.createTextNode('-');
@@ -426,17 +369,22 @@
 				newCell  = newRow.insertCell(6);
 				newCell.appendChild(newText);
 			}
-			tableCells = document.getElementById(type+"Table_"+id[i]).cells;
-			tableCells[0].innerHTML = i;
-	    tableCells[1].style.textAlign = "right";
-			tableCells[1].innerHTML = slot[i];
-			tableCells[2].innerHTML = date[i];
+			//tableCells = document.getElementById(type+"Table_"+data[i].recid).cells;
+			tableCells = document.getElementById(type+"Table_"+type+"_R"+i).cells;
+	    tableCells[0].style.textAlign = "left";
+			tableCells[0].innerHTML = data[i].recnr;
+	    tableCells[1].style.textAlign = "left";
+			tableCells[1].innerHTML = data[i].slot;
+	    tableCells[2].style.textAlign = "center";
+			//tableCells[2].innerHTML = data[i].recid;
+	    let date = "20"+data[i].recid.substring(0,2)+"-"+data[i].recid.substring(2,4)+"-"+data[i].recid.substring(4,6)+" ["+data[i].recid.substring(6,8)+"]";
+			tableCells[2].innerHTML = date;
 	   	tableCells[3].style.textAlign = "right";
-			tableCells[3].innerHTML = edt1[i];
+			tableCells[3].innerHTML = data[i].edt1;
 	   	tableCells[4].style.textAlign = "right";
-			tableCells[4].innerHTML = ert1[i];
+			tableCells[4].innerHTML = data[i].ert1;
 	    tableCells[5].style.textAlign = "right";
-			tableCells[5].innerHTML = gdt[i];
+			tableCells[5].innerHTML = data[i].gdt;
     };
   }	// showTable()
 

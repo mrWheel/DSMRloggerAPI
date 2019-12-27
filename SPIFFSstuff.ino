@@ -77,21 +77,15 @@ bool buildDataRecord(char *recIn)
   uint16_t recSlot = timestampToHourSlot(actTimestamp, strlen(actTimestamp));
   strCopy(key, 10, actTimestamp, 0, 8);
 
-  //int HH = HourFromTimestamp(actTimestamp);
-  //int DD = DayFromTimestamp(actTimestamp);
-  //int MM = MonthFromTimestamp(actTimestamp);
-  //int YY = YearFromTimestamp(actTimestamp);
-  //GG = GG + 0.1;
+  sprintf(record, (char*)DATA_FORMAT, key , (float)DSMRdata.energy_delivered_tariff1
+                                          , (float)DSMRdata.energy_delivered_tariff2
+                                          , (float)DSMRdata.energy_returned_tariff1
+                                          , (float)DSMRdata.energy_returned_tariff2
+                                          , (float)DSMRdata.gas_delivered);
+  // DATA + \n + \0                                        
+  fillRecord(record, DATA_RECLEN);
 
-    sprintf(record, (char*)DATA_FORMAT, key , (float)DSMRdata.energy_delivered_tariff1
-                                            , (float)DSMRdata.energy_delivered_tariff2
-                                            , (float)DSMRdata.energy_returned_tariff1
-                                            , (float)DSMRdata.energy_returned_tariff2
-                                            , (float)DSMRdata.gas_delivered);
-    // DATA + \n + \0                                        
-    fillRecord(record, DATA_RECLEN);
-
-    strcpy(recIn, record);
+  strcpy(recIn, record);
 
 } // buildDataRecord()
 
@@ -221,14 +215,7 @@ void readOneSlot(int8_t fileType, const char *fileName, uint8_t recNr
         {
           sscanf(buffer, "%[^;];%f;%f;%f;%f;%f", recID
                                                , &EDT1, &EDT2, &ERT1, &ERT2, &GDT);
-          root["rec"]  = recNr++;
-          root["slot"] = slot;
-          root["date"] = recID;
-          root["edt1"] = (float)EDT1;
-          root["edt2"] = (float)EDT2;
-          root["ert1"] = (float)ERT1;
-          root["ert2"] = (float)ERT2;
-          root["gdt"]  = (float)EDT1;
+          sendNestedJsonObj(recNr++, recID, slot, EDT1, EDT2, ERT1, ERT2, GDT);
 
         }
         else
@@ -252,13 +239,13 @@ void readSlotFromTimestamp(int8_t fileType, const char *fileName, const char *ti
   DebugTf("timeStamp[%s]\r\n", timeStamp);
   
   switch(fileType) {
-    case HOURS:   firstSlot   = timestampToHourSlot(actTimestamp, strlen(actTimestamp));
+    case HOURS:   firstSlot   = timestampToHourSlot(timeStamp, strlen(timeStamp));
                   maxSlots    = _NO_HOUR_SLOTS_;
                   break;
-    case DAYS:    firstSlot   = timestampToDaySlot(actTimestamp, strlen(actTimestamp));
+    case DAYS:    firstSlot   = timestampToDaySlot(timeStamp, strlen(timeStamp));
                   maxSlots    = _NO_DAY_SLOTS_;
                   break;
-    case MONTHS:  firstSlot   = timestampToMonthSlot(actTimestamp, strlen(actTimestamp));
+    case MONTHS:  firstSlot   = timestampToMonthSlot(timeStamp, strlen(timeStamp));
                   maxSlots    = _NO_MONTH_SLOTS_;
                   break;
   }
@@ -277,13 +264,13 @@ void readAllSlots(int8_t fileType, const char *fileName, const char *timeStamp
   int16_t startSlot, endSlot, nrSlots, recNr = 0;
   
   switch(fileType) {
-    case HOURS:   startSlot       = timestampToHourSlot(actTimestamp, strlen(actTimestamp));
+    case HOURS:   startSlot       = timestampToHourSlot(timeStamp, strlen(timeStamp));
                   nrSlots         = _NO_HOUR_SLOTS_;
                   break;
-    case DAYS:    startSlot       = timestampToDaySlot(actTimestamp, strlen(actTimestamp));
+    case DAYS:    startSlot       = timestampToDaySlot(timeStamp, strlen(timeStamp));
                   nrSlots         = _NO_DAY_SLOTS_;
                   break;
-    case MONTHS:  startSlot       = timestampToMonthSlot(actTimestamp, strlen(actTimestamp));
+    case MONTHS:  startSlot       = timestampToMonthSlot(timeStamp, strlen(timeStamp));
                   nrSlots         = _NO_MONTH_SLOTS_;
                   break;
   }

@@ -20,6 +20,7 @@
                         })
 #define Debugf(...)     ({ Serial.printf(__VA_ARGS__);        \
                            TelnetStream.printf(__VA_ARGS__);  \
+                           DebugFlush();                      \
                         })
 
 #define DebugFlush()    ({ Serial.flush(); \
