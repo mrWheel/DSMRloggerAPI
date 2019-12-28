@@ -234,8 +234,8 @@
   //============================================================================  
   function refreshHours()
   {
- 		console.log("fetch("+APIGW+"v1/hist/hours)");
-    fetch(APIGW+"v1/hist/hours", {"setTimeout": 2000})
+ 		console.log("fetch("+APIGW+"v1/hist/hours/asc)");
+    fetch(APIGW+"v1/hist/hours/asc", {"setTimeout": 2000})
       .then(response => response.json())
       .then(json => {
       	console.log("Ok, now processJson() for Hours");
@@ -256,8 +256,8 @@
   //============================================================================  
   function refreshDays()
   {
- 		console.log("fetch("+APIGW+"v1/hist/days)");
-    fetch(APIGW+"v1/hist/days", {"setTimeout": 2000})
+ 		console.log("fetch("+APIGW+"v1/hist/days/asc)");
+    fetch(APIGW+"v1/hist/days/asc", {"setTimeout": 2000})
       .then(response => response.json())
       .then(json => {
       	console.log("Ok, now processJson() for Days");
@@ -277,8 +277,8 @@
   //============================================================================  
   function refreshMonths()
   {
- 		console.log("fetch("+APIGW+"v1/hist/months)");
-    fetch(APIGW+"v1/hist/months", {"setTimeout": 2000})
+ 		console.log("fetch("+APIGW+"v1/hist/months/asc)");
+    fetch(APIGW+"v1/hist/months/asc", {"setTimeout": 2000})
       .then(response => response.json())
       .then(json => {
       	console.log("Ok, now processJson() for Months");
@@ -328,12 +328,31 @@
   //============================================================================  
   function processJson(data, type)
   {
-     for (var i in data) 
-     {
-     	console.log("processJson(): data["+i+"] => data["+i+"]name["+data[i].recid+"]");
-     }	// for i ..
-	   //console.log(type+", minI["+minI+"], maxI["+maxI+"]");
-		 showTable(type);
+  	
+     //for (var i in data) 
+   	 for (let i=0; i<data.length; i++)
+		 {
+     	//console.log("processJson(): data["+i+"] => data["+i+"].recid["+data[i].recid+"]");
+     	data[i].p_ed = {};
+     	data[i].p_er = {};
+     	data[i].p_gd = {};
+     	if (i < (data.length -1))
+     	{
+     		data[i].p_ed = (data[i].edt1 +data[i].edt2)-(data[i+1].edt1 +data[i+1].edt2);
+     		data[i].p_ed = (data[i].p_ed * 1000).toFixed(0);
+     		data[i].p_er = (data[i].ert1 +data[i].ert2)-(data[i+1].ert1 +data[i+1].ert2);
+     		data[i].p_er = (data[i].p_er * 1000).toFixed(0);
+     	  data[i].p_gd = ( data[i].gdt  -data[i+1].gdt).toFixed(3);
+     	}
+     	else
+     	{
+     		data[i].p_ed = (data[i].edt1 +data[i].edt2).toFixed(3);
+     		data[i].p_er = (data[i].ert1 +data[i].ert2).toFixed(3);
+     	  data[i].p_gd = (data[i].gdt).toFixed(3);
+     	}
+    }	// for i ..
+
+    showTable(type);
     	
   }	// processJson()
 
@@ -380,11 +399,11 @@
 	    let date = "20"+data[i].recid.substring(0,2)+"-"+data[i].recid.substring(2,4)+"-"+data[i].recid.substring(4,6)+" ["+data[i].recid.substring(6,8)+"]";
 			tableCells[2].innerHTML = date;
 	   	tableCells[3].style.textAlign = "right";
-			tableCells[3].innerHTML = data[i].edt1;
+			tableCells[3].innerHTML = data[i].p_ed;
 	   	tableCells[4].style.textAlign = "right";
-			tableCells[4].innerHTML = data[i].ert1;
+			tableCells[4].innerHTML = data[i].p_er;
 	    tableCells[5].style.textAlign = "right";
-			tableCells[5].innerHTML = data[i].gdt;
+			tableCells[5].innerHTML = data[i].p_gd;
     };
   }	// showTable()
 

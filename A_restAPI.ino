@@ -114,7 +114,9 @@ void handleHistApi(const char *word4, const char *word5, const char *word6)
     histApiSemafore = false;
     return;
   }
-  sendJsonHist(fileType, fileName, actTimestamp);
+  if (strcmp(word5, "desc") == 0)
+        sendJsonHist(fileType, fileName, actTimestamp, true);
+  else  sendJsonHist(fileType, fileName, actTimestamp, false);
 
   histApiSemafore = false;
 
@@ -345,10 +347,10 @@ void sendJsonFields(const char *Name)
 
 
 //=======================================================================
-void sendJsonHist(int8_t fileType, const char *fileName, const char *timeStamp) 
+void sendJsonHist(int8_t fileType, const char *fileName, const char *timeStamp, bool desc) 
 {
   uint8_t startSlot, nrSlots, recNr  = 0;
-  char typeApi[10];
+  char    typeApi[10];
 
   writeDataToFiles();
     
@@ -368,14 +370,18 @@ void sendJsonHist(int8_t fileType, const char *fileName, const char *timeStamp)
   }
 
   sendStartJsonObj(typeApi);
-  
-  startSlot += nrSlots +1; // <==== voorbij actuele slot!
+
+  if (desc)
+        startSlot += nrSlots +1; // <==== voorbij actuele slot!
+  else  startSlot += nrSlots;    // <==== start met actuele slot!
 
   DebugTf("sendJsonHist startSlot[%02d]\r\n", (startSlot % nrSlots));
 
   for (uint8_t s = 0; s < nrSlots; s++)
   {
-    readOneSlot(fileType, fileName, s, s+startSlot, true, "hist") ;
+    if (desc)
+          readOneSlot(fileType, fileName, s, (s +startSlot), true, "hist") ;
+    else  readOneSlot(fileType, fileName, s, (startSlot -s), true, "hist") ;
   }
   sendEndJsonObj();
   
