@@ -1,6 +1,6 @@
 /* 
 ***************************************************************************  
-**  Program  : restAPI, part of DSMRfirmwareAPI
+**  Program  : restAPI, part of DSMRloggerAPI
 **  Version  : v0.0.7
 **
 **  Copyright (c) 2019 Willem Aandewiel
@@ -10,9 +10,9 @@
 */
 
 // ******* Global Vars *******
-char    rootName[20] = "";
-char    fieldName[40] = "";
-volatile bool histApiSemafore = false;
+uint32_t  antiWearTimer = 0;
+
+char fieldName[40] = "";
 
 char fieldsArray[50][35] = {{0}}; // to lookup fields 
 int  fieldsElements      = 0;
@@ -74,6 +74,10 @@ void handleDevApi(const char *word4, const char *word5, const char *word6)
   {
     sendDeviceTime();
   }
+  else if (strcmp(word4, "settings") == 0)
+  {
+    sendDeviceSettings();
+  }
   else sendApiInfo();
   
 } // handleDevApi()
@@ -83,15 +87,8 @@ void handleDevApi(const char *word4, const char *word5, const char *word6)
 void handleHistApi(const char *word4, const char *word5, const char *word6)
 {
   int8_t    fileType = 0;
-  uint32_t  overruleSemafore = millis() + 2000;
   char      fileName[20] = "";
   
-  //while (histApiSemafore && ((millis() - overruleSemafore) < 0))
-  //{
-  //  yield();
-  //}
-  histApiSemafore = true;
-
   DebugTf("word4[%s], word5[%s], word6[%s]\r\n", word4, word5, word6);
   if (   strcmp(word4, "hours") == 0 )
   {
@@ -111,15 +108,11 @@ void handleHistApi(const char *word4, const char *word5, const char *word6)
   else 
   {
     sendApiInfo();
-    histApiSemafore = false;
     return;
   }
   if (strcmp(word5, "desc") == 0)
         sendJsonHist(fileType, fileName, actTimestamp, true);
   else  sendJsonHist(fileType, fileName, actTimestamp, false);
-
-  histApiSemafore = false;
-
 
 } // handleHistApi()
 
@@ -211,29 +204,20 @@ void _returnJSON400(const char * message)
 //=======================================================================
 void sendDeviceInfo() 
 {
-//char objSprtr[10] = "";
-  
-//httpServer.setContentLength(CONTENT_LENGTH_UNKNOWN);
-//httpServer.send(200, "application/json", "{\"devinfo\":[\r\n");
   sendStartJsonObj("devinfo");
 
-//-Device Info-----------------------------------------------------------------
   sendNestedJsonObj("Author", "Willem Aandewiel (www.aandewiel.nl)");
-  //sprintf(objSprtr, ",\r\n");
   sendNestedJsonObj("FwVersion", _FW_VERSION);
 
   sprintf(cMsg, "%s %s", __DATE__, __TIME__);
   sendNestedJsonObj("Compiled", cMsg);
-  //String(__DATE__).c_str()
-  //                                 + String( "  " ).c_str()
-  //                                 + String( __TIME__ ).c_str());
   sendNestedJsonObj("maxFreeBlock", ESP.getMaxFreeBlockSize());
   sendNestedJsonObj("ChipID", String( ESP.getChipId(), HEX ).c_str());
   sendNestedJsonObj("CoreVersion", String( ESP.getCoreVersion() ).c_str() );
   sendNestedJsonObj("SdkVersion", String( ESP.getSdkVersion() ).c_str());
   sendNestedJsonObj("CpuFreq", ESP.getCpuFreqMHz(), "MHz");
-  sendNestedJsonObj("SketchSize", formatFloat( (ESP.getSketchSize() / 1024.0), 3), "Bytes");
-  sendNestedJsonObj("FreeSketchSpace", formatFloat( (ESP.getFreeSketchSpace() / 1024.0), 3), "Bytes");
+  sendNestedJsonObj("SketchSize", formatFloat( (ESP.getSketchSize() / 1024.0), 3), "kB");
+  sendNestedJsonObj("FreeSketchSpace", formatFloat( (ESP.getFreeSketchSpace() / 1024.0), 3), "kB");
 
   if ((ESP.getFlashChipId() & 0x000000ff) == 0x85) 
         sprintf(cMsg, "%08X (PUYA)", ESP.getFlashChipId());
@@ -277,21 +261,39 @@ void sendDeviceInfo()
 //=======================================================================
 void sendDeviceTime() 
 {
-  //char objSprtr[10] = "";
-  
-//httpServer.setContentLength(CONTENT_LENGTH_UNKNOWN);
-//httpServer.send(200, "application/json", "{\"devtime\":[\r\n");
   sendStartJsonObj("devtime");
-
-//-Device Info-----------------------------------------------------------------
   sendNestedJsonObj("time", buildDateTimeString(actTimestamp, sizeof(actTimestamp)).c_str()); 
-  //sprintf(objSprtr, ",\r\n");
   sendNestedJsonObj("epoch", (int)now());
 
-//httpServer.sendContent("\r\n]}\r\n");
   sendEndJsonObj();
 
 } // sendDeviceTime()
+
+
+//=======================================================================
+void sendDeviceSettings() 
+{
+  DebugTln("sending device settings ...\r");
+
+  sendStartJsonObj("settings");
+  
+  sendNestedJsonObj("settingEDT1",          settingEDT1);
+  sendNestedJsonObj("settingEDT2",          settingEDT2);
+  sendNestedJsonObj("settingERT1",          settingERT1);
+  sendNestedJsonObj("settingERT2",          settingERT2);
+  sendNestedJsonObj("settingGDT",           settingGDT);
+  sendNestedJsonObj("settingENBK",          settingENBK);
+  sendNestedJsonObj("settingGNBK",          settingGNBK);
+  sendNestedJsonObj("settingInterval",      settingInterval);
+  sendNestedJsonObj("settingMQTTbroker",    settingMQTTbroker);
+  sendNestedJsonObj("settingMQTTuser",      settingMQTTuser);
+  sendNestedJsonObj("settingMQTTpasswd",    settingMQTTpasswd);
+  sendNestedJsonObj("settingMQTTtopTopic",  settingMQTTtopTopic);
+  sendNestedJsonObj("settingMQTTinterval",  settingMQTTinterval);
+
+  sendEndJsonObj();
+
+} // sendDeviceSettings()
 
 
 //=======================================================================
@@ -302,10 +304,7 @@ struct buildJsonApi {
     void apply(Item &i) {
       skip = false;
       String Name = Item::name;
-      if (strlen(fieldName) > 1 && Name != String(fieldName))
-      {
-        skip = true;
-      }
+
       if (!isInFieldsArray(Name.c_str(), fieldsElements))
       {
         skip = true;
@@ -338,9 +337,7 @@ struct buildJsonApi {
 void sendJsonFields(const char *Name) 
 {
   sendStartJsonObj(Name);
-
   DSMRdata.applyEach(buildJsonApi());
-
   sendEndJsonObj();
 
 } // sendJsonFields()
@@ -352,7 +349,12 @@ void sendJsonHist(int8_t fileType, const char *fileName, const char *timeStamp, 
   uint8_t startSlot, nrSlots, recNr  = 0;
   char    typeApi[10];
 
-  writeDataToFiles();
+  if (millis() - antiWearTimer > 61000)
+  {
+    antiWearTimer = millis();
+    writeDataToFiles();
+    writeLastStatus();
+  }
     
   switch(fileType) {
     case HOURS:   startSlot       = timestampToHourSlot(timeStamp, strlen(timeStamp));
@@ -415,7 +417,6 @@ void copyToFieldsArray(const char inArray[][35], int elemts)
 
   }
   fieldsElements = i;
-  //fieldsArray[i][0] = '\0';
   
 } // copyToFieldsArray()
 
@@ -448,9 +449,10 @@ void sendApiInfo()
     <table>\
     <tr><td><b>/api/v1/dev/info</b></td><td>Device information in JSON format</td></tr>\
     <tr><td><b>/api/v1/dev/time</b></td><td>Device time (epoch) in JSON format</td></tr>\
-    <tr><td><b>/api/v1/hist/hours/</b></td><td>Readings from hours table in JSON format</td></tr>\
-    <tr><td><b>/api/v1/hist/days/</b></td><td>Readings from days table in JSON format</td></tr>\
-    <tr><td><b>/api/v1/hist/months/</b></td><td>Readings from months table in JSON format</td></tr>\
+    <tr><td><b>/api/v1/dev/settings</b></td><td>Device settings in JSON format</td></tr>\
+    <tr><td><b>/api/v1/hist/hours/{desc|asc}</b></td><td>Readings from hours table in JSON format</td></tr>\
+    <tr><td><b>/api/v1/hist/days/{desc|asc}</b></td><td>Readings from days table in JSON format</td></tr>\
+    <tr><td><b>/api/v1/hist/months/{desc|asc}</b></td><td>Readings from months table in JSON format</td></tr>\
     <tr><td><b>/api/v1/sm/info</b></td><td>Information about the Slimme Meter in JSON format</td></tr>\
     <tr><td><b>/api/v1/sm/actual</b></td><td>Actual data from Slimme Meter in JSON format</td></tr>\
     <tr><td><b>/api/v1/sm/fields</b></td><td>All available fields from the Slimme Meter in JSON format</td></tr>\
@@ -461,7 +463,7 @@ void sendApiInfo()
     JSON format: {\"fields\":[{\"name\":\"&lt;fieldName&gt;\",\"value\":&lt;value&gt;,\"unit\":\"&lt;unit&gt;\"}]}\
     <br>\
     <br>\
-    See the documenatation @weet ik veel \
+    <a href='/'>terug</a>\
   </body>\
 </html>\r\n";
 

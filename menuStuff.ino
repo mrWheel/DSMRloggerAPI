@@ -1,6 +1,6 @@
 /* 
 ***************************************************************************  
-**  Program  : menuStuff, part of DSMRfirmwareAPI
+**  Program  : menuStuff, part of DSMRloggerAPI
 **  Version  : v0.0.7
 **
 **  Copyright (c) 2019 Willem Aandewiel
@@ -164,12 +164,17 @@ void handleKeyInput()
       case 'b':
       case 'B':     displayBoardInfo();
                     break;
-      case 's':
-      case 'S':     readSettings(true);
+      case 'l':
+      case 'L':     readSettings(true);
                     break;
       case 'd':
       case 'D':     displayDaysHist(true);
                     break;
+#if defined(HAS_NO_SLIMMEMETER)
+      case 'F':     forceBuildRingFiles = true;
+                    runMode = SInit;
+                    break;
+#endif
       case 'h':
       case 'H':     displayHoursHist(true);
                     break;
@@ -212,8 +217,8 @@ void handleKeyInput()
                     DebugFlush();
                     ESP.reset();
                     break;
-      case 'f':
-      case 'F':     listSPIFFS();
+      case 's':
+      case 'S':     listSPIFFS();
                     break;
       case 'v':
       case 'V':     if (Verbose2) 
@@ -239,10 +244,13 @@ void handleKeyInput()
                     break;
       default:      Debugln(F("\r\nCommands are:\r\n"));
                     Debugln(F("   B - Board Info\r"));
-                    Debugln(F("   S - list Settings\r"));
+                    Debugln(F("   L - list Settings\r"));
                     Debugln(F("   D - Display Day table from SPIFFS\r"));
                     Debugln(F("   H - Display Hour table from SPIFFS\r"));
                     Debugln(F("   M - Display Month table from SPIFFS\r"));
+                  #if defined(HAS_NO_SLIMMEMETER)
+                    Debugln(F("  *F - Force build RING files\r"));
+                  #endif
                     Debugf ("   I - Identify by blinking LED on GPIO[%02d]\r\n", LED_BUILTIN);
                     if (showRaw) 
                     {
@@ -255,7 +263,7 @@ void handleKeyInput()
                     }
                     Debugln(F("  *W - Force Re-Config WiFi\r"));
                     Debugln(F("  *R - Reboot\r"));
-                    Debugln(F("   F - File info on SPIFFS\r"));
+                    Debugln(F("   S - File info on SPIFFS\r"));
                     Debugln(F("  *U - Update SPIFFS (save Data-files)\r"));
                     Debugln(F("  *Z - Zero counters\r\n"));
                     if (Verbose1 & Verbose2)  Debugln(F("   V - Toggle Verbose Off\r"));

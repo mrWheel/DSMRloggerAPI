@@ -16,12 +16,6 @@
   static char       MQTTbrokerURL[101];
   static uint16_t   MQTTbrokerPort = 1883;
   static char       MQTTbrokerIPchar[20];
-  static  DynamicJsonDocument jsonDoc(4000);  // generic doc to return, clear() before use!
-  JsonObject root;
-
-
-// Moved to main global firmware space, since it's used in more than one place now.
-//  static  DynamicJsonDocument jsonDoc(4000);  // generic doc to return, clear() before use!  
   
 #ifdef USE_MQTT
   #include <PubSubClient.h>           // MQTT client publish and subscribe functionality
@@ -151,7 +145,8 @@ void handleMQTT()
 
     case MQTT_STATE_WAIT_CONNECTION_ATTEMPT:
       //do non-blocking wait for 3 seconds
-      DebugTln(F("MQTT State: MQTT_WAIT_CONNECTION_ATTEMPT"));
+      //--vvvv --> dit geeft érg veel debugregels-op-niets-af!
+      //DebugTln(F("MQTT State: MQTT_WAIT_CONNECTION_ATTEMPT"));
       if ((millis() - timeMQTTLastRetry) > MQTT_WAITFORRETRY) 
       {
         //Try again... after waitforretry non-blocking delay

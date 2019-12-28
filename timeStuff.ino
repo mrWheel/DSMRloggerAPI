@@ -1,6 +1,6 @@
 /*
 ***************************************************************************  
-**  Program  : timeStuff, part of DSMRfirmwareAPI
+**  Program  : timeStuff, part of DSMRloggerAPI
 **  Version  : v0.0.7
 **
 **  Copyright (c) 2019 Willem Aandewiel

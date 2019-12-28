@@ -42,6 +42,10 @@
                                                 {openTab('Telegram');});
     document.getElementById('bSysInfo').addEventListener('click',function() 
                                                 {openTab('SysInfo');});
+    document.getElementById('restAPI').addEventListener('click',function() 
+                                                { console.log("newPage: goAPI");
+                                                  location.href = "/api";
+                                                });
     document.getElementById('FSexplorer').addEventListener('click',function() 
                                                 { console.log("newTab: goFSexplorer");
                                                   location.href = "/FSexplorer";
@@ -396,8 +400,8 @@
 			tableCells[1].innerHTML = data[i].slot;
 	    tableCells[2].style.textAlign = "center";
 			//tableCells[2].innerHTML = data[i].recid;
-	    let date = "20"+data[i].recid.substring(0,2)+"-"+data[i].recid.substring(2,4)+"-"+data[i].recid.substring(4,6)+" ["+data[i].recid.substring(6,8)+"]";
-			tableCells[2].innerHTML = date;
+//	    let date = "20"+data[i].recid.substring(0,2)+"-"+data[i].recid.substring(2,4)+"-"+data[i].recid.substring(4,6)+" ["+data[i].recid.substring(6,8)+"]";
+			tableCells[2].innerHTML = formatDate(type, data[i].recid);
 	   	tableCells[3].style.textAlign = "right";
 			tableCells[3].innerHTML = data[i].p_ed;
 	   	tableCells[4].style.textAlign = "right";
@@ -417,6 +421,21 @@
     return parent.appendChild(el); // Append the second parameter(element) to the first one
   }
   
+
+  
+  //============================================================================  
+  function formatDate(type, dateIn) {
+  	let dateOut = "";
+    if (type == "Hours")
+	    date = "20"+dateIn.substring(0,2)+"-"+dateIn.substring(2,4)+"-"+dateIn.substring(4,6)+" ["+dateIn.substring(6,8)+"]";
+    else if (type == "Days")
+	    date = "20"+dateIn.substring(0,2)+"-"+dateIn.substring(2,4)+"-["+dateIn.substring(4,6)+"]:"+dateIn.substring(6,8);
+    else if (type == "Months")
+	    date = "20"+dateIn.substring(0,2)+"-["+dateIn.substring(2,4)+"]-"+dateIn.substring(4,6)+":"+dateIn.substring(6,8);
+		else
+	    date = "20"+dateIn.substring(0,2)+"-"+dateIn.substring(2,4)+"-"+dateIn.substring(4,6)+":"+dateIn.substring(6,8);
+    return date;
+  }
 
   
   //============================================================================  

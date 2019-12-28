@@ -1,6 +1,6 @@
 /*
 ***************************************************************************  
-**  Program  : processTelegram - part of DSMRfirmwareAPI
+**  Program  : processTelegram - part of DSMRloggerAPI
 **  Version  : v0.0.7
 **
 **  Copyright (c) 2019 Willem Aandewiel
@@ -187,31 +187,16 @@ struct FSInfo {
   char        newTimestamp[20] = "";
   uint32_t    slotErrors = 0;
   uint32_t    nrReboots  = 0;
+  DynamicJsonDocument jsonDoc(1000);  // generic doc to return, clear() before use!
+  JsonObject          root;
 
 //----------------- old var's -----(remove as soon as possible)-----------------
-int8_t    actTab = 0;
 uint32_t  telegramInterval, noMeterWait, telegramCount, telegramErrors, lastOledStatus;
 char      cMsg[150], fChar[10];
-float     EnergyDelivered, EnergyReturned, prevEnergyDelivered=0.0, prevEnergyReturned=0.0;
-float     PowerDelivered, PowerReturned, maxPowerDelivered, maxPowerReturned;
-char      maxTimePD[7], maxTimePR[7]; // hh:mm
-int32_t   PowerDelivered_l1, PowerDelivered_l2, PowerDelivered_l3;  // Watt in 1 watt resolution
-int32_t   PowerReturned_l1,  PowerReturned_l2,  PowerReturned_l3;   // Watt in 1 watt resolution
-float     GasDelivered;
-String    pTimestamp;
-String    P1_Version, Equipment_Id, GasEquipment_Id, ElectricityTariff;
-char      Identification[100];  // Sn (0..96)
-float     EnergyDeliveredTariff1, EnergyDeliveredTariff2, EnergyReturnedTariff1, EnergyReturnedTariff2;
-float     Voltage_l1, Voltage_l2, Voltage_l3;
-uint8_t   Current_l1, Current_l2, Current_l3;
-uint16_t  GasDeviceType;
-
 String    lastReset = "";
 bool      spiffsNotPopulated = false; // v1.0.3b
-bool      OTAinProgress = false, doLog = false, Verbose1 = false, Verbose2 = false, showRaw = false;
+bool      doLog = false, Verbose1 = false, Verbose2 = false, showRaw = false;
 int8_t    thisHour = -1, prevNtpHour = 0, thisDay = -1, thisMonth = -1, lastMonth, thisYear = 15;
-int32_t   thisHourKey = -1;
-int8_t    forceMonth = 0, forceDay = 0;
 int8_t    showRawCount = 0;
 uint32_t  nextSecond, unixTimestamp;
 uint64_t  upTimeSeconds;

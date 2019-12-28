@@ -1,6 +1,6 @@
 /* 
 ***************************************************************************  
-**  Program  : Debug.h, part of DSMRfirmwareAPI
+**  Program  : Debug.h, part of DSMRloggerAPI
 **  Version  : v0.0.7
 **
 **  Copyright (c) 2019 Willem Aandewiel

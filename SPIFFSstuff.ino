@@ -1,6 +1,6 @@
 /* 
 ***************************************************************************  
-**  Program  : SPIFFSstuff, part of DSMRfirmwareAPI
+**  Program  : SPIFFSstuff, part of DSMRloggerAPI
 **  Version  : v0.0.7
 **
 **  Copyright (c) 2019 Willem Aandewiel
@@ -141,7 +141,7 @@ void writeDataToFiles()
   uint16_t recSlot;
 
   buildDataRecord(record);
-  DebugTf(">%s\r", record); // record ends in a \n
+  DebugTf(">%s\r\n", record); // record ends in a \n
 
   // update HOURS
   recSlot = timestampToHourSlot(actTimestamp, strlen(actTimestamp));

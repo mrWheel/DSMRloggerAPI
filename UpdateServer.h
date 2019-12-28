@@ -1,6 +1,6 @@
 /*
 ***************************************************************************  
-**  Program  : UpdateServer.h, part of DSMRfirmwareAPI
+**  Program  : UpdateServer.h, part of DSMRloggerAPI
 **  Version  : v0.0.7
 ** 
 **  This is the ESP8266HTTPUpdateServer.h file 

@@ -1,14 +1,14 @@
-/*
+/* 
 ***************************************************************************  
-**  Program  : processTelegram - part of DSMRfirmwareAPI
+**  Program  : processTelegram, part of DSMRloggerAPI
 **  Version  : v0.0.7
 **
 **  Copyright (c) 2019 Willem Aandewiel
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
-*/  
-
+*/
+//==================================================================================
 void processTelegram()
 {
   DebugTf("Telegram[%d]=>DSMRdata.timestamp[%s]\r\n", telegramCount

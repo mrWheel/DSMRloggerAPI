@@ -1,6 +1,6 @@
 /* 
 ***************************************************************************  
-**  Program  : helperStuff, part of DSMRfirmwareAPI
+**  Program  : helperStuff, part of DSMRloggerAPI
 **  Version  : v0.0.7
 **
 **  Copyright (c) 2019 Willem Aandewiel
