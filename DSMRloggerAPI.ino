@@ -2,7 +2,7 @@
 ***************************************************************************  
 **  Program  : DSMRloggerAPI (restAPI)
 */
-#define _FW_VERSION "v0.0.9 (28-12-2019)"
+#define _FW_VERSION "v0.1.0 (29-12-2019)"
 /*
 **  Copyright (c) 2019 Willem Aandewiel
 **
@@ -156,9 +156,9 @@ void setup()
 
 //------ read status file for last Timestamp --------------------
   strcpy(actTimestamp, "040302010101X");
-  //=========================================================//
-  //writeLastStatus();  // only for firsttime initialization //
-  //=========================================================//
+  //==========================================================//
+   writeLastStatus();  // only for firsttime initialization //
+  //==========================================================//
   readLastStatus(); // place it in actTimestamp
   // set the time to actTimestamp!
   actT = epoch(actTimestamp, strlen(actTimestamp), true);

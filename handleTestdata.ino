@@ -29,8 +29,9 @@ int16_t     forceBuildRecs;
 void handleTestdata()
 {
   time_t nt;
+  int16_t slot;
   
-  if ((millis() - telegramTimer) < TELEGRAM_INTERVAL)  return;   // not yet time for new Telegram
+  if (!forceBuildRingFiles && (millis() - telegramTimer) < TELEGRAM_INTERVAL)  return;   // not yet time for new Telegram
   telegramTimer = millis();
 
 //  DebugTf("Time for a new Telegram ..");
@@ -40,11 +41,13 @@ void handleTestdata()
       case SInit:   runMode = SMonth;
                     forceBuildRecs = (_NO_MONTH_SLOTS_ *2) +5;
                     runMode = SMonth;
+                    nt = epoch(actTimestamp, sizeof(actTimestamp), true);
                     break;
                     
       case SMonth:  if (forceBuildRecs <= 0)
                     {
                       forceBuildRecs = (_NO_DAY_SLOTS_ *2) +4;
+                      nt = epoch(actTimestamp, sizeof(actTimestamp), true);
                       runMode = SDay;
                       break;
                     }    
@@ -55,7 +58,8 @@ void handleTestdata()
                     
       case SDay:    if (forceBuildRecs <= 0)
                     {
-                      forceBuildRecs = _NO_HOUR_SLOTS_ +2;
+                      forceBuildRecs = (_NO_HOUR_SLOTS_ * 2) +5;
+                      nt = epoch(actTimestamp, sizeof(actTimestamp), true);
                       runMode = SHour;
                       break;
                     }
@@ -66,12 +70,15 @@ void handleTestdata()
                     
       case SHour:   if (forceBuildRecs <= 0)
                     {
-                      runMode = SNormal;
                       forceBuildRingFiles= false;
+                      nt = epoch(actTimestamp, sizeof(actTimestamp), true);
                       DebugTln("Force build RING file back to normal operation\r\n\n");
+                      runMode = SNormal;
                       break;
                     }
                     nt = now() + (SECS_PER_HOUR / 2);
+                    //epochToTimestamp(nt, newTimestamp, sizeof(newTimestamp));
+                    //slot = timestampToHourSlot(newTimestamp, sizeof(newTimestamp));
                     DebugTf("Force build RING file for hours -> rec[%2d]\r\n\n", forceBuildRecs);
                     forceBuildRecs--;
                     break;
@@ -87,7 +94,7 @@ void handleTestdata()
   }
 
   epochToTimestamp(nt, newTimestamp, sizeof(newTimestamp));
-//  Debugf(".. new time is [%s]\r\n", newTimestamp);
+  Debugf("==>> new date/time [%s] is [%s]\r\n", newTimestamp, buildDateTimeString(newTimestamp, sizeof(newTimestamp)).c_str());
   
   updateMeterValues(SNormal);
   DSMRdata = {};
@@ -104,6 +111,7 @@ void handleTestdata()
   // Succesfully parsed, now process the data!
 
   processTelegram();
+  Debugf("==>> act date/time [%s] is [%s]\r\n\n", actTimestamp, buildDateTimeString(actTimestamp, sizeof(actTimestamp)).c_str());
 
 } // handleTestdata()
 

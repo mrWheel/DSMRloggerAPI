@@ -25,10 +25,11 @@ void processTelegram()
     return;
   }
   
-  sprintf(actTimestamp, "%s", newTimestamp);
-
+  sprintf(actTimestamp, "%s", newTimestamp);  // maar nog NIET actT!!!
+  DebugTf("actHour[%02d] -- newHour[%02d]\r\n", hour(actT), hour(newT));
+  
   // has the hour changed (or the day)  
-  if (hour(actT) != hour(newT) || day(actT) != day(newT) )
+  if ((hour(actT) != hour(newT)) || (day(actT) != day(newT)) )
   {
     writeDataToFiles();
     writeLastStatus();
