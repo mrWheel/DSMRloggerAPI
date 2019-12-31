@@ -1,9 +1,9 @@
 /* 
 ***************************************************************************  
 **  Program  : helperStuff, part of DSMRloggerAPI
-**  Version  : v0.0.7
+**  Version  : v0.1.1
 **
-**  Copyright (c) 2019 Willem Aandewiel
+**  Copyright (c) 2020 Willem Aandewiel
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
@@ -229,6 +229,16 @@ void strCopy(char *dest, int maxLen, const char *src)
     
 } // strCopy()
 
+
+//===========================================================================================
+int stricmp(const char *a, const char *b)
+{
+    for (;; a++, b++) {
+        int d = tolower((unsigned char)*a) - tolower((unsigned char)*b);
+        if (d != 0 || !*a)
+            return d;
+    }
+} // stricmp()
 
 //===========================================================================================
 char *intToStr(int32_t v)

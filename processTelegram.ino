@@ -1,9 +1,9 @@
 /* 
 ***************************************************************************  
 **  Program  : processTelegram, part of DSMRloggerAPI
-**  Version  : v0.0.7
+**  Version  : v0.1.0
 **
-**  Copyright (c) 2019 Willem Aandewiel
+**  Copyright (c) 2020 Willem Aandewiel
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
@@ -15,8 +15,8 @@ void processTelegram()
                                                     , DSMRdata.timestamp.c_str());
   strcpy(newTimestamp, DSMRdata.timestamp.c_str()); 
 
-  actT = epoch(actTimestamp, strlen(actTimestamp), false);
   newT = epoch(newTimestamp, strlen(newTimestamp), true); // update system time
+  actT = epoch(actTimestamp, strlen(actTimestamp), false);
   
   // Skip first 3 telegrams .. just to settle down a bit ;-)
   
@@ -25,7 +25,7 @@ void processTelegram()
     return;
   }
   
-  sprintf(actTimestamp, "%s", newTimestamp);  // maar nog NIET actT!!!
+  strCopy(actTimestamp, sizeof(actTimestamp), newTimestamp);  // maar nog NIET actT!!!
   DebugTf("actHour[%02d] -- newHour[%02d]\r\n", hour(actT), hour(newT));
   
   // has the hour changed (or the day)  

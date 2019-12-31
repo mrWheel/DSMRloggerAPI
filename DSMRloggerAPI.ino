@@ -2,9 +2,9 @@
 ***************************************************************************  
 **  Program  : DSMRloggerAPI (restAPI)
 */
-#define _FW_VERSION "v0.1.0 (29-12-2019)"
+#define _FW_VERSION "v0.1.1 (31-12-2019)"
 /*
-**  Copyright (c) 2019 Willem Aandewiel
+**  Copyright (c) 2020 Willem Aandewiel
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
@@ -38,7 +38,7 @@
 //  #define USE_NTP_TIME              // define to generate Timestamp from NTP (Only Winter Time for now)
 //  #define SM_HAS_NO_FASE_INFO       // if your SM does not give fase info use total delevered/returned
 #define USE_MQTT                  // define if you want to use MQTT
-//  #define USE_MINDERGAS             // define if you want to update mindergas (also add token down below)
+#define USE_MINDERGAS             // define if you want to update mindergas (also add token down below)
 //  #define SHOW_PASSWRDS             // well .. show the PSK key and MQTT password, what else?
 /******************** don't change anything below this comment **********************/
 
@@ -157,7 +157,7 @@ void setup()
 //------ read status file for last Timestamp --------------------
   strcpy(actTimestamp, "040302010101X");
   //==========================================================//
-   writeLastStatus();  // only for firsttime initialization //
+  // writeLastStatus();  // only for firsttime initialization //
   //==========================================================//
   readLastStatus(); // place it in actTimestamp
   // set the time to actTimestamp!

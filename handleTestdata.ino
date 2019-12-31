@@ -84,7 +84,7 @@ void handleTestdata()
                     break;
                     
       default:      runMode = SNormal;
-                    forceBuildRingFiles= false;
+                    forceBuildRingFiles = false;
 
     } // switch()
   }
@@ -97,6 +97,34 @@ void handleTestdata()
   Debugf("==>> new date/time [%s] is [%s]\r\n", newTimestamp, buildDateTimeString(newTimestamp, sizeof(newTimestamp)).c_str());
   
   updateMeterValues(SNormal);
+  
+  currentCRC = 0;
+  memset(telegram,0,sizeof(telegram));
+  
+#if defined( USE_PRE40_PROTOCOL )
+    for (int16_t line = 0; line < 20; line++) {
+      yield();
+      int16_t len = buildTelegram30(line, telegramLine);  // also: prints to DSMRsend
+//    calcCRC = decodeTelegram(len);  // why??
+    }
+    if (Verbose2) Debugf("!\r\n");
+    strConcat(telegram, sizeof(telegram), "!\r\n");
+
+#else
+    for (int16_t line = 0; line < 38; line++) {
+      yield();
+      int16_t len = buildTelegram40(line, telegramLine);  // also: prints to DSMRsend
+      calcCRC = decodeTelegram(len);
+    } 
+    sprintf(cMsg, "!%04X\r\n\r\n", (calcCRC & 0xFFFF));
+    if (Verbose2) Debug(cMsg);
+    strConcat(telegram, sizeof(telegram), cMsg);
+    
+#endif
+
+  DebugFlush();
+  telegramCount++;
+
   DSMRdata = {};
   ParseResult<void> res = P1Parser::parse(&DSMRdata, telegram, lengthof(telegram));
   if (res.err) 
@@ -106,11 +134,16 @@ void handleTestdata()
   } 
   else if (!DSMRdata.all_present()) 
   {
-    DebugTln("DSMR: Some fields are missing");
+    if (Verbose2) DebugTln("DSMR: Some fields are missing");
   } 
   // Succesfully parsed, now process the data!
 
   processTelegram();
+  if (!forceBuildRingFiles)
+  {
+        sendMQTTData();
+  }
+  
   Debugf("==>> act date/time [%s] is [%s]\r\n\n", actTimestamp, buildDateTimeString(actTimestamp, sizeof(actTimestamp)).c_str());
 
 } // handleTestdata()
@@ -400,31 +433,6 @@ void updateMeterValues(uint8_t period)
                                                           , (int)(IPD_l2 * 1000)
                                                           , (int)(IPD_l3 * 1000)
                                                           , PDelivered);
-
-  currentCRC = 0;
-  memset(telegram,0,sizeof(telegram));
-  
-  if (String(actDSMR) == "40") {
-    for (int16_t line = 0; line < 38; line++) {
-      yield();
-      int16_t len = buildTelegram40(line, telegramLine);  // also: prints to DSMRsend
-      calcCRC = decodeTelegram(len);
-    } 
-    sprintf(cMsg, "!%04X\r\n\r\n", (calcCRC & 0xFFFF));
-    if (Verbose2) Debug(cMsg);
-    strConcat(telegram, sizeof(telegram), cMsg);
-
-  } else {
-    for (int16_t line = 0; line < 20; line++) {
-      yield();
-      int16_t len = buildTelegram30(line, telegramLine);  // also: prints to DSMRsend
-//    calcCRC = decodeTelegram(len);  // why??
-    }
-    if (Verbose2) Debugf("!\r\n");
-    strConcat(telegram, sizeof(telegram), "!\r\n");
-  }
-  DebugFlush();
-  telegramCount++;
   
 } // updateMeterValues()
 

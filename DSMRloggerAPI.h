@@ -1,9 +1,9 @@
 /*
 ***************************************************************************  
 **  Program  : processTelegram - part of DSMRloggerAPI
-**  Version  : v0.0.7
+**  Version  : v0.1.1
 **
-**  Copyright (c) 2019 Willem Aandewiel
+**  Copyright (c) 2020 Willem Aandewiel
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
@@ -48,19 +48,13 @@
 #define DATA_RECLEN       75
 
 #define HOURS_FILE        "/RINGhours.csv"
-#define HOURS_PER_PERIOD  24              // number of hours to show per request
-#define KEEP_DAYS_HOURS   3               // number of days to keep!
-#define _NO_HOUR_SLOTS_   (KEEP_DAYS_HOURS * 24)
+#define _NO_HOUR_SLOTS_   (48 +1)
 
 #define DAYS_FILE         "/RINGdays.csv"
-#define DAYS_PER_PERIOD   7               // number of days to show per request
-#define KEEP_WEEK_DAYS    3               // number of weeks to keep!  
-#define _NO_DAY_SLOTS_    (KEEP_WEEK_DAYS * 7)
+#define _NO_DAY_SLOTS_    (14 +1)
 
 #define MONTHS_FILE       "/RINGmonths.csv"
-#define MONTHS_PER_PERIOD 12              // number of months to show per request
-#define KEEP_YEAR_MONTHS  1               // number of years to keep!
-#define _NO_MONTH_SLOTS_  (KEEP_YEAR_MONTHS * 12)
+#define _NO_MONTH_SLOTS_  (24 +1)
 
 enum    { PERIOD_UNKNOWN, HOURS, DAYS, MONTHS, YEARS };
 
@@ -176,7 +170,8 @@ struct FSInfo {
   P1Reader    slimmeMeter(&Serial, 0);
 #endif
 
-
+//===========================prototype=========================================
+int strcicmp(const char *a, const char *b);
 
 //===========================GLOBAL VAR'S======================================
   WiFiClient  wifiClient;
@@ -206,8 +201,10 @@ float     settingENBK, settingGNBK;
 uint8_t   settingInterval;
 char      settingBgColor[MAXCOLORNAME], settingFontColor[MAXCOLORNAME];
 char      settingMQTTbroker[101], settingMQTTuser[40], settingMQTTpasswd[30], settingMQTTtopTopic[21];
-uint32_t  settingMQTTinterval;
-
+uint32_t  settingMQTTinterval, settingMQTTbrokerPort;
+#if defined( USE_MINDERGAS )
+  char      settingMindergasAuthtoken[21] = "";
+#endif
 
 
 /***************************************************************************

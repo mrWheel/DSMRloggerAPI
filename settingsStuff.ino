@@ -1,9 +1,9 @@
 /*
 ***************************************************************************  
 **  Program  : settingsStuff, part of DSMRloggerAPI
-**  Version  : v0.0.7
+**  Version  : v0.1.1
 **
-**  Copyright (c) 2019 Willem Aandewiel
+**  Copyright (c) 2020 Willem Aandewiel
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
@@ -37,8 +37,9 @@ void writeSettings()
   file.print("FontColor = ");         file.println(settingFontColor);           Debug(F("."));
 
 #ifdef USE_MQTT
-  sprintf(settingMQTTbroker, "%s:%d", MQTTbrokerURL, MQTTbrokerPort);
+  //sprintf(settingMQTTbroker, "%s:%d", MQTTbroker, MQTTbrokerPort);
   file.print("MQTTbroker = ");        file.println(settingMQTTbroker);          Debug(F("."));
+  file.print("MQTTbrokerPort = ");    file.println(settingMQTTbrokerPort);      Debug(F("."));
   file.print("MQTTUser = ");          file.println(settingMQTTuser);            Debug(F("."));
   file.print("MQTTpasswd = ");        file.println(settingMQTTpasswd);          Debug(F("."));
   file.print("MQTTinterval = ");      file.println(settingMQTTinterval);        Debug(F("."));
@@ -65,8 +66,8 @@ void writeSettings()
     DebugT(F("FontColor = "));         Debugln(settingFontColor);   
 
 #ifdef USE_MQTT
-    sprintf(settingMQTTbroker, "%s:%d", MQTTbrokerURL, MQTTbrokerPort);
     DebugT(F("MQTTbroker = "));        Debugln(settingMQTTbroker);          
+    DebugT(F("MQTTbrokerPort = "));    Debugln(settingMQTTbrokerPort);          
     DebugT(F("MQTTUser = "));          Debugln(settingMQTTuser);     
   #ifdef SHOW_PASSWRDS       
       DebugT(F("MQTTpasswd = "));        Debugln(settingMQTTpasswd);  
@@ -106,6 +107,7 @@ void readSettings(bool show)
   strCopy(settingBgColor, sizeof(settingBgColor), "deepskyblue");
   strCopy(settingFontColor, sizeof(settingFontColor), "white");
   settingMQTTbroker[0]     = '\0';
+  settingMQTTbrokerPort    = 1883;
   settingMQTTuser[0]       = '\0';
   settingMQTTpasswd[0]     = '\0';
   settingMQTTinterval      = 60;
@@ -139,51 +141,32 @@ void readSettings(bool show)
     words[0].toLowerCase();
     nColor = words[1].substring(0,15);
 
-    if (words[0].equalsIgnoreCase("EnergyDeliveredT1")) settingEDT1         = words[1].toFloat();  
-    if (words[0].equalsIgnoreCase("EnergyDeliveredT2")) settingEDT2         = words[1].toFloat();  
-    if (words[0].equalsIgnoreCase("EnergyReturnedT1"))  settingERT1         = words[1].toFloat();  
-    if (words[0].equalsIgnoreCase("EnergyReturnedT2"))  settingERT2         = words[1].toFloat();  
-    if (words[0].equalsIgnoreCase("GasDeliveredT"))     settingGDT          = words[1].toFloat();  
-    if (words[0].equalsIgnoreCase("EnergyVasteKosten")) settingENBK         = words[1].toFloat();
-    if (words[0].equalsIgnoreCase("GasVasteKosten"))    settingGNBK         = words[1].toFloat();
+    if (words[0].equalsIgnoreCase("EnergyDeliveredT1"))   settingEDT1         = words[1].toFloat();  
+    if (words[0].equalsIgnoreCase("EnergyDeliveredT2"))   settingEDT2         = words[1].toFloat();  
+    if (words[0].equalsIgnoreCase("EnergyReturnedT1"))    settingERT1         = words[1].toFloat();  
+    if (words[0].equalsIgnoreCase("EnergyReturnedT2"))    settingERT2         = words[1].toFloat();  
+    if (words[0].equalsIgnoreCase("GasDeliveredT"))       settingGDT          = words[1].toFloat();  
+    if (words[0].equalsIgnoreCase("EnergyVasteKosten"))   settingENBK         = words[1].toFloat();
+    if (words[0].equalsIgnoreCase("GasVasteKosten"))      settingGNBK         = words[1].toFloat();
 
-    if (words[0].equalsIgnoreCase("SleepTime"))         settingSleepTime    = words[1].toInt();  
-    if (words[0].equalsIgnoreCase("TelegramInterval"))  settingInterval     = words[1].toInt();  
+    if (words[0].equalsIgnoreCase("SleepTime"))           settingSleepTime    = words[1].toInt();  
+    if (words[0].equalsIgnoreCase("TelegramInterval"))    settingInterval     = words[1].toInt();  
 
-    //if (words[0].equalsIgnoreCase("BackgroundColor")) strncpy(settingBgColor,   String(nColor).substring(0,(MAXCOLORNAME - 1)).c_str());  
-    if (words[0].equalsIgnoreCase("BackgroundColor"))   strCopy(settingBgColor, (MAXCOLORNAME - 1),   words[1].c_str());  
-    //if (words[0].equalsIgnoreCase("FontColor"))       strncpy(settingFontColor, String(nColor).substring(0,(MAXCOLORNAME - 1)).c_str());  
-    if (words[0].equalsIgnoreCase("FontColor"))         strCopy(settingFontColor, (MAXCOLORNAME - 1),  words[1].c_str()); 
+    if (words[0].equalsIgnoreCase("BackgroundColor"))     strCopy(settingBgColor, (MAXCOLORNAME -1), words[1].c_str());  
+    if (words[0].equalsIgnoreCase("FontColor"))           strCopy(settingFontColor, (MAXCOLORNAME -1), words[1].c_str()); 
 
     if (words[0].equalsIgnoreCase("MindergasAuthtoken"))  strCopy(settingMindergasAuthtoken, 20, words[1].c_str());  
    
 #ifdef USE_MQTT
     if (words[0].equalsIgnoreCase("MQTTbroker"))  {
       memset(settingMQTTbroker, '\0', sizeof(settingMQTTbroker));
-      memset(MQTTbrokerURL, '\0', sizeof(MQTTbrokerURL));
       strCopy(settingMQTTbroker, 100, words[1].c_str());
-      int cln = String(settingMQTTbroker).indexOf(":",0);
-      DebugTf("settingMQTTbroker[%s] => found[:] @[%d]\r\n", settingMQTTbroker, cln);
-      if (cln > -1) 
-      {
-        MQTTbrokerPort = String(settingMQTTbroker).substring((cln+1)).toInt();
-        settingMQTTbroker[cln] = '\0';
-        strCopy(MQTTbrokerURL, cln, settingMQTTbroker);
-        //DebugTf("URL[%s]->Port[%d]\r\n", MQTTbrokerURL, MQTTbrokerPort);
-        sprintf(settingMQTTbroker, "%s:%d", MQTTbrokerURL, MQTTbrokerPort);
-        //DebugTf("new -> settingMQTTbroker[%s]\r\n", settingMQTTbroker);
-      } 
-      else 
-      {
-        strCopy(MQTTbrokerURL, 100, settingMQTTbroker);
-        MQTTbrokerPort = 1883;
-      }
-      DebugTf("[%s] => MQTTbrokerURL[%s], port[%d]\r\n", settingMQTTbroker, MQTTbrokerURL, MQTTbrokerPort);
     }
-    if (words[0].equalsIgnoreCase("MQTTuser"))      strCopy(settingMQTTuser    ,35 ,words[1].c_str());  
-    if (words[0].equalsIgnoreCase("MQTTpasswd"))    strCopy(settingMQTTpasswd  ,25, words[1].c_str());  
-    if (words[0].equalsIgnoreCase("MQTTinterval"))  settingMQTTinterval        = words[1].toInt();  
-    if (words[0].equalsIgnoreCase("MQTTtopTopic"))  strCopy(settingMQTTtopTopic, 20, words[1].c_str());  
+    if (words[0].equalsIgnoreCase("MQTTbrokerPort"))      settingMQTTbrokerPort    = words[1].toInt();  
+    if (words[0].equalsIgnoreCase("MQTTuser"))            strCopy(settingMQTTuser    ,35 ,words[1].c_str());  
+    if (words[0].equalsIgnoreCase("MQTTpasswd"))          strCopy(settingMQTTpasswd  ,25, words[1].c_str());  
+    if (words[0].equalsIgnoreCase("MQTTinterval"))        settingMQTTinterval        = words[1].toInt();  
+    if (words[0].equalsIgnoreCase("MQTTtopTopic"))        strCopy(settingMQTTtopTopic, 20, words[1].c_str());  
 #endif
     
   } // while available()
@@ -207,7 +190,7 @@ void readSettings(bool show)
   Debugf("                  Font Color : %s\r\n", settingFontColor);
 #ifdef USE_MQTT
   Debugln(F("\r\n==== MQTT settings ==============================================\r"));
-  Debugf("          MQTT broker URL/IP : %s:%d", MQTTbrokerURL, MQTTbrokerPort);
+  Debugf("          MQTT broker URL/IP : %s:%d", settingMQTTbroker, settingMQTTbrokerPort);
   if (MQTTclient.connected()) Debugln(F(" (is Connected!)\r"));
   else                 Debugln(F(" (NOT Connected!)\r"));
   Debugf("                   MQTT user : %s\r\n", settingMQTTuser);
@@ -228,6 +211,63 @@ void readSettings(bool show)
 
 } // readSettings()
 
+
+//=======================================================================
+void updateSetting(const char *field, const char *newValue)
+{
+  DebugTf("-> field[%s], newValue[%s]\r\n", field, newValue);
+  
+  if (!stricmp(field, "settingEDT1"))               settingEDT1         = String(newValue).toFloat();  
+  if (!stricmp(field, "settingEDT2"))               settingEDT2         = String(newValue).toFloat();  
+  if (!stricmp(field, "settingERT1"))               settingERT1         = String(newValue).toFloat();  
+  if (!stricmp(field, "settingERT2"))               settingERT2         = String(newValue).toFloat();  
+  if (!stricmp(field, "settingGDT"))                settingGDT          = String(newValue).toFloat();  
+  if (!stricmp(field, "settingENBK"))               settingENBK         = String(newValue).toFloat();
+  if (!stricmp(field, "settingGNBK"))               settingGNBK         = String(newValue).toFloat();
+
+  if (!stricmp(field, "settingSleepTime"))          settingSleepTime    = String(newValue).toInt();  
+  if (!stricmp(field, "settingInterval"))           settingInterval     = String(newValue).toInt();  
+
+  if (!stricmp(field, "settingBgColor"))            strCopy(settingBgColor, (MAXCOLORNAME -1), newValue);  
+  if (!stricmp(field, "settingFontColor"))          strCopy(settingFontColor, (MAXCOLORNAME -1), newValue); 
+
+  if (!stricmp(field, "settingMindergasAuthtoken")) strCopy(settingMindergasAuthtoken, 20, newValue);  
+   
+#ifdef USE_MQTT
+  if (!stricmp(field, "settingMQTTbroker"))  {
+    DebugT("settingMQTTbroker! to : ");
+    memset(settingMQTTbroker, '\0', sizeof(settingMQTTbroker));
+    strCopy(settingMQTTbroker, 100, newValue);
+    Debugf("[%s]\r\n", settingMQTTbroker);
+  }
+  if (!stricmp(field, "settingMQTTbrokerPort"))     settingMQTTbrokerPort    = String(newValue).toInt();  
+  if (!stricmp(field, "settingMQTTuser"))           strCopy(settingMQTTuser    ,35, newValue);  
+  if (!stricmp(field, "settingMQTTpasswd"))         strCopy(settingMQTTpasswd  ,25, newValue);  
+  if (!stricmp(field, "settingMQTTinterval"))       settingMQTTinterval        = String(newValue).toInt();  
+  if (!stricmp(field, "settingMQTTtopTopic"))       strCopy(settingMQTTtopTopic, 20, newValue);  
+#endif
+
+  writeSettings();
+  
+} // updateSetting()
+
+/**
+//-----------------------------------------------------------------------
+void updateSetting(const char *field, int32_t newValue)
+{
+  const char *charVal = intToStr(newValue);
+  updateSetting(field, charVal);
+  
+} // updateSetting(*char, int);
+
+//-----------------------------------------------------------------------
+void updateSetting(const char *field, float newValue)
+{
+  const char *charVal = floatToStr(newValue, 6);
+  updateSetting(field, charVal);
+  
+} // updateSetting(*char, int);
+**/
 
 /***************************************************************************
 *

@@ -1,9 +1,9 @@
 /* 
 ***************************************************************************  
 **  Program  : MQTTstuff, part of DSMRloggerAPI
-**  Version  : v0.0.7
+**  Version  : v0.1.1
 **
-**  Copyright (c) 2019 Willem Aandewiel
+**  Copyright (c) 2020 Willem Aandewiel
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
@@ -13,8 +13,8 @@
 // Declare some variables within global scope
 
   static IPAddress  MQTTbrokerIP;
-  static char       MQTTbrokerURL[101];
-  static uint16_t   MQTTbrokerPort = 1883;
+//static char       MQTTbroker[101];
+//static uint16_t   MQTTbrokerPort = 1883;
   static char       MQTTbrokerIPchar[20];
   
 #ifdef USE_MQTT
@@ -53,13 +53,13 @@ void handleMQTT()
   {
     case MQTT_STATE_INIT:  
       DebugTln(F("MQTT State: MQTT Initializing")); 
-      WiFi.hostByName(MQTTbrokerURL, MQTTbrokerIP);  // lookup the MQTTbrokerURL convert to IP
+      WiFi.hostByName(settingMQTTbroker, MQTTbrokerIP);  // lookup the MQTTbroker convert to IP
       sprintf(MQTTbrokerIPchar, "%d.%d.%d.%d", MQTTbrokerIP[0], MQTTbrokerIP[1], MQTTbrokerIP[2], MQTTbrokerIP[3]);
       if (isValidIP(MQTTbrokerIP))  
       {
-        DebugTf("[%s] => setServer(%s, %d)\r\n", settingMQTTbroker, MQTTbrokerIPchar, MQTTbrokerPort);
+        DebugTf("[%s] => setServer(%s, %d)\r\n", settingMQTTbroker, MQTTbrokerIPchar, settingMQTTbrokerPort);
         MQTTclient.disconnect();
-        MQTTclient.setServer(MQTTbrokerIPchar, MQTTbrokerPort);
+        MQTTclient.setServer(MQTTbrokerIPchar, settingMQTTbrokerPort);
         MQTTclientId  = String(_HOSTNAME) + WiFi.macAddress();
         //skip wait for reconnect
         stateMQTT = MQTT_STATE_WAIT_FOR_FIRST_TELEGRAM;     
@@ -67,7 +67,7 @@ void handleMQTT()
       }
       else
       { // invalid IP, then goto error state
-        DebugTf("ERROR: [%s] => is not a valid URL\r\n", MQTTbrokerURL);
+        DebugTf("ERROR: [%s] => is not a valid URL\r\n", settingMQTTbroker);
         stateMQTT = MQTT_STATE_ERROR;
         //DebugTln(F("Next State: MQTT_STATE_ERROR"));
       }     
@@ -263,7 +263,7 @@ void sendMQTTData()
 
   if (!MQTTclient.connected() || !isValidIP(MQTTbrokerIP)) return;
 
-  DebugTf("Sending data to MQTT server [%s]:[%d]\r\n", MQTTbrokerURL, MQTTbrokerPort);
+  DebugTf("Sending data to MQTT server [%s]:[%d]\r\n", settingMQTTbroker, settingMQTTbrokerPort);
 
   DSMRdata.applyEach(buildJsonMQTT());
   strCopy(lastMQTTtimestamp, sizeof(lastMQTTtimestamp), actTimestamp);

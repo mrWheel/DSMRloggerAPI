@@ -1,9 +1,9 @@
 /* 
 ***************************************************************************  
 **  Program  : SPIFFSstuff, part of DSMRloggerAPI
-**  Version  : v0.0.7
+**  Version  : v0.1.1
 **
-**  Copyright (c) 2019 Willem Aandewiel
+**  Copyright (c) 2020 Willem Aandewiel
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
@@ -381,8 +381,6 @@ uint16_t timestampToDaySlot(const char * TS, int8_t len)
   //char      aSlot[5];
   time_t    t1 = epoch((char*)TS, strlen(TS), false);
   uint32_t  nrDays = t1 / SECS_PER_DAY;
-  //sprintf(aSlot, "%d", (nrDays % KEEP_WEEK_DAYS));
-  //uint8_t   uSlot  = String(aSlot).toInt();
   uint16_t  recSlot = (nrDays % _NO_DAY_SLOTS_);
   
   if (Verbose1) DebugTf("===>>>>>   DAY[%02d] => recSlot[%02d]\r\n", day(t1), recSlot);

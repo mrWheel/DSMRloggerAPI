@@ -1,9 +1,9 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRindex.js, part of DSMRfirmwareAPI
-**  Version  : v0.0.8
+**  Version  : v0.1.0
 **
-**  Copyright (c) 2019 Willem Aandewiel
+**  Copyright (c) 2020 Willem Aandewiel
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
@@ -128,6 +128,7 @@
         data = json.devinfo;
     	  for( let i in data ){
       			var tableRef = document.getElementById('devInfoTable').getElementsByTagName('tbody')[0];
+      			
       			if( ( document.getElementById("devInfoTable_"+data[i].name)) == null )
       			{
       			  //console.log("data["+i+"] => name["+data[i].name+"]");
@@ -150,6 +151,7 @@
 		     			tableCells[1].style.textAlign = "right";
 							tableCells[2].innerHTML = data[i].unit;
 						}
+						
 						if (data[i].name == "FwVersion")
 						{
 							document.getElementById('devVersion').innerHTML = json.devinfo[i].value;
@@ -365,7 +367,8 @@
   function showTable(type)
   {	
   	console.log("showTable("+type+")");
-  	for (let i=0; i<data.length; i++)
+  	// the last element has the metervalue, so skip it
+  	for (let i=0; i<(data.length -1); i++)
   	{
  			//console.log("showTable("+type+"): data["+i+"] => data["+i+"]name["+data[i].recid+"]");
   		var tableRef = document.getElementById('last'+type+'Table').getElementsByTagName('tbody')[0];

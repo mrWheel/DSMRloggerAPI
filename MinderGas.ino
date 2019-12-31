@@ -1,5 +1,5 @@
 /*
-**  Copyright (c) 2019 Robert van den Breemen
+**  Copyright (c) 2020 Robert van den Breemen
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
@@ -21,7 +21,6 @@
 #define WAIT_TIME           60000       // 60 seconden
 
 uint32_t  mindergasTime                 = millis();
-char      settingMindergasAuthtoken[21] = "";
 
 //=======================================================================
 void handleMindergas()
@@ -172,7 +171,11 @@ void processMindergas()
       DebugTln(F("Start writing POST data "));
       t = now() - SECS_PER_DAY;  // we want to upload the gas usage of yesterday so rewind the clock for 1 day
       char dataString[80];
-      sprintf(dataString,"{ \"date\": \"%04d-%02d-%02d\", \"reading\": \"%.3f\" }", year(t), month(t), day(t), GasDelivered);
+      sprintf(dataString,"{ \"date\": \"%04d-%02d-%02d\", \"reading\": \"%.3f\" }"
+                                                          , year(t)
+                                                          , month(t)
+                                                          , day(t)
+                                                          , DSMRdata.gas_delivered.val());
       // write the POST to a file...
       minderGasFile.println(F("POST /api/gas_meter_readings HTTP/1.1"));
       minderGasFile.print(F("AUTH-TOKEN:")); minderGasFile.println(settingMindergasAuthtoken);
