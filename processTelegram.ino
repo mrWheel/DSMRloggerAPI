@@ -28,8 +28,12 @@ void processTelegram()
   strCopy(actTimestamp, sizeof(actTimestamp), newTimestamp);  // maar nog NIET actT!!!
   DebugTf("actHour[%02d] -- newHour[%02d]\r\n", hour(actT), hour(newT));
   
-  // has the hour changed (or the day)  
-  if ((hour(actT) != hour(newT)) || (day(actT) != day(newT)) )
+  // has the hour changed (or the day or month)  
+  // in production testing on hour only would
+  // suffice, but in testing I need all three
+  if (     (hour(actT) != hour(newT)  ) 
+       ||   (day(actT) != day(newT)   ) 
+       || (month(actT) != month(newT) ) )
   {
     writeDataToFiles();
     writeLastStatus();

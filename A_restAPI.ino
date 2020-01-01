@@ -241,31 +241,31 @@ void sendDeviceInfo()
 {
   sendStartJsonObj("devinfo");
 
-  sendNestedJsonObj("Author", "Willem Aandewiel (www.aandewiel.nl)");
-  sendNestedJsonObj("FwVersion", _FW_VERSION);
+  sendNestedJsonObj("author", "Willem Aandewiel (www.aandewiel.nl)");
+  sendNestedJsonObj("fwversion", _FW_VERSION);
 
   sprintf(cMsg, "%s %s", __DATE__, __TIME__);
-  sendNestedJsonObj("Compiled", cMsg);
-  sendNestedJsonObj("FreeHeap", ESP.getFreeHeap(), "bytes");
-  sendNestedJsonObj("maxFreeBlock", ESP.getMaxFreeBlockSize(), "bytes");
-  sendNestedJsonObj("ChipID", String( ESP.getChipId(), HEX ).c_str());
-  sendNestedJsonObj("CoreVersion", String( ESP.getCoreVersion() ).c_str() );
-  sendNestedJsonObj("SdkVersion", String( ESP.getSdkVersion() ).c_str());
-  sendNestedJsonObj("CpuFreq", ESP.getCpuFreqMHz(), "MHz");
-  sendNestedJsonObj("SketchSize", formatFloat( (ESP.getSketchSize() / 1024.0), 3), "kB");
-  sendNestedJsonObj("FreeSketchSpace", formatFloat( (ESP.getFreeSketchSpace() / 1024.0), 3), "kB");
+  sendNestedJsonObj("compiled", cMsg);
+  sendNestedJsonObj("freeheap", ESP.getFreeHeap(), "bytes");
+  sendNestedJsonObj("maxfreeblock", ESP.getMaxFreeBlockSize(), "bytes");
+  sendNestedJsonObj("chipid", String( ESP.getChipId(), HEX ).c_str());
+  sendNestedJsonObj("coreversion", String( ESP.getCoreVersion() ).c_str() );
+  sendNestedJsonObj("sdkversion", String( ESP.getSdkVersion() ).c_str());
+  sendNestedJsonObj("cpufreq", ESP.getCpuFreqMHz(), "MHz");
+  sendNestedJsonObj("sketchsize", formatFloat( (ESP.getSketchSize() / 1024.0), 3), "kB");
+  sendNestedJsonObj("freesketchSpace", formatFloat( (ESP.getFreeSketchSpace() / 1024.0), 3), "kB");
 
   if ((ESP.getFlashChipId() & 0x000000ff) == 0x85) 
         sprintf(cMsg, "%08X (PUYA)", ESP.getFlashChipId());
   else  sprintf(cMsg, "%08X", ESP.getFlashChipId());
-  sendNestedJsonObj("FlashChipID", cMsg);  // flashChipId
-  sendNestedJsonObj("FlashChipSize", formatFloat((ESP.getFlashChipSize() / 1024.0 / 1024.0), 3), "MB");
-  sendNestedJsonObj("FlashChipRealSize", formatFloat((ESP.getFlashChipRealSize() / 1024.0 / 1024.0), 3), "MB");
-  sendNestedJsonObj("FlashChipSpeed", formatFloat((ESP.getFlashChipSpeed() / 1000.0 / 1000.0), 0), "MHz");
+  sendNestedJsonObj("flashchipid", cMsg);  // flashChipId
+  sendNestedJsonObj("flashchipsize", formatFloat((ESP.getFlashChipSize() / 1024.0 / 1024.0), 3), "MB");
+  sendNestedJsonObj("flashchiprealsize", formatFloat((ESP.getFlashChipRealSize() / 1024.0 / 1024.0), 3), "MB");
+  sendNestedJsonObj("flashchipspeed", formatFloat((ESP.getFlashChipSpeed() / 1000.0 / 1000.0), 0), "MHz");
 
   FlashMode_t ideMode = ESP.getFlashChipMode();
-  sendNestedJsonObj("FlashChipMode", flashMode[ideMode]);
-  sendNestedJsonObj("BoardType",
+  sendNestedJsonObj("flashchipmode", flashMode[ideMode]);
+  sendNestedJsonObj("boardtype",
 #ifdef ARDUINO_ESP8266_NODEMCU
      "ESP8266_NODEMCU"
 #endif
@@ -279,15 +279,16 @@ void sendDeviceInfo()
      "ESP8266_ESP12"
 #endif
   );
-  sendNestedJsonObj("SSID", WiFi.SSID().c_str());
-//sendNestedJsonObj("PskKey", WiFi.psk());   // uncomment if you want to see this
-  sendNestedJsonObj("IpAddress", WiFi.localIP().toString().c_str());
-  sendNestedJsonObj("WiFiRSSI", WiFi.RSSI());
-  sendNestedJsonObj("Hostname", _HOSTNAME);
-  sendNestedJsonObj("upTime", upTime());
-  sendNestedJsonObj("TelegramCount", (int)telegramCount);
-  sendNestedJsonObj("TelegramErrors", (int)telegramErrors);
-  sendNestedJsonObj("lastReset", lastReset);
+  sendNestedJsonObj("ssid", WiFi.SSID().c_str());
+//sendNestedJsonObj("pskkey", WiFi.psk());   // uncomment if you want to see this
+  sendNestedJsonObj("ipaddress", WiFi.localIP().toString().c_str());
+  sendNestedJsonObj("wifirssi", WiFi.RSSI());
+  sendNestedJsonObj("hostname", _HOSTNAME);
+  sendNestedJsonObj("uptime", upTime());
+  sendNestedJsonObj("telegramcount", (int)telegramCount);
+  sendNestedJsonObj("telegramerrors", (int)telegramErrors);
+  sendNestedJsonObj("reboots", (int)nrReboots);
+  sendNestedJsonObj("lastreset", lastReset);
 
   httpServer.sendContent("\r\n]}\r\n");
 
@@ -344,6 +345,8 @@ struct buildJsonApi {
     void apply(Item &i) {
       skip = false;
       String Name = Item::name;
+      //-- for dsmr30 -----------------------------------------------
+      if (Name.indexOf("gas_delivered2") == 0) Name = "gas_delivered";
 
       if (!isInFieldsArray(Name.c_str(), fieldsElements))
       {
@@ -490,6 +493,7 @@ void sendApiInfo()
     <tr><td><b>/api/v1/dev/info</b></td><td>Device information in JSON format</td></tr>\
     <tr><td><b>/api/v1/dev/time</b></td><td>Device time (epoch) in JSON format</td></tr>\
     <tr><td><b>/api/v1/dev/settings</b></td><td>Device settings in JSON format</td></tr>\
+    <tr><td><b>/api/v1/dev/settings/&lt;json&gt;</b></td><td>POST/PUT update setting in JSON format</td></tr>\
     <tr><td><b>/api/v1/hist/hours/{desc|asc}</b></td><td>Readings from hours table in JSON format</td></tr>\
     <tr><td><b>/api/v1/hist/days/{desc|asc}</b></td><td>Readings from days table in JSON format</td></tr>\
     <tr><td><b>/api/v1/hist/months/{desc|asc}</b></td><td>Readings from months table in JSON format</td></tr>\
