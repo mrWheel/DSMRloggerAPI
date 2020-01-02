@@ -43,6 +43,16 @@ void processAPI()
 
   int8_t wc = splitString(URI, '/', words, 10);
   
+  if (Verbose2) 
+  {
+    DebugT(">>");
+    for (int w=0; w<wc; w++)
+    {
+      DebugTf("word[%d] => [%s], ", w, words[w].c_str());
+    }
+    Debugln(" ");
+  }
+
   if (words[1] != "api" || words[2] != "v1")
   {
     sendApiInfo();
@@ -107,6 +117,7 @@ void handleDevApi(const char *URI, const char *word4, const char *word5, const c
       }
       //DebugTf("--> field[%s] => newValue[%s]\r\n", field, newValue);
       updateSetting(field, newValue);
+      httpServer.send(200, "application/json", httpServer.arg(0));
     }
     else
     {
@@ -124,7 +135,7 @@ void handleHistApi(const char *word4, const char *word5, const char *word6)
   int8_t    fileType = 0;
   char      fileName[20] = "";
   
-  DebugTf("word4[%s], word5[%s], word6[%s]\r\n", word4, word5, word6);
+  //DebugTf("word4[%s], word5[%s], word6[%s]\r\n", word4, word5, word6);
   if (   strcmp(word4, "hours") == 0 )
   {
     fileType = HOURS;
@@ -159,7 +170,7 @@ void handleSmApi(const char *word4, const char *word5, const char *word6)
   uint8_t p=0;  
   bool    stopParsingTelegram = false;
 
-  DebugTf("word4[%s], word5[%s], word6[%s]\r\n", word4, word5, word6);
+  //DebugTf("word4[%s], word5[%s], word6[%s]\r\n", word4, word5, word6);
   if (strcmp(word4, "info") == 0)
   {
     //sendSmInfo();
@@ -188,23 +199,35 @@ void handleSmApi(const char *word4, const char *word5, const char *word6)
   else if (strcmp(word4, "telegram") == 0)
   {
     slimmeMeter.enable(true);
-
-    Serial.setTimeout(5000);
+    Serial.flush();
+    Serial.setTimeout(5000);  // 5 seconds must be enough ..
     // The terminator character is discarded from the serial buffer.
+    memset(tlgrm, 0, sizeof(tlgrm));
     int l = Serial.readBytesUntil('/', tlgrm, sizeof(tlgrm));
     // now read from '/' to '!'
     // The terminator character is discarded from the serial buffer.
     l = Serial.readBytesUntil('!', tlgrm, sizeof(tlgrm));
+    Serial.setTimeout(1000);  // seems to be the default ..
     DebugTf("read [%d] bytes\r\n", l);
+    if (l == 0) 
+    {
+      httpServer.send(200, "application/plain", "no telegram received");
+      return;
+    }
+    
     tlgrm[l++] = '!';
+#if !defined( USE_PRE40_PROTOCOL )
     // next 6 bytes are "<CRC>\r\n"
     for (int i=l; (i<l+6) && (i<sizeof(tlgrm)); i++)
     {
       tlgrm[i] = (char)Serial.read();
     }
+#else
+    tlgrm[l++] = '\r';
+    tlgrm[l++] = '\n';
+#endif
     for (int i=strlen(tlgrm); i>=0; i--) tlgrm[i+1] = tlgrm[i];
     tlgrm[0] = '/'; 
-    Serial.setTimeout(1000);  // seems to be the default ..
     if (Verbose1) Debugf("Telegram (%d chars):\r\n/%s", strlen(tlgrm), tlgrm);
     httpServer.send(200, "application/plain", tlgrm);
 
@@ -216,15 +239,13 @@ void handleSmApi(const char *word4, const char *word5, const char *word6)
 
 //=======================================================================
 // some helper functions
-//void _returnJSON(JsonObject obj);
+/******
 void _returnJSON(JsonObject obj)
 {
   String jsonString;
 
   serializeJson(obj, jsonString);         // machine readable
-  //serializeJsonPretty(obj, jsonString); // human readable for testing
   DebugTf("JSON String is %d chars\r\n", jsonString.length());
-  //DebugTln(jsonString);
   httpServer.send(200, "application/json", jsonString);
   
 } // _returnJSON()
@@ -234,7 +255,7 @@ void _returnJSON400(const char * message)
   httpServer.send(400, "application/json", message);
 
 } // _returnJSON400()
-
+******/
 
 //=======================================================================
 void sendDeviceInfo() 
@@ -314,22 +335,22 @@ void sendDeviceSettings()
 
   sendStartJsonObj("settings");
   
-  sendNestedJsonObj("settingEDT1",                settingEDT1);
-  sendNestedJsonObj("settingEDT2",                settingEDT2);
-  sendNestedJsonObj("settingERT1",                settingERT1);
-  sendNestedJsonObj("settingERT2",                settingERT2);
-  sendNestedJsonObj("settingGDT",                 settingGDT);
-  sendNestedJsonObj("settingENBK",                settingENBK);
-  sendNestedJsonObj("settingGNBK",                settingGNBK);
-  sendNestedJsonObj("settingInterval",            settingInterval);
-  sendNestedJsonObj("settingMQTTbroker",          settingMQTTbroker);
-  sendNestedJsonObj("settingMQTTbrokerPort",      settingMQTTbrokerPort);
-  sendNestedJsonObj("settingMQTTuser",            settingMQTTuser);
-  sendNestedJsonObj("settingMQTTpasswd",          settingMQTTpasswd);
-  sendNestedJsonObj("settingMQTTtopTopic",        settingMQTTtopTopic);
-  sendNestedJsonObj("settingMQTTinterval",        settingMQTTinterval);
+  sendJsonSettingObj("ed_tariff1",        settingEDT1,            "f", 0, 10);
+  sendJsonSettingObj("ed_tariff2",        settingEDT2,            "f", 0, 10);
+  sendJsonSettingObj("er_tariff1",        settingERT1,            "f", 0, 10);
+  sendJsonSettingObj("er_tariff2",        settingERT2,            "f", 0, 10);
+  sendJsonSettingObj("gd_tariff",         settingGDT,             "f", 0, 10);
+  sendJsonSettingObj("electr_netw_costs", settingENBK,            "f", 0, 100);
+  sendJsonSettingObj("gas_netw_costs",    settingGNBK,            "f", 0, 100);
+  sendJsonSettingObj("tlgrm_interval",    settingInterval,        "i", 1, 60);
+  sendJsonSettingObj("mqtt_broker",       settingMQTTbroker,      "s", sizeof(settingMQTTbroker));
+  sendJsonSettingObj("mqtt_broker_port",  settingMQTTbrokerPort,  "i", 0, 9999);
+  sendJsonSettingObj("mqtt_user",         settingMQTTuser,        "s", sizeof(settingMQTTuser));
+  sendJsonSettingObj("mqtt_passwd",       settingMQTTpasswd,      "s", sizeof(settingMQTTpasswd));
+  sendJsonSettingObj("mqtt_topTopic",     settingMQTTtopTopic,    "s", sizeof(settingMQTTtopTopic));
+  sendJsonSettingObj("mqtt_interval",     settingMQTTinterval,    "i", 0, 600);
 #if defined (USE_MINDERGAS )
-  sendNestedJsonObj("settingMindergasAuthtoken",  settingMindergasAuthtoken);
+  sendJsonSettingObj("mindergastoken",  settingMindergasToken,    "s", sizeof(settingMindergasToken));
 #endif
 
   sendEndJsonObj();
@@ -346,8 +367,9 @@ struct buildJsonApi {
       skip = false;
       String Name = Item::name;
       //-- for dsmr30 -----------------------------------------------
+#if defined( USE_PRE40_PROTOCOL )
       if (Name.indexOf("gas_delivered2") == 0) Name = "gas_delivered";
-
+#endif
       if (!isInFieldsArray(Name.c_str(), fieldsElements))
       {
         skip = true;
@@ -485,15 +507,20 @@ void sendApiInfo()
     <title>API reference</title>\
     <style>\
       body { background-color: #cccccc; font-family: Arial, Helvetica, Sans-Serif; Color: #000088; }\
+      table.padded-table td { padding-left:20px; padding-right:20px; padding-top:10px; vertical-align: top;}\
     </style>\
   </head>\
   <body>\
     <h1>API Reference</h1>\
-    <table>\
+    <table class='padded-table'>\
     <tr><td><b>/api/v1/dev/info</b></td><td>Device information in JSON format</td></tr>\
     <tr><td><b>/api/v1/dev/time</b></td><td>Device time (epoch) in JSON format</td></tr>\
     <tr><td><b>/api/v1/dev/settings</b></td><td>Device settings in JSON format</td></tr>\
-    <tr><td><b>/api/v1/dev/settings/&lt;json&gt;</b></td><td>POST/PUT update setting in JSON format</td></tr>\
+    <tr><td><b>/api/v1/dev/settings/&lt;json&gt;</b></td><td>POST/PUT update setting in JSON format<br>\
+                           test with:<br>\
+                           curl -X POST -H \"Content-Type: application/json\" --data '{\"name\":\"mqtt_broker\",\"value\":\"hassio.local\"}'\
+                           http://DSMR-API.local/api/v1/dev/settings\
+                           </td></tr>\
     <tr><td><b>/api/v1/hist/hours/{desc|asc}</b></td><td>Readings from hours table in JSON format</td></tr>\
     <tr><td><b>/api/v1/hist/days/{desc|asc}</b></td><td>Readings from days table in JSON format</td></tr>\
     <tr><td><b>/api/v1/hist/months/{desc|asc}</b></td><td>Readings from months table in JSON format</td></tr>\

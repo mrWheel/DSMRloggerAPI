@@ -206,7 +206,9 @@ struct buildJsonMQTT {
       {
         String Name = Item::name;
         //-- for dsmr30 -----------------------------------------------
+  #if defined( USE_PRE40_PROTOCOL )
         if (Name.indexOf("gas_delivered2") == 0) Name = "gas_delivered";
+  #endif
         String Unit = Item::unit();
 
         jsonDoc.clear();

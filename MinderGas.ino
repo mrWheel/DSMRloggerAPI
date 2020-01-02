@@ -113,7 +113,7 @@ void processMindergas()
         break;
       } 
       // check to see if there is a authtoken
-      validToken = (strlen(settingMindergasAuthtoken) > 5); // Assume there is a valid token, if there is a string. To be proven later.
+      validToken = (strlen(settingMindergasToken) > 5); // Assume there is a valid token, if there is a string. To be proven later.
       if  (validToken) 
       {
         //Next state is wait for first telegram
@@ -178,7 +178,7 @@ void processMindergas()
                                                           , DSMRdata.gas_delivered.val());
       // write the POST to a file...
       minderGasFile.println(F("POST /api/gas_meter_readings HTTP/1.1"));
-      minderGasFile.print(F("AUTH-TOKEN:")); minderGasFile.println(settingMindergasAuthtoken);
+      minderGasFile.print(F("AUTH-TOKEN:")); minderGasFile.println(settingMindergasToken);
       minderGasFile.println(F("Host: mindergas.nl"));
       minderGasFile.println(F("User-Agent: DSMRWS"));
       minderGasFile.println(F("Content-Type: application/json"));
@@ -268,7 +268,7 @@ void processMindergas()
                     switch (intStatuscodeMindergas) {
                       case 401:
                         validToken = false;
-                        strCopy(settingMindergasAuthtoken, sizeof(settingMindergasAuthtoken), "Invalid token"); 
+                        strCopy(settingMindergasToken, sizeof(settingMindergasToken), "Invalid token"); 
                         strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "Unauthorized, token invalid!"); // report error back to see in settings page
                         DebugTln(F("Invalid Mindergas Authenication Token"));
                         stateMindergas = MG_NO_AUTHTOKEN;

@@ -204,6 +204,48 @@ void sendNestedJsonObj(const char *cName, float fValue)
   
 } // sendNestedJsonObj(*char, float)
 
+
+//=======================================================================
+void sendJsonSettingObj(const char *cName, float fValue, const char *fType, int minValue, int maxValue)
+{
+  char jsonBuff[200] = "";
+
+  sprintf(jsonBuff, "%s{\"name\": \"%s\", \"value\": %.3f, \"type\": \"%s\", \"min\": %d, \"max\": %d}"
+                                      , objSprtr, cName, fValue, fType, minValue, maxValue);
+
+  httpServer.sendContent(jsonBuff);
+  sprintf(objSprtr, ",\r\n");
+
+} // sendJsonSettingObj(*char, float, *char, int, int)
+
+
+//=======================================================================
+void sendJsonSettingObj(const char *cName, int iValue, const char *iType, int minValue, int maxValue)
+{
+  char jsonBuff[200] = "";
+
+  sprintf(jsonBuff, "%s{\"name\": \"%s\", \"value\": %d, \"type\": \"%s\", \"min\": %d, \"max\": %d}"
+                                      , objSprtr, cName, iValue, iType, minValue, maxValue);
+
+  httpServer.sendContent(jsonBuff);
+  sprintf(objSprtr, ",\r\n");
+
+} // sendJsonSettingObj(*char, int, *char, int, int)
+
+
+//=======================================================================
+void sendJsonSettingObj(const char *cName, const char *cValue, const char *sType, int maxLen)
+{
+  char jsonBuff[200] = "";
+
+  sprintf(jsonBuff, "%s{\"name\": \"%s\", \"value\":\" %s\", \"type\": \"%s\", \"maxlen\": %d}"
+                                      , objSprtr, cName, cValue, sType, maxLen);
+
+  httpServer.sendContent(jsonBuff);
+  sprintf(objSprtr, ",\r\n");
+
+} // sendJsonSettingObj(*char, *char, *char, int, int)
+
 /***************************************************************************
 *
 * Permission is hereby granted, free of charge, to any person obtaining a

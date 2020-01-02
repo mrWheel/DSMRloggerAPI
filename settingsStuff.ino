@@ -46,7 +46,7 @@ void writeSettings()
   file.print("MQTTtopTopic = ");      file.println(settingMQTTtopTopic);        Debug(F("."));
 #endif
   
-  file.print("MindergasAuthtoken = ");file.println(settingMindergasAuthtoken);  Debug(F("."));
+  file.print("MindergasAuthtoken = ");file.println(settingMindergasToken);  Debug(F("."));
   file.close();  
   
   Debugln(F(" done"));
@@ -79,7 +79,7 @@ void writeSettings()
 #endif
   
 #ifdef USE_MINDERGAS
-    DebugT(F("MindergasAuthtoken = "));Debugln(settingMindergasAuthtoken);  
+    DebugT(F("MindergasAuthtoken = "));Debugln(settingMindergasToken);  
 #endif
   } // Verbose1
   
@@ -112,7 +112,7 @@ void readSettings(bool show)
   settingMQTTpasswd[0]     = '\0';
   settingMQTTinterval      = 60;
   sprintf(settingMQTTtopTopic, "%s", _HOSTNAME);
-  settingMindergasAuthtoken[0] = '\0';
+  settingMindergasToken[0] = '\0';
 
   if (!SPIFFS.exists(SETTINGS_FILE)) 
   {
@@ -155,7 +155,7 @@ void readSettings(bool show)
     if (words[0].equalsIgnoreCase("BackgroundColor"))     strCopy(settingBgColor, (MAXCOLORNAME -1), words[1].c_str());  
     if (words[0].equalsIgnoreCase("FontColor"))           strCopy(settingFontColor, (MAXCOLORNAME -1), words[1].c_str()); 
 
-    if (words[0].equalsIgnoreCase("MindergasAuthtoken"))  strCopy(settingMindergasAuthtoken, 20, words[1].c_str());  
+    if (words[0].equalsIgnoreCase("MindergasAuthtoken"))  strCopy(settingMindergasToken, 20, words[1].c_str());  
    
 #ifdef USE_MQTT
     if (words[0].equalsIgnoreCase("MQTTbroker"))  {
@@ -204,7 +204,7 @@ void readSettings(bool show)
 #endif  // USE_MQTT
 #ifdef USE_MINDERGAS
   Debugln(F("\r\n==== Mindergas settings ==============================================\r"));
-  Debugf("         Mindergas Authtoken : %s\r\n", settingMindergasAuthtoken);
+  Debugf("         Mindergas Authtoken : %s\r\n", settingMindergasToken);
 #endif  
   
   Debugln(F("-\r"));
@@ -216,58 +216,38 @@ void readSettings(bool show)
 void updateSetting(const char *field, const char *newValue)
 {
   DebugTf("-> field[%s], newValue[%s]\r\n", field, newValue);
-  
-  if (!stricmp(field, "settingEDT1"))               settingEDT1         = String(newValue).toFloat();  
-  if (!stricmp(field, "settingEDT2"))               settingEDT2         = String(newValue).toFloat();  
-  if (!stricmp(field, "settingERT1"))               settingERT1         = String(newValue).toFloat();  
-  if (!stricmp(field, "settingERT2"))               settingERT2         = String(newValue).toFloat();  
-  if (!stricmp(field, "settingGDT"))                settingGDT          = String(newValue).toFloat();  
-  if (!stricmp(field, "settingENBK"))               settingENBK         = String(newValue).toFloat();
-  if (!stricmp(field, "settingGNBK"))               settingGNBK         = String(newValue).toFloat();
 
-  if (!stricmp(field, "settingSleepTime"))          settingSleepTime    = String(newValue).toInt();  
-  if (!stricmp(field, "settingInterval"))           settingInterval     = String(newValue).toInt();  
+  if (!stricmp(field, "ed_tariff1"))        settingEDT1         = String(newValue).toFloat();  
+  if (!stricmp(field, "ed_tariff2"))        settingEDT2         = String(newValue).toFloat();  
+  if (!stricmp(field, "er_tariff1"))        settingERT1         = String(newValue).toFloat();  
+  if (!stricmp(field, "er_tariff2"))        settingERT2         = String(newValue).toFloat();  
+  if (!stricmp(field, "electr_netw_costs")) settingENBK         = String(newValue).toFloat();
 
-  if (!stricmp(field, "settingBgColor"))            strCopy(settingBgColor, (MAXCOLORNAME -1), newValue);  
-  if (!stricmp(field, "settingFontColor"))          strCopy(settingFontColor, (MAXCOLORNAME -1), newValue); 
+  if (!stricmp(field, "gd_tariff"))         settingGDT          = String(newValue).toFloat();  
+  if (!stricmp(field, "gas_netw_costs"))    settingGNBK         = String(newValue).toFloat();
 
-  if (!stricmp(field, "settingMindergasAuthtoken")) strCopy(settingMindergasAuthtoken, 20, newValue);  
+  if (!stricmp(field, "tlgrm_interval"))    settingInterval     = String(newValue).toInt();  
+
+  if (!stricmp(field, "MindergasToken"))    strCopy(settingMindergasToken, 20, newValue);  
    
 #ifdef USE_MQTT
-  if (!stricmp(field, "settingMQTTbroker"))  {
+  if (!stricmp(field, "mqtt_broker"))  {
     DebugT("settingMQTTbroker! to : ");
     memset(settingMQTTbroker, '\0', sizeof(settingMQTTbroker));
     strCopy(settingMQTTbroker, 100, newValue);
     Debugf("[%s]\r\n", settingMQTTbroker);
   }
-  if (!stricmp(field, "settingMQTTbrokerPort"))     settingMQTTbrokerPort    = String(newValue).toInt();  
-  if (!stricmp(field, "settingMQTTuser"))           strCopy(settingMQTTuser    ,35, newValue);  
-  if (!stricmp(field, "settingMQTTpasswd"))         strCopy(settingMQTTpasswd  ,25, newValue);  
-  if (!stricmp(field, "settingMQTTinterval"))       settingMQTTinterval        = String(newValue).toInt();  
-  if (!stricmp(field, "settingMQTTtopTopic"))       strCopy(settingMQTTtopTopic, 20, newValue);  
+  if (!stricmp(field, "mqtt_broker_port"))  settingMQTTbrokerPort = String(newValue).toInt();  
+  if (!stricmp(field, "mqtt_user"))         strCopy(settingMQTTuser    ,35, newValue);  
+  if (!stricmp(field, "mqtt_passwd"))       strCopy(settingMQTTpasswd  ,25, newValue);  
+  if (!stricmp(field, "mqtt_interval"))     settingMQTTinterval   = String(newValue).toInt();  
+  if (!stricmp(field, "mqtt_topTopic"))     strCopy(settingMQTTtopTopic, 20, newValue);  
 #endif
 
   writeSettings();
   
 } // updateSetting()
 
-/**
-//-----------------------------------------------------------------------
-void updateSetting(const char *field, int32_t newValue)
-{
-  const char *charVal = intToStr(newValue);
-  updateSetting(field, charVal);
-  
-} // updateSetting(*char, int);
-
-//-----------------------------------------------------------------------
-void updateSetting(const char *field, float newValue)
-{
-  const char *charVal = floatToStr(newValue, 6);
-  updateSetting(field, charVal);
-  
-} // updateSetting(*char, int);
-**/
 
 /***************************************************************************
 *

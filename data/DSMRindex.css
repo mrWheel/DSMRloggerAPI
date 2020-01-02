@@ -26,6 +26,17 @@ table {
 	background: lightblue;
 }
 
+input {
+   -moz-appearance: none;/* older firefox */
+   -webkit-appearance: none; /* safari, chrome, edge and ie mobile */
+   appearance: none; /* rest */
+   font-size: 14pt;
+}
+
+.settingDiv {
+	background: lightblue;		
+}
+
 .container-card {
   padding: 50;
   margin: 50;

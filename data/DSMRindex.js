@@ -113,7 +113,7 @@
     } else if (tabName == "Telegram") {
       console.log("newTab: Telegram");
       refreshSmTelegram();
-      TimerTab = setInterval(refreshSmTelegram, 60 * 1000); // repeat every 60s
+      //TimerTab = setInterval(refreshSmTelegram, 60 * 1000); // do not repeat!
     }
   } // openTab()
 
@@ -126,7 +126,8 @@
       .then(json => {
         //console.log("parsed .., data is ["+ JSON.stringify(json)+"]");
         data = json.devinfo;
-    	  for( let i in data ){
+    	  for( let i in data )
+    	  {
       			var tableRef = document.getElementById('devInfoTable').getElementsByTagName('tbody')[0];
       			
       			if( ( document.getElementById("devInfoTable_"+data[i].name)) == null )
@@ -152,10 +153,10 @@
 							tableCells[2].innerHTML = data[i].unit;
 						}
 						
-						if (data[i].name == "FwVersion")
+						if (data[i].name == "fwversion")
 						{
 							document.getElementById('devVersion').innerHTML = json.devinfo[i].value;
-						} else if (data[i].name == 'Hostname')
+						} else if (data[i].name == 'hostname')
 						{
 							document.getElementById('devName').innerHTML = data[i].value;
 						}
@@ -202,7 +203,8 @@
       .then(json => {
       		//console.log("parsed .., fields is ["+ JSON.stringify(json)+"]");
       		data = json.fields;
-      		for (var i in data) {
+      		for (var i in data) 
+      		{
       			var tableRef = document.getElementById('actualTable').getElementsByTagName('tbody')[0];
       			if( ( document.getElementById("actualTable_"+data[i].name)) == null )
       			{
