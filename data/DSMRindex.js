@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRindex.js, part of DSMRfirmwareAPI
-**  Version  : v0.1.2
+**  Version  : v0.1.3
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -62,7 +62,11 @@
                     ,"slave_valve_position","slave_delivered"
                     ,"\0"
                     ];
-
+                    
+  var monthNames = [ "indxNul","Januari","Februari","Maart","April","Mei","Juni"
+                    ,"Juli","Augustus","September","Oktober","November","december"
+                    ,"\0"
+                   ];
   
   window.onload=bootsTrap;
   window.onfocus = function() {
@@ -395,10 +399,9 @@
     fetch(APIGW+"v1/hist/months/asc", {"setTimeout": 2000})
       .then(response => response.json())
       .then(json => {
-        console.log("Ok, now processJson() for Months");
         //console.log(response);
         data = json.months;
-        processJson(data, "Months");
+        processMonths(data);
       })
       .catch(function(error) {
         var p = document.createElement('p');
@@ -469,6 +472,139 @@
     showTable(type);
       
   } // processJson()
+      
+  
+  //============================================================================  
+  function processMonths(data)
+  {
+     console.log("now in processMonths() ..");
+     for (let i=0; i<data.length; i++)
+     {
+      data[i].p_ed = {};
+      data[i].p_er = {};
+      data[i].p_gd = {};
+      if (i < (data.length -1))
+      {
+        data[i].p_ed = (data[i].edt1 +data[i].edt2)-(data[i+1].edt1 +data[i+1].edt2);
+        data[i].p_ed = (data[i].p_ed * 1000).toFixed(0);
+        data[i].p_er = (data[i].ert1 +data[i].ert2)-(data[i+1].ert1 +data[i+1].ert2);
+        data[i].p_er = (data[i].p_er * 1000).toFixed(0);
+        data[i].p_gd = ( data[i].gdt  -data[i+1].gdt).toFixed(3);
+      }
+      else
+      {
+        data[i].p_ed = (data[i].edt1 +data[i].edt2).toFixed(3);
+        data[i].p_er = (data[i].ert1 +data[i].ert2).toFixed(3);
+        data[i].p_gd = (data[i].gdt).toFixed(3);
+      }
+    } // for i ..
+
+    showMonthsTable(data);
+      
+  } // processMonths()
+
+    
+  //============================================================================  
+  function showMonthsTable(data)
+  { 
+    console.log("now in showMonthsTable() ..");
+    var showRows = 0;
+    if (data.length > 24) showRows = 12;
+    else                  showRows = data.length / 2;
+    //console.log("showRows is ["+showRows+"]");
+    for (let i=0; i<showRows; i++)
+    {
+      //console.log("showMonthsTable(): data["+i+"] => data["+i+"]name["+data[i].recid+"]");
+      var tableRef = document.getElementById('lastMonthsTable').getElementsByTagName('tbody')[0];
+      //if( ( document.getElementById(type +"Table_"+data[i].recid)) == null )
+      if( ( document.getElementById("lastMonthsTable_R"+i)) == null )
+      {
+        var newRow   = tableRef.insertRow();
+        //newRow.setAttribute("id", type+"Table_"+data[i].recid, 0);
+        newRow.setAttribute("id", "lastMonthsTable_R"+i, 0);
+        // Insert a cell in the row at index 0
+        var newCell  = newRow.insertCell(0);          // maand
+        var newText  = document.createTextNode('-');
+        newCell.appendChild(newText);
+        newCell  = newRow.insertCell(1);              // |
+        newCell.appendChild(newText);
+        newCell  = newRow.insertCell(2);              // jaar
+        newCell.appendChild(newText);
+        newCell  = newRow.insertCell(3);              // verbruik
+        newCell.appendChild(newText);
+        newCell  = newRow.insertCell(4);              // jaar
+        newCell.appendChild(newText);
+        newCell  = newRow.insertCell(5);              // verbruik
+        newCell.appendChild(newText);
+        newCell  = newRow.insertCell(6);              // |
+        newCell.appendChild(newText);
+        newCell  = newRow.insertCell(7);              // jaar
+        newCell.appendChild(newText);
+        newCell  = newRow.insertCell(8);              // opgewekt
+        newCell.appendChild(newText);
+        newCell  = newRow.insertCell(9);              // jaar
+        newCell.appendChild(newText);
+        newCell  = newRow.insertCell(10);             // opgewekt
+        newCell.appendChild(newText);
+        newCell  = newRow.insertCell(11);             // |
+        newCell.appendChild(newText);
+        newCell  = newRow.insertCell(12);             // jaar
+        newCell.appendChild(newText);
+        newCell  = newRow.insertCell(13);             // gas
+        newCell.appendChild(newText);
+        newCell  = newRow.insertCell(14);             // jaar
+        newCell.appendChild(newText);
+        newCell  = newRow.insertCell(15);             // jaar
+        newCell.appendChild(newText);
+      }
+      var mmNr = parseInt(data[i].recid.substring(2,4), 10);
+      //console.log("mmNr["+mmNr+"] => ["+monthNames[mmNr]+"]");
+
+      tableCells = document.getElementById("lastMonthsTable_R"+i).cells;
+      tableCells[0].style.textAlign = "right";
+      tableCells[0].innerHTML = monthNames[mmNr];                     // maand
+      
+      tableCells[1].style.textAlign = "center";
+      tableCells[1].innerHTML = "|";                                  // |
+      tableCells[1].style.fontWeight = 'bold';
+      
+      tableCells[2].style.textAlign = "center";
+      tableCells[2].innerHTML = "20"+data[i].recid.substring(0,2);    // jaar
+      tableCells[3].style.textAlign = "right";
+      tableCells[3].innerHTML = data[i].p_ed;                         // verbruik
+      tableCells[4].style.textAlign = "center";
+      tableCells[4].innerHTML = "20"+data[i+12].recid.substring(0,2); // jaar
+      tableCells[5].style.textAlign = "right";
+      tableCells[5].innerHTML = data[i+12].p_ed;                      // verbruik
+
+      tableCells[6].style.textAlign = "center";
+      tableCells[6].innerHTML = "|";                                  // |
+      tableCells[6].style.fontWeight = 'bold';
+
+      tableCells[7].style.textAlign = "center";
+      tableCells[7].innerHTML = "20"+data[i].recid.substring(0,2);    // jaar
+      tableCells[8].style.textAlign = "right";
+      tableCells[8].innerHTML = data[i].p_er;                         // verbruik
+      tableCells[9].style.textAlign = "center";
+      tableCells[9].innerHTML = "20"+data[i+12].recid.substring(0,2); // jaar
+      tableCells[10].style.textAlign = "right";
+      tableCells[10].innerHTML = data[i+12].p_er;                     // verbruik
+
+      tableCells[11].style.textAlign = "center";
+      tableCells[11].innerHTML = "|";                                 // |
+      tableCells[11].style.fontWeight = 'bold';
+
+      tableCells[12].style.textAlign = "center";
+      tableCells[12].innerHTML = "20"+data[i].recid.substring(0,2);   // jaar
+      tableCells[13].style.textAlign = "right";
+      tableCells[13].innerHTML = data[i].p_gd;                        // verbruik
+      tableCells[14].style.textAlign = "center";
+      tableCells[14].innerHTML = "20"+data[i+12].recid.substring(0,2);// jaar
+      tableCells[15].style.textAlign = "right";
+      tableCells[15].innerHTML = data[i+12].p_gd;                     // verbruik
+
+    };
+  } // showMonthsTable()
 
     
   //============================================================================  
