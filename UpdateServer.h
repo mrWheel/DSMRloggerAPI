@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : UpdateServer.h, part of DSMRloggerAPI
-**  Version  : v0.1.1
+**  Version  : v0.1.2
 ** 
 **  This is the ESP8266HTTPUpdateServer.h file 
 **  modified by PA4WD ("https://github.com/PA4WD/Arduino/tree/master/libraries/ESP8266HTTPUpdateServer")

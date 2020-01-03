@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : Debug.h, part of DSMRloggerAPI
-**  Version  : v0.1.1
+**  Version  : v0.1.2
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **  Met dank aan Erik
@@ -20,7 +20,6 @@
                         })
 #define Debugf(...)     ({ Serial.printf(__VA_ARGS__);        \
                            TelnetStream.printf(__VA_ARGS__);  \
-                           DebugFlush();                      \
                         })
 
 #define DebugFlush()    ({ Serial.flush(); \

@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : jsonStuff, part of DSMRloggerAPI
-**  Version  : v0.1.1
+**  Version  : v0.1.2
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -17,6 +17,7 @@ void sendStartJsonObj(const char *objName)
   objSprtr[0]    = '\0';
 
   sprintf(sBuff, "{\"%s\":[\r\n", objName);
+  httpServer.sendHeader("Access-Control-Allow-Origin", "*");
   httpServer.setContentLength(CONTENT_LENGTH_UNKNOWN);
   httpServer.send(200, "application/json", sBuff);
   

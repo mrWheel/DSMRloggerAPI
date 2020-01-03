@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : restAPI, part of DSMRloggerAPI
-**  Version  : v0.1.1
+**  Version  : v0.1.2
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -17,10 +17,14 @@ char fieldName[40] = "";
 char fieldsArray[50][35] = {{0}}; // to lookup fields 
 int  fieldsElements      = 0;
 
-int  actualElements = 8;
+int  actualElements = 20;
 char actualArray[][35] = { "timestamp","energy_delivered_tariff1","energy_delivered_tariff2"
                           ,"energy_returned_tariff1","energy_returned_tariff2"
                           ,"power_delivered","power_returned"
+                          ,"voltage_l1","voltage_l2","voltage_l3"
+                          ,"current_l1","current_l2","current_l3"
+                          ,"power_delivered_l1","power_delivered_l2","power_delivered_l3"
+                          ,"power_returned_l1","power_returned_l2","power_returned_l3"
                           ,"\0"};
 int  infoElements = 7;
 char infoArray[][35]   = { "identification","p1_version","equipment_id","electricity_tariff"
@@ -198,12 +202,13 @@ void handleSmApi(const char *word4, const char *word5, const char *word6)
   }
   else if (strcmp(word4, "telegram") == 0)
   {
+    showRaw = true;
     slimmeMeter.enable(true);
-    Serial.flush();
     Serial.setTimeout(5000);  // 5 seconds must be enough ..
-    // The terminator character is discarded from the serial buffer.
     memset(tlgrm, 0, sizeof(tlgrm));
-    int l = Serial.readBytesUntil('/', tlgrm, sizeof(tlgrm));
+    int l = 0;
+    // The terminator character is discarded from the serial buffer.
+    l = Serial.readBytesUntil('/', tlgrm, sizeof(tlgrm));
     // now read from '/' to '!'
     // The terminator character is discarded from the serial buffer.
     l = Serial.readBytesUntil('!', tlgrm, sizeof(tlgrm));
@@ -212,22 +217,26 @@ void handleSmApi(const char *word4, const char *word5, const char *word6)
     if (l == 0) 
     {
       httpServer.send(200, "application/plain", "no telegram received");
+      showRaw = false;
       return;
     }
-    
+
     tlgrm[l++] = '!';
 #if !defined( USE_PRE40_PROTOCOL )
     // next 6 bytes are "<CRC>\r\n"
-    for (int i=l; (i<l+6) && (i<sizeof(tlgrm)); i++)
+    for (int i=0; ( i<6 && (i<(sizeof(tlgrm)-7)) ); i++)
     {
-      tlgrm[i] = (char)Serial.read();
+      tlgrm[l++] = (char)Serial.read();
     }
 #else
-    tlgrm[l++] = '\r';
-    tlgrm[l++] = '\n';
+    tlgrm[l++]    = '\r';
+    tlgrm[l++]    = '\n';
 #endif
-    for (int i=strlen(tlgrm); i>=0; i--) tlgrm[i+1] = tlgrm[i];
+    tlgrm[(l +1)] = '\0';
+    // shift telegram 1 char to the right (make room at pos [0] for '/')
+    for (int i=strlen(tlgrm); i>=0; i--) { tlgrm[i+1] = tlgrm[i]; yield(); }
     tlgrm[0] = '/'; 
+    showRaw = false;
     if (Verbose1) Debugf("Telegram (%d chars):\r\n/%s", strlen(tlgrm), tlgrm);
     httpServer.send(200, "application/plain", tlgrm);
 

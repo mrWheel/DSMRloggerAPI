@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : FSexplorer, part of DSMRloggerAPI
-**  Version  : v0.1.1
+**  Version  : v0.1.2
 **
 **  Mostly stolen from https://www.arduinoforum.de/User-Fips
 **  For more information visit: https://fipsok.de

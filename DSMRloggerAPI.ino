@@ -2,7 +2,7 @@
 ***************************************************************************  
 **  Program  : DSMRloggerAPI (restAPI)
 */
-#define _FW_VERSION "v0.1.1 (01-01-2020)"
+#define _FW_VERSION "v0.1.2 (03-01-2020)"
 /*
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -333,7 +333,7 @@ void setup()
   DebugTf("Startup complete! actTimestamp[%s]\r\n", actTimestamp);  
 
 #if defined( IS_ESP12 ) && !defined( HAS_NO_SLIMMEMETER )
-  Serial.swap();
+    Serial.swap();
 #endif // is_esp12
 
   sprintf(cMsg, "Last reset reason: [%s]\r", ESP.getResetReason().c_str());

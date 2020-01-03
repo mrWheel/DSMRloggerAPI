@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : MQTTstuff, part of DSMRloggerAPI
-**  Version  : v0.1.1
+**  Version  : v0.1.2
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **

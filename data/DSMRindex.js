@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRindex.js, part of DSMRfirmwareAPI
-**  Version  : v0.1.0
+**  Version  : v0.1.2
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -15,8 +15,54 @@
   let needReload  = true;
   let activeTab   = "none";
   let TimerTab;
- 	
- 	var data = [];
+  
+  var data = [];
+  var longFields = [ "identification","p1_version","timestamp","equipment_id"
+                    ,"energy_delivered_tariff1","energy_delivered_tariff2"
+                    ,"energy_returned_tariff1","energy_returned_tariff2","electricity_tariff"
+                    ,"power_delivered","power_returned"
+                    ,"electricity_threshold","electricity_switch_position"
+                    ,"electricity_failures","electricity_long_failures","electricity_failure_log"
+                    ,"electricity_sags_l1","electricity_sags_l2","electricity_sags_l3"
+                    ,"electricity_swells_l1","electricity_swells_l2","electricity_swells_l3"
+                    ,"message_short","message_long"
+                    ,"voltage_l1","voltage_l2","voltage_l3"
+                    ,"current_l1","current_l2","current_l3"
+                    ,"power_delivered_l1","power_delivered_l2","power_delivered_l3"
+                    ,"power_returned_l1","power_returned_l2","power_returned_l3"
+                    ,"gas_device_type","gas_equipment_id","gas_valve_position","gas_delivered"
+                    ,"thermal_device_type","thermal_equipment_id"
+                    ,"thermal_valve_position","thermal_delivered"
+                    ,"water_device_type","water_equipment_id"
+                    ,"water_valve_position","water_delivered"
+                    ,"slave_device_type","slave_equipment_id"
+                    ,"slave_valve_position","slave_delivered"
+                    ,"\0"
+                  ];
+                    
+  var shortFields = [ "Slimme Meter ID","P1 Versie","timestamp","Equipment ID"
+                    ,"Energie Gebruikt tarief 1","Energy Gebruikt tarief 2"
+                    ,"Energie Opgewekt tarief 1","Energie Opgewekt tarief 2","Electriciteit tarief"
+                    ,"Vermogen Gebruikt","Vermogen Opgewekt"
+                    ,"electricity_threshold","electricity_switch_position"
+                    ,"electricity_failures","electricity_long_failures","electricity_failure_log"
+                    ,"electricity_sags_l1","electricity_sags_l2","electricity_sags_l3"
+                    ,"electricity_swells_l1","electricity_swells_l2","electricity_swells_l3"
+                    ,"message_short","message_long"
+                    ,"Voltage l1","Voltage l2","Voltage l3"
+                    ,"Current l1","Current l2","Current l3"
+                    ,"Vermogen Gebruikt l1","Vermogen Gebruikt l2","Vermogen Gebruikt l3"
+                    ,"Vermogen Opgewekt l1","Vermogen Opgewekt l2","Vermogen Opgewekt l3"
+                    ,"Gas Device Type","Gas Equipment ID","Gas Klep Positie","Gas Gebruikt"
+                    ,"thermal_device_type","thermal_equipment_id"
+                    ,"thermal_valve_position","thermal_delivered"
+                    ,"water_device_type","water_equipment_id"
+                    ,"water_valve_position","water_delivered"
+                    ,"slave_device_type","slave_equipment_id"
+                    ,"slave_valve_position","slave_delivered"
+                    ,"\0"
+                    ];
+
   
   window.onload=bootsTrap;
   window.onfocus = function() {
@@ -38,6 +84,8 @@
                                                 {openTab('LastDays');});
     document.getElementById('bLastMonths').addEventListener('click',function() 
                                                 {openTab('LastMonths');});
+    document.getElementById('bFields').addEventListener('click',function() 
+                                                {openTab('Fields');});
     document.getElementById('bTelegram').addEventListener('click',function() 
                                                 {openTab('Telegram');});
     document.getElementById('bSysInfo').addEventListener('click',function() 
@@ -83,12 +131,12 @@
     }
     //--- and set active tab to 'block'
     console.log("now set ["+bID+"] to block ..");
-    document.getElementById(bID).style.background='lightgray';
+    //document.getElementById(bID).style.background='lightgray';
     document.getElementById(tabName).style.display = "block";  
     if (tabName == "Actual") {
       console.log("newTab: Actual");
-      refreshSmFields();
-      TimerTab = setInterval(refreshSmFields, 60 * 1000); // repeat every 60s
+      refreshSmActual();
+      TimerTab = setInterval(refreshSmActual, 60 * 1000); // repeat every 60s
 
     } else if (tabName == "LastHours") {
       console.log("newTab: LastHours");
@@ -110,6 +158,11 @@
       refreshDevInfo();
       TimerTab = setInterval(refreshDevInfo, 60 * 1000); // repeat every 30s
 
+    } else if (tabName == "Fields") {
+      console.log("newTab: Fields");
+      refreshSmFields();
+      TimerTab = setInterval(refreshSmFields, 60 * 1000); // repeat every 30s
+
     } else if (tabName == "Telegram") {
       console.log("newTab: Telegram");
       refreshSmTelegram();
@@ -126,49 +179,52 @@
       .then(json => {
         //console.log("parsed .., data is ["+ JSON.stringify(json)+"]");
         data = json.devinfo;
-    	  for( let i in data )
-    	  {
-      			var tableRef = document.getElementById('devInfoTable').getElementsByTagName('tbody')[0];
-      			
-      			if( ( document.getElementById("devInfoTable_"+data[i].name)) == null )
-      			{
-      			  //console.log("data["+i+"] => name["+data[i].name+"]");
-      				var newRow   = tableRef.insertRow();
-							newRow.setAttribute("id", "devInfoTable_"+data[i].name, 0);
-							// Insert a cell in the row at index 0
-							var newCell  = newRow.insertCell(0);
-						  var newText  = document.createTextNode('');
-							newCell.appendChild(newText);
-							newCell  = newRow.insertCell(1);
-							newCell.appendChild(newText);
-							newCell  = newRow.insertCell(2);
-							newCell.appendChild(newText);
-						}
-						tableCells = document.getElementById("devInfoTable_"+data[i].name).cells;
-						tableCells[0].innerHTML = data[i].name;
-						tableCells[1].innerHTML = data[i].value;
-	     			if (data[i].hasOwnProperty('unit'))
-	     			{
-		     			tableCells[1].style.textAlign = "right";
-							tableCells[2].innerHTML = data[i].unit;
-						}
-						
-						if (data[i].name == "fwversion")
-						{
-							document.getElementById('devVersion').innerHTML = json.devinfo[i].value;
-						} else if (data[i].name == 'hostname')
-						{
-							document.getElementById('devName').innerHTML = data[i].value;
-						}
-      		}
-     	})
-  		.catch(function(error) {
-      	var p = document.createElement('p');
-      	p.appendChild(
-        	document.createTextNode('Error: ' + error.message)
-      	);
-    	});     
-  }	// refreshDevInfo()
+        for( let i in data )
+        {
+            var tableRef = document.getElementById('devInfoTable').getElementsByTagName('tbody')[0];
+            
+            if( ( document.getElementById("devInfoTable_"+data[i].name)) == null )
+            {
+              //console.log("data["+i+"] => name["+data[i].name+"]");
+              var newRow   = tableRef.insertRow();
+              newRow.setAttribute("id", "devInfoTable_"+data[i].name, 0);
+              // Insert a cell in the row at index 0
+              var newCell  = newRow.insertCell(0);
+              newCell.style.whiteSpace = "nowrap";
+              var newText  = document.createTextNode('');
+              newCell.appendChild(newText);
+              newCell  = newRow.insertCell(1);
+              newCell.style.whiteSpace = "nowrap";
+              newCell.appendChild(newText);
+              newCell  = newRow.insertCell(2);
+              newCell.style.whiteSpace = "nowrap";
+              newCell.appendChild(newText);
+            }
+            tableCells = document.getElementById("devInfoTable_"+data[i].name).cells;
+            tableCells[0].innerHTML = data[i].name;
+            tableCells[1].innerHTML = data[i].value;
+            if (data[i].hasOwnProperty('unit'))
+            {
+              tableCells[1].style.textAlign = "right";
+              tableCells[2].innerHTML = data[i].unit;
+            }
+            
+            if (data[i].name == "fwversion")
+            {
+              document.getElementById('devVersion').innerHTML = json.devinfo[i].value;
+            } else if (data[i].name == 'hostname')
+            {
+              document.getElementById('devName').innerHTML = data[i].value;
+            }
+          }
+      })
+      .catch(function(error) {
+        var p = document.createElement('p');
+        p.appendChild(
+          document.createTextNode('Error: ' + error.message)
+        );
+      });     
+  } // refreshDevInfo()
 
   
   //============================================================================  
@@ -178,21 +234,66 @@
       .then(response => response.json())
       .then(json => {
         //console.log("parsed .., data is ["+ JSON.stringify(json)+"]");
-    	  for( let i in json.devtime ){
-						if (json.devtime[i].name == "time")
-						{
-						  //console.log("Got new time ["+json.devtime[i].value+"]");
-							document.getElementById('theTime').innerHTML = json.devtime[i].value;
-						}
-      		}
-     	})
-  		.catch(function(error) {
-      	var p = document.createElement('p');
-      	p.appendChild(
-        	document.createTextNode('Error: ' + error.message)
-      	);
-    	});     
-  }	// refreshDevTime()
+        for( let i in json.devtime ){
+            if (json.devtime[i].name == "time")
+            {
+              //console.log("Got new time ["+json.devtime[i].value+"]");
+              document.getElementById('theTime').innerHTML = json.devtime[i].value;
+            }
+          }
+      })
+      .catch(function(error) {
+        var p = document.createElement('p');
+        p.appendChild(
+          document.createTextNode('Error: ' + error.message)
+        );
+      });     
+  } // refreshDevTime()
+  
+  
+  //============================================================================  
+  function refreshSmActual()
+  {
+    fetch(APIGW+"v1/sm/actual")
+      .then(response => response.json())
+      .then(json => {
+          //console.log("parsed .., fields is ["+ JSON.stringify(json)+"]");
+          data = json.actual;
+          for (var i in data) 
+          {
+            data[i].guiName = long2Short(data[i].name);
+            var tableRef = document.getElementById('actualTable').getElementsByTagName('tbody')[0];
+            if( ( document.getElementById("actualTable_"+data[i].name)) == null )
+            {
+              var newRow   = tableRef.insertRow();
+              newRow.setAttribute("id", "actualTable_"+data[i].name, 0);
+              // Insert a cell in the row at index 0
+              var newCell  = newRow.insertCell(0);
+              var newText  = document.createTextNode('');
+              newCell.appendChild(newText);
+              newCell  = newRow.insertCell(1);
+              newCell.appendChild(newText);
+              newCell  = newRow.insertCell(2);
+              newCell.appendChild(newText);
+            }
+            tableCells = document.getElementById("actualTable_"+data[i].name).cells;
+            tableCells[0].innerHTML = data[i].guiName;
+            tableCells[1].innerHTML = data[i].value;
+            if (data[i].hasOwnProperty('unit'))
+            {
+              tableCells[1].style.textAlign = "right";
+              tableCells[2].innerHTML = data[i].unit;
+            }
+          }
+          //console.log("-->done..");
+      })
+      .catch(function(error) {
+        var p = document.createElement('p');
+        p.appendChild(
+          document.createTextNode('Error: ' + error.message)
+        );
+      }); 
+  };  // refreshSmActual()
   
   
   //============================================================================  
@@ -201,106 +302,111 @@
     fetch(APIGW+"v1/sm/fields")
       .then(response => response.json())
       .then(json => {
-      		//console.log("parsed .., fields is ["+ JSON.stringify(json)+"]");
-      		data = json.fields;
-      		for (var i in data) 
-      		{
-      			var tableRef = document.getElementById('actualTable').getElementsByTagName('tbody')[0];
-      			if( ( document.getElementById("actualTable_"+data[i].name)) == null )
-      			{
-      				var newRow   = tableRef.insertRow();
-							newRow.setAttribute("id", "actualTable_"+data[i].name, 0);
-							// Insert a cell in the row at index 0
-							var newCell  = newRow.insertCell(0);
-						  var newText  = document.createTextNode('');
-							newCell.appendChild(newText);
-							newCell  = newRow.insertCell(1);
-							newCell.appendChild(newText);
-							newCell  = newRow.insertCell(2);
-							newCell.appendChild(newText);
-						}
-						tableCells = document.getElementById("actualTable_"+data[i].name).cells;
-						tableCells[0].innerHTML = data[i].name;
-						tableCells[1].innerHTML = data[i].value;
-	     			if (data[i].hasOwnProperty('unit'))
-	     			{
-		     			tableCells[1].style.textAlign = "right";
-							tableCells[2].innerHTML = data[i].unit;
-						}
-      		}
-      		//console.log("-->done..");
+          //console.log("parsed .., fields is ["+ JSON.stringify(json)+"]");
+          data = json.fields;
+          for (var i in data) 
+          {
+            //data[i].guiName = data[i].name;
+            data[i].guiName = long2Short(data[i].name);
+            var tableRef = document.getElementById('fieldsTable').getElementsByTagName('tbody')[0];
+            if( ( document.getElementById("fieldsTable_"+data[i].name)) == null )
+            {
+              var newRow   = tableRef.insertRow();
+              newRow.setAttribute("id", "fieldsTable_"+data[i].name, 0);
+              // Insert a cell in the row at index 0
+              var newCell  = newRow.insertCell(0);
+              var newText  = document.createTextNode('');
+              newCell.appendChild(newText);
+              newCell  = newRow.insertCell(1);
+              newCell.appendChild(newText);
+              newCell  = newRow.insertCell(2);
+              newCell.appendChild(newText);
+              newCell  = newRow.insertCell(3);
+              newCell.appendChild(newText);
+            }
+            tableCells = document.getElementById("fieldsTable_"+data[i].name).cells;
+            tableCells[0].innerHTML = data[i].name;
+            tableCells[1].innerHTML = data[i].guiName;
+            tableCells[2].innerHTML = data[i].value;
+            if (data[i].hasOwnProperty('unit'))
+            {
+              tableCells[2].style.textAlign = "right";
+              tableCells[3].innerHTML = data[i].unit;
+            }
+          }
+          //console.log("-->done..");
       })
-  		.catch(function(error) {
-      	var p = document.createElement('p');
-      	p.appendChild(
-        	document.createTextNode('Error: ' + error.message)
-      	);
-      });	
-  };	// refreshSmFields()
+      .catch(function(error) {
+        var p = document.createElement('p');
+        p.appendChild(
+          document.createTextNode('Error: ' + error.message)
+        );
+      }); 
+  };  // refreshSmFields()
   
   
   //============================================================================  
   function refreshHours()
   {
- 		console.log("fetch("+APIGW+"v1/hist/hours/asc)");
+    console.log("fetch("+APIGW+"v1/hist/hours/asc)");
     fetch(APIGW+"v1/hist/hours/asc", {"setTimeout": 2000})
       .then(response => response.json())
       .then(json => {
-      	console.log("Ok, now processJson() for Hours");
-      	//console.log(json);
-      	data = json.hours;
-      	//console.log(data);
-	      processJson(data, "Hours");
-  		})
-  		.catch(function(error) {
-      	var p = document.createElement('p');
-      	p.appendChild(
-        	document.createTextNode('Error: ' + error.message)
-      	);
-      });	
-  }	// resfreshHours()
+        console.log("Ok, now processJson() for Hours");
+        //console.log(json);
+        data = json.hours;
+        //console.log(data);
+        processJson(data, "Hours");
+      })
+      .catch(function(error) {
+        var p = document.createElement('p');
+        p.appendChild(
+          document.createTextNode('Error: ' + error.message)
+        );
+      }); 
+  } // resfreshHours()
   
-	
+  
   //============================================================================  
   function refreshDays()
   {
- 		console.log("fetch("+APIGW+"v1/hist/days/asc)");
+    console.log("fetch("+APIGW+"v1/hist/days/asc)");
     fetch(APIGW+"v1/hist/days/asc", {"setTimeout": 2000})
       .then(response => response.json())
       .then(json => {
-      	console.log("Ok, now processJson() for Days");
-      	data = json.days;
-      	//console.log(data);
-	      processJson(data, "Days");
-  		})
-  		.catch(function(error) {
-      	var p = document.createElement('p');
-      	p.appendChild(
-        	document.createTextNode('Error: ' + error.message)
-      	);
-  		});
-	}	// resfreshDays()
+        console.log("Ok, now processJson() for Days");
+        data = json.days;
+        //console.log(data);
+        processJson(data, "Days");
+      })
+      .catch(function(error) {
+        var p = document.createElement('p');
+        p.appendChild(
+          document.createTextNode('Error: ' + error.message)
+        );
+      });
+  } // resfreshDays()
   
-	
+  
   //============================================================================  
   function refreshMonths()
   {
- 		console.log("fetch("+APIGW+"v1/hist/months/asc)");
+    console.log("fetch("+APIGW+"v1/hist/months/asc)");
     fetch(APIGW+"v1/hist/months/asc", {"setTimeout": 2000})
       .then(response => response.json())
       .then(json => {
-      	console.log("Ok, now processJson() for Months");
-      	//console.log(response);
-      	data = json.months;
-	      processJson(data, "Months");
-  		})
-  		.catch(function(error) {
-      	var p = document.createElement('p');
-      	p.appendChild(
-        	document.createTextNode('Error: ' + error.message)
-      	);
-  		});
-	}	// resfreshMonths()
+        console.log("Ok, now processJson() for Months");
+        //console.log(response);
+        data = json.months;
+        processJson(data, "Months");
+      })
+      .catch(function(error) {
+        var p = document.createElement('p');
+        p.appendChild(
+          document.createTextNode('Error: ' + error.message)
+        );
+      });
+  } // resfreshMonths()
 
     
   //============================================================================  
@@ -311,134 +417,138 @@
       .then(response => {
         console.log("parsed .., data is ["+ response+"]");
         console.log('-------------------');
-   			var divT = document.getElementById('rawTelegram');
-   			if ( document.getElementById("TelData") == null )
-      	{
-      	    console.log("CreateElement(pre)..");
-      			var preT = document.createElement('pre');
-						preT.setAttribute("id", "TelData", 0);
+        var divT = document.getElementById('rawTelegram');
+        if ( document.getElementById("TelData") == null )
+        {
+            console.log("CreateElement(pre)..");
+            var preT = document.createElement('pre');
+            preT.setAttribute("id", "TelData", 0);
             preT.setAttribute('class', 'telegram');
             preT.textContent = response;
             divT.appendChild(preT);
-				}
-				preT = document.getElementById("TelData");
+        }
+        preT = document.getElementById("TelData");
         preT.textContent = response;
-  		})
-  		.catch(function(error) {
-      	var p = document.createElement('p');
-      	p.appendChild(
-        	document.createTextNode('Error: ' + error.message)
-      	);
-    	});     
-  }	// refreshSmTelegram()
-  		
-	
+      })
+      .catch(function(error) {
+        var p = document.createElement('p');
+        p.appendChild(
+          document.createTextNode('Error: ' + error.message)
+        );
+      });     
+  } // refreshSmTelegram()
+      
+  
   //============================================================================  
   function processJson(data, type)
   {
-  	
+    
      //for (var i in data) 
-   	 for (let i=0; i<data.length; i++)
-		 {
-     	//console.log("processJson(): data["+i+"] => data["+i+"].recid["+data[i].recid+"]");
-     	data[i].p_ed = {};
-     	data[i].p_er = {};
-     	data[i].p_gd = {};
-     	if (i < (data.length -1))
-     	{
-     		data[i].p_ed = (data[i].edt1 +data[i].edt2)-(data[i+1].edt1 +data[i+1].edt2);
-     		data[i].p_ed = (data[i].p_ed * 1000).toFixed(0);
-     		data[i].p_er = (data[i].ert1 +data[i].ert2)-(data[i+1].ert1 +data[i+1].ert2);
-     		data[i].p_er = (data[i].p_er * 1000).toFixed(0);
-     	  data[i].p_gd = ( data[i].gdt  -data[i+1].gdt).toFixed(3);
-     	}
-     	else
-     	{
-     		data[i].p_ed = (data[i].edt1 +data[i].edt2).toFixed(3);
-     		data[i].p_er = (data[i].ert1 +data[i].ert2).toFixed(3);
-     	  data[i].p_gd = (data[i].gdt).toFixed(3);
-     	}
-    }	// for i ..
+     for (let i=0; i<data.length; i++)
+     {
+      //console.log("processJson(): data["+i+"] => data["+i+"].recid["+data[i].recid+"]");
+      data[i].p_ed = {};
+      data[i].p_er = {};
+      data[i].p_gd = {};
+      if (i < (data.length -1))
+      {
+        data[i].p_ed = (data[i].edt1 +data[i].edt2)-(data[i+1].edt1 +data[i+1].edt2);
+        data[i].p_ed = (data[i].p_ed * 1000).toFixed(0);
+        data[i].p_er = (data[i].ert1 +data[i].ert2)-(data[i+1].ert1 +data[i+1].ert2);
+        data[i].p_er = (data[i].p_er * 1000).toFixed(0);
+        data[i].p_gd = ( data[i].gdt  -data[i+1].gdt).toFixed(3);
+      }
+      else
+      {
+        data[i].p_ed = (data[i].edt1 +data[i].edt2).toFixed(3);
+        data[i].p_er = (data[i].ert1 +data[i].ert2).toFixed(3);
+        data[i].p_gd = (data[i].gdt).toFixed(3);
+      }
+    } // for i ..
 
     showTable(type);
-    	
-  }	// processJson()
+      
+  } // processJson()
 
     
   //============================================================================  
   function showTable(type)
-  {	
-  	console.log("showTable("+type+")");
-  	// the last element has the metervalue, so skip it
-  	for (let i=0; i<(data.length -1); i++)
-  	{
- 			//console.log("showTable("+type+"): data["+i+"] => data["+i+"]name["+data[i].recid+"]");
-  		var tableRef = document.getElementById('last'+type+'Table').getElementsByTagName('tbody')[0];
-    	//if( ( document.getElementById(type +"Table_"+data[i].recid)) == null )
-    	if( ( document.getElementById(type +"Table_"+type+"_R"+i)) == null )
-     	{
-     		var newRow   = tableRef.insertRow();
-				//newRow.setAttribute("id", type+"Table_"+data[i].recid, 0);
-				newRow.setAttribute("id", type+"Table_"+type+"_R"+i, 0);
-				// Insert a cell in the row at index 0
-				var newCell  = newRow.insertCell(0);
-			  var newText  = document.createTextNode('-');
-				newCell.appendChild(newText);
-				newCell  = newRow.insertCell(1);
-				newCell.appendChild(newText);
-				newCell  = newRow.insertCell(2);
-				newCell.appendChild(newText);
-				newCell  = newRow.insertCell(3);
-				newCell.appendChild(newText);
-				newCell  = newRow.insertCell(4);
-				newCell.appendChild(newText);
-				newCell  = newRow.insertCell(5);
-				newCell.appendChild(newText);
-				newCell  = newRow.insertCell(6);
-				newCell.appendChild(newText);
-			}
-			//tableCells = document.getElementById(type+"Table_"+data[i].recid).cells;
-			tableCells = document.getElementById(type+"Table_"+type+"_R"+i).cells;
-	    tableCells[0].style.textAlign = "left";
-			tableCells[0].innerHTML = data[i].recnr;
-	    tableCells[1].style.textAlign = "left";
-			tableCells[1].innerHTML = data[i].slot;
-	    tableCells[2].style.textAlign = "center";
-			//tableCells[2].innerHTML = data[i].recid;
-//	    let date = "20"+data[i].recid.substring(0,2)+"-"+data[i].recid.substring(2,4)+"-"+data[i].recid.substring(4,6)+" ["+data[i].recid.substring(6,8)+"]";
-			tableCells[2].innerHTML = formatDate(type, data[i].recid);
-	   	tableCells[3].style.textAlign = "right";
-			tableCells[3].innerHTML = data[i].p_ed;
-	   	tableCells[4].style.textAlign = "right";
-			tableCells[4].innerHTML = data[i].p_er;
-	    tableCells[5].style.textAlign = "right";
-			tableCells[5].innerHTML = data[i].p_gd;
+  { 
+    console.log("showTable("+type+")");
+    // the last element has the metervalue, so skip it
+    for (let i=0; i<(data.length -1); i++)
+    {
+      //console.log("showTable("+type+"): data["+i+"] => data["+i+"]name["+data[i].recid+"]");
+      var tableRef = document.getElementById('last'+type+'Table').getElementsByTagName('tbody')[0];
+      //if( ( document.getElementById(type +"Table_"+data[i].recid)) == null )
+      if( ( document.getElementById(type +"Table_"+type+"_R"+i)) == null )
+      {
+        var newRow   = tableRef.insertRow();
+        //newRow.setAttribute("id", type+"Table_"+data[i].recid, 0);
+        newRow.setAttribute("id", type+"Table_"+type+"_R"+i, 0);
+        // Insert a cell in the row at index 0
+        var newCell  = newRow.insertCell(0);
+        var newText  = document.createTextNode('-');
+        newCell.appendChild(newText);
+        newCell  = newRow.insertCell(1);
+        newCell.appendChild(newText);
+        newCell  = newRow.insertCell(2);
+        newCell.appendChild(newText);
+        newCell  = newRow.insertCell(3);
+        newCell.appendChild(newText);
+        newCell  = newRow.insertCell(4);
+        newCell.appendChild(newText);
+        newCell  = newRow.insertCell(5);
+        newCell.appendChild(newText);
+        newCell  = newRow.insertCell(6);
+        newCell.appendChild(newText);
+      }
+      //tableCells = document.getElementById(type+"Table_"+data[i].recid).cells;
+      tableCells = document.getElementById(type+"Table_"+type+"_R"+i).cells;
+      tableCells[0].style.textAlign = "left";
+      tableCells[0].innerHTML = data[i].recnr;
+      tableCells[1].style.textAlign = "left";
+      tableCells[1].innerHTML = data[i].slot;
+      tableCells[2].style.textAlign = "center";
+      //tableCells[2].innerHTML = data[i].recid;
+//      let date = "20"+data[i].recid.substring(0,2)+"-"+data[i].recid.substring(2,4)+"-"+data[i].recid.substring(4,6)+" ["+data[i].recid.substring(6,8)+"]";
+      tableCells[2].innerHTML = formatDate(type, data[i].recid);
+      tableCells[3].style.textAlign = "right";
+      tableCells[3].innerHTML = data[i].p_ed;
+      tableCells[4].style.textAlign = "right";
+      tableCells[4].innerHTML = data[i].p_er;
+      tableCells[5].style.textAlign = "right";
+      tableCells[5].innerHTML = data[i].p_gd;
     };
-  }	// showTable()
+  } // showTable()
 
   
   //============================================================================  
-  function createNode(element) {
-    return document.createElement(element); // Create the type of element you pass in the parameters
-  }
-
-  function append(parent, el) {
-    return parent.appendChild(el); // Append the second parameter(element) to the first one
-  }
-  
+  function long2Short(longName) {
+    //console.log("long2Short("+longName+") for ["+longFields.length+"] elements");
+    for(var index = 0; index < (longFields.length -1); index++) 
+    {
+        if (longFields[index] == longName)
+        {
+          return shortFields[index];
+        }
+    };
+    return longName;
+    
+  } // long2Short()
 
   
   //============================================================================  
   function formatDate(type, dateIn) {
-  	let dateOut = "";
+    let dateOut = "";
     if (type == "Hours")
-	    date = "20"+dateIn.substring(0,2)+"-"+dateIn.substring(2,4)+"-"+dateIn.substring(4,6)+" ["+dateIn.substring(6,8)+"]";
+      date = "20"+dateIn.substring(0,2)+"-"+dateIn.substring(2,4)+"-"+dateIn.substring(4,6)+" ["+dateIn.substring(6,8)+"]";
     else if (type == "Days")
-	    date = "20"+dateIn.substring(0,2)+"-"+dateIn.substring(2,4)+"-["+dateIn.substring(4,6)+"]:"+dateIn.substring(6,8);
+      date = "20"+dateIn.substring(0,2)+"-"+dateIn.substring(2,4)+"-["+dateIn.substring(4,6)+"]:"+dateIn.substring(6,8);
     else if (type == "Months")
-	    date = "20"+dateIn.substring(0,2)+"-["+dateIn.substring(2,4)+"]-"+dateIn.substring(4,6)+":"+dateIn.substring(6,8);
-		else
-	    date = "20"+dateIn.substring(0,2)+"-"+dateIn.substring(2,4)+"-"+dateIn.substring(4,6)+":"+dateIn.substring(6,8);
+      date = "20"+dateIn.substring(0,2)+"-["+dateIn.substring(2,4)+"]-"+dateIn.substring(4,6)+":"+dateIn.substring(6,8);
+    else
+      date = "20"+dateIn.substring(0,2)+"-"+dateIn.substring(2,4)+"-"+dateIn.substring(4,6)+":"+dateIn.substring(6,8);
     return date;
   }
 

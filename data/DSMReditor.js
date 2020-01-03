@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMReditor.js, part of DSMRloggerAPI
-**  Version  : v0.1.0
+**  Version  : v0.1.2
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -169,50 +169,52 @@
           var settings = document.getElementById('settings');
           if( ( document.getElementById("setting_"+data[i].name)) == null )
           {
-          		var div1 = document.createElement("div");
-          		    div1.setAttribute("class", "settingDiv");
-          		var div2 = document.createElement("div");
-          		    div2.style.width = "200px";
-          		    div2.style.float = 'left';
-          		    div2.textContent = data[i].name;
-	            div1.appendChild(div2);
-          		    div2 = document.createElement("span");
+              var div1 = document.createElement("div");
+                  div1.setAttribute("class", "settingDiv");
+                  div1.style.marginLeft = "200px";
+                  div1.style.marginRight = "200px";
+              var div2 = document.createElement("div");
+                  div2.style.width = "200px";
+                  div2.style.float = 'left';
+                  div2.textContent = data[i].name;
+              div1.appendChild(div2);
+                  div2 = document.createElement("span");
                   var sInput = document.createElement("INPUT");
                     sInput.setAttribute("id", "setting_"+data[i].name);
 
                     if (data[i].type == "s")
                     {
-	                    sInput.setAttribute("type", "text");
-	                    sInput.setAttribute("maxlength", data[i].maxlen);
+                      sInput.setAttribute("type", "text");
+                      sInput.setAttribute("maxlength", data[i].maxlen);
                     }
                     else if (data[i].type == "f")
                     {
-	                    sInput.setAttribute("type", "number");
-	                    sInput.max = data[i].max;
-	                    sInput.min = data[i].min;
-		                  sInput.step = (data[i].min + data[i].max) / 1000;
-	                  }
+                      sInput.setAttribute("type", "number");
+                      sInput.max = data[i].max;
+                      sInput.min = data[i].min;
+                      sInput.step = (data[i].min + data[i].max) / 1000;
+                    }
                     else if (data[i].type == "i")
-	                  {
-	                    sInput.setAttribute("type", "number");
-	                    sInput.max = data[i].max;
-	                    sInput.min = data[i].min;
-		                  sInput.step = (data[i].min + data[i].max) / 1000;
+                    {
+                      sInput.setAttribute("type", "number");
+                      sInput.max = data[i].max;
+                      sInput.min = data[i].min;
+                      sInput.step = (data[i].min + data[i].max) / 1000;
                       sInput.step = 1;
                     }
                     sInput.setAttribute("value", data[i].value);
                     sInput.addEventListener('change',
-     																				function() { setChanged("setting_"+data[i].name); },
-     																				false
-  																				);
+                                            function() { setChanged("setting_"+data[i].name); },
+                                            false
+                                          );
                   div2.appendChild(sInput);
-	            div1.appendChild(div2);
-	            settings.appendChild(div1);
+              div1.appendChild(div2);
+              settings.appendChild(div1);
           }
           else
           {
             document.getElementById("setting_"+data[i].name).style.background = "white";
-	          document.getElementById("setting_"+data[i].name).value = data[i].value;
+            document.getElementById("setting_"+data[i].name).value = data[i].value;
           }
         }
         //console.log("-->done..");
@@ -235,7 +237,7 @@
     } else if (activeTab == "tabSettings") {
       console.log("undoReload(): reload Settings..");
       data = {};
-  		refreshSettings();
+      refreshSettings();
 
     } else {
       console.log("undoReload(): I don't knwo what to do ..");
@@ -246,19 +248,19 @@
   
   //============================================================================  
   function saveData() {
-		for(var i in data)
-		{
-			var fldId  = data[i].name;
-			var newVal = document.getElementById("setting_"+fldId).value;
-			if (data[i].value != newVal)
-			{
-	     	console.log("save data ["+data[i].name+"] => from["+data[i].value+"] to["+newVal+"]");
-	     	sendPutCall(fldId, newVal);
-	    }
-		}    
+    for(var i in data)
+    {
+      var fldId  = data[i].name;
+      var newVal = document.getElementById("setting_"+fldId).value;
+      if (data[i].value != newVal)
+      {
+        console.log("save data ["+data[i].name+"] => from["+data[i].value+"] to["+newVal+"]");
+        sendPutCall(fldId, newVal);
+      }
+    }    
     data = {};
-		refreshSettings();
-		
+    refreshSettings();
+    
   } // saveData()
   
   //============================================================================  
@@ -275,16 +277,16 @@
         };
 
         fetch(APIGW+"v1/dev/settings", other_params)
-				  .then(function(response) {
-  					//console.log(response.status );    //=> number 100–599
-  					//console.log(response.statusText); //=> String
-  					//console.log(response.headers);    //=> Headers
-  					//console.log(response.url);        //=> String
-						//console.log(response.text());
-  				  //return response.text()
-					}, function(error) {
-  					console.log("Error["+error.message+"]"); //=> String
-					});
+          .then(function(response) {
+            //console.log(response.status );    //=> number 100–599
+            //console.log(response.statusText); //=> String
+            //console.log(response.headers);    //=> Headers
+            //console.log(response.url);        //=> String
+            //console.log(response.text());
+            //return response.text()
+          }, function(error) {
+            console.log("Error["+error.message+"]"); //=> String
+          });
         //document.getElementById('message').innerHTML = "Ok";
     }
 

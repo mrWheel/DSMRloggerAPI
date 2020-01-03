@@ -1,7 +1,7 @@
 <!--
 ***************************************************************************  
 **  Program  : DSMReditor.html, part of DSMRloggerAPI
-**  Version  : v0.1.0
+**  Version  : v0.1.2
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -11,84 +11,83 @@
 <!DOCTYPE html>
 <html charset="UTF-8">
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1">	
+  <meta name="viewport" content="width=device-width, initial-scale=1">  
   <link rel="stylesheet" type="text/css" href="/DSMRindex.css">
-	<title>ESP-DSMR Slimme Meter Editor</title>
+  <title>ESP-DSMR Slimme Meter Editor</title>
 </head>
 <body>
-	<font face="Arial">
-		<!-- <div class="dev-header"> -->
-		<div class="header">
-    	<h1>
+  <font face="Arial">
+    <!-- <div class="dev-header"> -->
+    <div class="header">
+      <h1>
         <span id="sysName">DSMR-editor</span> &nbsp; &nbsp; &nbsp;
         <span id="devName" style='font-size: small;'>-</span> &nbsp;
         <span id="devVersion" style='font-size: small;'>[version]</span>
+        <span id='theTime' class='nav-item nav-clock'>00:00</span>
       </h1>
    </div>
 <!--  <div style="clear:both"></div> -->
   </font>
 
- 	<!-- <div class="clock" id="theTime">-</div> -->
- 	<div class="nav-container">
- 	  <div class='nav-left'>
-      <a id='bTerug'       	class='nav-item editButton'>Terug</a>
-      <a id='bEditMonths'  	class='nav-item editButton'>Meterstanden</a>
+  <!-- <div class="clock" id="theTime">-</div> -->
+  <div class="nav-container">
+    <div class='nav-left'>
+      <a id='bTerug'        class='nav-item editButton'>Terug</a>
+      <a id='bEditMonths'   class='nav-item editButton'>Meterstanden</a>
       <a id='bEditSettings' class='nav-item editButton'>Settings</a>
-      <a id='bUndo'  			 	class='nav-item editButton'>Herstel</a>
-    	<a id='bSave'    		 	class='nav-item editButton'>Opslaan</a>
-  	</div>
-  	<div class='nav-right'>
-    	<div id='theTime' class='nav-item nav-clock'>00:00</div>
+      <a id='bUndo'         class='nav-item editButton'>Herstel</a>
+      <a id='bSave'         class='nav-item editButton'>Opslaan</a>
     </div>
   </div>
 
- 	<!-- START Tabbladen -->
- 	<div id="tabMonths" class="tabName" style="display:none">
-  	<label for="Period"><b>Meterstand: </b></label>
-	    Energy Delivered
-	    <input type="radio" name="editType" id="MED" onchange="setEditType('D')" checked/>
-	    &nbsp;&nbsp;
-	    Energy Returned
-	    <input type="radio" name="editType" id="MER" onchange="setEditType('R')"/>
-	    &nbsp;&nbsp;
-	    Gas Delivered
-	    <input type="radio" name="editType" id="MGD" onchange="setEditType('G')"/>
-	    &nbsp;&nbsp;
+  <!-- START Tabbladen -->
+  <div id="tabMonths" class="tabName" style="display:none">
+    <label for="Period"><b>Meterstand: </b></label>
+      Energy Delivered
+      <input type="radio" name="editType" id="MED" onchange="setEditType('D')" checked/>
+      &nbsp;&nbsp;
+      Energy Returned
+      <input type="radio" name="editType" id="MER" onchange="setEditType('R')"/>
+      &nbsp;&nbsp;
+      Gas Delivered
+      <input type="radio" name="editType" id="MGD" onchange="setEditType('G')"/>
+      &nbsp;&nbsp;
 
-  	<!-- START Maanden -->
-  	<div id="tabMaanden" class="tabName" style="display:none">
-  		<br>
-  		<div style="margin-left: 50px; background: white;">
-	  		<table id="maandenTable" border="1" bgcolor="deepskyblue"> 
-  				<tbody>
-  				</tbody>
-  			</table>
-  		</div>
-		</div> <!-- END Maanden -->
-	</div>
-	
-	
- 	<div id="tabSettings" class="tabName" style="display:none">
-	 	<!-- START actueelTab Settings -->
-	    <div id="settings">
+    <!-- START Maanden -->
+    <div id="tabMaanden" class="tabName" style="display:none">
+      <br>
+      <div style="margin-left: 50px; background: white;">
+        <table id="maandenTable" border="1" bgcolor="deepskyblue"> 
+          <tbody>
+          </tbody>
+        </table>
+      </div>
+    </div> <!-- END Maanden -->
+  </div>
+  
+  
+  <div id="tabSettings" class="tabName" style="display:none">
+    <!-- START settingsTab Settings -->
+    <br>
+      <div id="settings">
       </div> 
- 	</div>	<!-- END Settings -->
-	
-	<!-- END Tabbladen -->
+  </div>  <!-- END Settings -->
+  
+  <!-- END Tabbladen -->
 
   <!-- REST -->
   <div id="Redirect"></div>
   <div id="message"></div>
-	
-	<div id='settingBgColor' style='display:none'>deepskyblue</div>
-	<div id='settingFontColor' style='display:none'>white</div>
   
- 	<div class="footer">
- 	  <span id="devIPaddress"></span>
- 		<span>2019 &copy; Willem Aandewiel &nbsp; &nbsp;</span>
- 	</div>
+  <div id='settingBgColor' style='display:none'>deepskyblue</div>
+  <div id='settingFontColor' style='display:none'>white</div>
+  
+  <div class="footer">
+    <span id="devIPaddress"></span>
+    <span>2019 &copy; Willem Aandewiel &nbsp; &nbsp;</span>
+  </div>
 
- 	<script src="/DSMReditor.js"></script>
+  <script src="/DSMReditor.js"></script>
 
   </body>
 

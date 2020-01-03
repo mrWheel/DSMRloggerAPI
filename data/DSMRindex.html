@@ -1,7 +1,7 @@
 <!--
 ***************************************************************************  
 **  Program  : DSMRindex.html, part of DSMRloggerAPI
-**  Version  : v0.1.0
+**  Version  : v0.1.2
 **
 **  Copyright (c) 2019 Willem Aandewiel
 **
@@ -26,6 +26,7 @@
         <span id="sysName">DSMR-logger(API)</span> &nbsp; &nbsp; &nbsp;
         <span id="devName" style='font-size: small;'>-</span> &nbsp;
         <span id="devVersion" style='font-size: small;'>[version]</span>
+        <span id='theTime' class='nav-item nav-clock'>00:00</span>
       </h1>
    </div>
 <!--  <div style="clear:both"></div> -->
@@ -40,15 +41,17 @@
       <a id='bLastDays'   class='nav-item tabButton'>per Dag</a>
       <a id='bLastMonths' class='nav-item tabButton'>per Maand</a>
       <a id='bTelegram'   class='nav-item tabButton'>Telegram</a>
+      <a id='bFields'     class='nav-item tabButton'>all Fields</a>
       <a id='bSysInfo'    class='nav-item tabButton'>Systeem Info</a>
       <a id='restAPI'    class='nav-item tabButton'>restAPI</a>
       <a id='FSexplorer'  class='nav-img'>
                       <img src='/FSexplorer.png' alt='FSexplorer'></a>
     </div>
+<!--
     <div class='nav-right'>
       <div id='theTime' class='nav-item nav-clock'>00:00</div>
-		  <!--<div class="nav-clock" id="theTime">1234567890</div> -->
     </div>
+-->
   </div>
   <!-- END Tabbladen -->
   
@@ -57,31 +60,36 @@
   <!-- START Actual Tab -->
   <div id="Actual" class="tabName" style="display:block">
     <!-- START actueelTab Dummy -->
-    <h1>Actueel</h1>
-    <h2>/api/v1/fields</h2>
-    <div id='actual' style="margin-left: 50px; background: lightblue;">
-    	<table id="actualTable">
-    	<thead>
+    <div>
+        <span style="font-size: 30px;">Actueel &nbsp; &nbsp; </span>
+        <span style="font-size: 20px;">/api/v1/sm/actual</span>
+    </div>
+    <div id='actual' style="margin-left: 50px; margin-right: 500px; background: lightblue;">
+      <table id="actualTable">
+      <thead>
         <tr>
             <th align='left'>Name</th><th align='left'>Value</th><th>Unit</th>
         </tr>
-    	</thead>
-    	<tbody>
-    	</tbody>
-    	<tfoot>
+      </thead>
+      <tbody>
+      </tbody>
+      <tfoot>
         <tr>
-            <td>nice table</td>
+            <td>---eof---</td>
         </tr>
-    	<tfoot>
-			</table>
+      <tfoot>
+      </table>
     </div>
   
   </div>  <!-- END Actual Tab -->
 
   <!-- START LastHoursTab -->
   <div id="LastHours" class="tabName" style="display:none">
-    <h2>/api/v1/dev/hist/hours/asc</h2>
-    <div id='lastHours' style="margin-left: 50px; background: lightblue;">
+    <div>
+        <span style="font-size: 30px;">Hours &nbsp; &nbsp; </span>
+        <span style="font-size: 20px;">/api/v1/hist/hours/asc</span>
+    </div>
+    <div id='lastHours' style="margin-left: 50px; margin-right: 250px; background: lightblue;">
     <table id="lastHoursTable">
     <thead>
         <tr>
@@ -98,20 +106,23 @@
     </tbody>
     <tfoot>
         <tr>
-            <td>---------</td>
+            <td>---eof---</td>
         </tr>
     <tfoot>
-		</table>
+    </table>
     </div>
     
   </div> <!-- END LastHoursTab -->
 
   <!-- START LastDaysTab -->
   <div id="LastDays" class="tabName" style="display:none">
-    <h2>/api/v1/dev/hist/days/asc</h2>
-    <div id='lastDays' style="margin-left: 50px; background: lightblue;">
-    	<table id="lastDaysTable">
-    	<thead>
+    <div>
+        <span style="font-size: 30px;">Days &nbsp; &nbsp; </span>
+        <span style="font-size: 20px;">/api/v1/hist/days/asc</span>
+    </div>
+    <div id='lastDays' style="margin-left: 50px; margin-right: 250px; background: lightblue;">
+      <table id="lastDaysTable">
+      <thead>
         <tr>
             <th align='left'>RecNr</th>
             <th align='center'>Slot</th>
@@ -121,24 +132,27 @@
             <th align='right'>Gasverbruik</th>
             <th align='right'>Kosten</th>
         </tr>
-    	</thead>
-    	<tbody>
-    	</tbody>
-    	<tfoot>
+      </thead>
+      <tbody>
+      </tbody>
+      <tfoot>
         <tr>
-            <td>---------</td>
+            <td---eof---</td>
         </tr>
-    	<tfoot>
-			</table>
-		</div>
+      <tfoot>
+      </table>
+    </div>
   </div> <!-- END LastDaysTab -->
 
   <!-- START LastMonthsTab -->
   <div id="LastMonths" class="tabName" style="display:none">
-    <h2>/api/v1/dev/hist/months/asc</h2>
-    <div id='lastMonths' style="margin-left: 50px; background: lightblue;">
-    	<table id="lastMonthsTable">
-    	<thead>
+    <div>
+        <span style="font-size: 30px;">Months &nbsp; &nbsp; </span>
+        <span style="font-size: 20px;">/api/v1/hist/months/asc</span>
+    </div>
+    <div id='lastMonths' style="margin-left: 50px; margin-right: 250px; background: lightblue;">
+      <table id="lastMonthsTable">
+      <thead>
         <tr>
             <th align='left'>RecNr</th>
             <th align='center'>Slot</th>
@@ -148,49 +162,85 @@
             <th align='right'>Gasverbruik</th>
             <th align='right'>Kosten</th>
         </tr>
-    	</thead>
-    	<tbody>
-    	</tbody>
-    	<tfoot>
+      </thead>
+      <tbody>
+      </tbody>
+      <tfoot>
         <tr>
-            <td>---------</td>
+            <td>---eof---</td>
         </tr>
-    	<tfoot>
-			</table>
-		</div>
+      <tfoot>
+      </table>
+    </div>
   </div> <!-- END LastMonthsTab -->
 
   <!-- START SysInfo Tab -->
   <div id="SysInfo" class="tabName" style="display:none">
-    <h1>Device Info</h1>
-    <h2>/api/v1/dev/info</h2>
-    <div id='devInfo' style="margin-left: 50px; background: lightblue;">
-    	<table id="devInfoTable">
-    	<thead>
+    <div>
+        <span style="font-size: 30px;">Device Info &nbsp; &nbsp; </span>
+        <span style="font-size: 20px;">/api/v1/dev/info</span>
+    </div>
+    <div id='devInfo' style="margin-left: 150px; margin-right: 500px; background: lightblue;">
+      <table id="devInfoTable">
+      <thead>
         <tr>
-            <th align='left'>Name</th><th align='left'>Value</th><th>Unit</th>
+            <th align='left'>Name</th>
+            <th align='left'>Value</th>
+            <th align='left'>Unit</th>
         </tr>
-    	</thead>
-    	<tbody>
-    	</tbody>
-    	<tfoot>
+      </thead>
+      <tbody>
+      </tbody>
+      <tfoot>
         <tr>
-            <td>==========</td>
+            <td>---eof---</td>
         </tr>
-    	<tfoot>
-			</table>
+      <tfoot>
+      </table>
     </div>
   
   </div>  <!-- END SysInfo Tab -->
 
   <!-- START TelegramTab -->
   <div id="Telegram" class="tabName" style="display:none">
-    <h2>/api/v1/sm/telegram</h2>
-    <div id="rawTelegram">
-    ------------
+    <div>
+        <span style="font-size: 30px;">raw Telegram &nbsp; &nbsp; </span>
+        <span style="font-size: 20px;">/api/v1/sm/telegram</span>
     </div>
+    <div id="rawTelegram" style="margin-left: 150px; margin-right: 500px; background: lightblue;">
+    </div>
+    ---eof---
   </div> <!-- END TelegramTab -->
+
+  <!-- START Actual Tab -->
+  <div id="Fields" class="tabName" style="display:block">
+    <!-- START filedsTab Dummy -->
+    <div>
+        <span style="font-size: 30px;">all Fields &nbsp; &nbsp; </span>
+        <span style="font-size: 20px;">/api/v1/sm/fields</span>
+    </div>
+    <div id='fields' style="margin-left: 150px; margin-right: 500px; background: lightblue;">
+      <table id="fieldsTable">
+      <thead>
+        <tr>
+            <th align='left'>DSMR Name</th>
+            <th align='left'>Display Name</th>
+            <th align='left'>Value</th>
+            <th>Unit</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+      <tfoot>
+        <tr>
+            <td>EOF</td>
+        </tr>
+      <tfoot>
+      </table>
+    </div>
   
+  </div>  <!-- END fields Tab -->
+
   <!-- REST -->
   
   <div class="footer">

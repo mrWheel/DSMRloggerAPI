@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRindex.css, part of DSMRfirmwareAPI
-**  Version  : v0.1.0
+**  Version  : v0.1.2
 **
 **  Copyright (c) 2019 Willem Aandewiel
 **
@@ -13,17 +13,23 @@
 }
 
 html {
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
-	font-family: 'Dosis', sans-serif;
-	line-height: 1.6;
-	color: black;
-	background: lightblue;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-family: 'Dosis', sans-serif;
+  line-height: 1.6;
+  color: black;
+  background: #e6ffff;
 }
 
 table {
-	color: black;
-	background: lightblue;
+  color: black;
+  background: lightblue;
+}
+
+th td {
+  padding-left: 15px;
+  padding-right: 50px;
+  white-space: nowrap;
 }
 
 input {
@@ -34,7 +40,8 @@ input {
 }
 
 .settingDiv {
-	background: lightblue;		
+  background: lightblue;  
+  white-space: nowrap;  
 }
 
 .container-card {
@@ -153,7 +160,7 @@ input {
 }
 
 .nav-img {
-	top: 1px;
+  top: 1px;
   display: inline-block;
   width: 40px;
   height: 40px;
@@ -161,8 +168,8 @@ input {
 
 .nav-item {
   display: inline-block;
- 	font-size: 16px;
- 	padding: 10px 0;
+  font-size: 16px;
+  padding: 10px 0;
   height: 20px;
   width: 110px;
   border: none;
@@ -172,7 +179,7 @@ input {
 
 .nav-left {
   flex: 2 1 0;
- 	text-align: center; 
+  text-align: center; 
 }
 
 .nav-right {
@@ -182,20 +189,21 @@ input {
 }
 
 .nav-container a:hover {
-	color: black;
+  color: black;
   background: black; /* only for FSexplorer - Rest does not work */
 }
 
 .nav-clock {
-  top: 1px;
+  //top: 1px;
   color: black;
+  float: right;
   font-size: small;
   font-weight:bold;
   text-align: right;
   background: white; 
   width: 200px; 
   padding-right: 10px;
-	background: #00bffe;
+  background: #e6ffff;
 }
 
 /*-------------------------*/
@@ -215,18 +223,18 @@ input {
 }
 
 #logWindow {
-		font-size: 14px;
-		margin-left: 20px;
-		width: 90vw;
+    font-size: 14px;
+    margin-left: 20px;
+    width: 90vw;
     height: 20vh;
 }
 
 .editButton {
-	background-color: white;
+  background-color: white;
 }
 
 .editButton a:hover {
-	background-color: gray;
+  background-color: gray;
 }
 
 
