@@ -194,14 +194,11 @@
               newRow.setAttribute("id", "devInfoTable_"+data[i].name, 0);
               // Insert a cell in the row at index 0
               var newCell  = newRow.insertCell(0);
-              newCell.style.whiteSpace = "nowrap";
               var newText  = document.createTextNode('');
               newCell.appendChild(newText);
               newCell  = newRow.insertCell(1);
-              newCell.style.whiteSpace = "nowrap";
               newCell.appendChild(newText);
               newCell  = newRow.insertCell(2);
-              newCell.style.whiteSpace = "nowrap";
               newCell.appendChild(newText);
             }
             tableCells = document.getElementById("devInfoTable_"+data[i].name).cells;
@@ -265,27 +262,28 @@
           data = json.actual;
           for (var i in data) 
           {
-            data[i].guiName = long2Short(data[i].name);
+            data[i].shortName = long2Short(data[i].name);
             var tableRef = document.getElementById('actualTable').getElementsByTagName('tbody')[0];
             if( ( document.getElementById("actualTable_"+data[i].name)) == null )
             {
               var newRow   = tableRef.insertRow();
               newRow.setAttribute("id", "actualTable_"+data[i].name, 0);
               // Insert a cell in the row at index 0
-              var newCell  = newRow.insertCell(0);
+              var newCell  = newRow.insertCell(0);						// (short)name
               var newText  = document.createTextNode('');
               newCell.appendChild(newText);
-              newCell  = newRow.insertCell(1);
+              newCell  = newRow.insertCell(1);								// value
               newCell.appendChild(newText);
-              newCell  = newRow.insertCell(2);
+              newCell  = newRow.insertCell(2);								// unit
               newCell.appendChild(newText);
             }
             tableCells = document.getElementById("actualTable_"+data[i].name).cells;
-            tableCells[0].innerHTML = data[i].guiName;
+            tableCells[0].innerHTML = data[i].shortName;
             tableCells[1].innerHTML = data[i].value;
             if (data[i].hasOwnProperty('unit'))
             {
-              tableCells[1].style.textAlign = "right";
+              tableCells[1].style.textAlign = "right";				// value
+              tableCells[2].style.textAlign = "center";				// unit
               tableCells[2].innerHTML = data[i].unit;
             }
           }
@@ -310,31 +308,31 @@
           data = json.fields;
           for (var i in data) 
           {
-            //data[i].guiName = data[i].name;
-            data[i].guiName = long2Short(data[i].name);
+            data[i].shortName = long2Short(data[i].name);
             var tableRef = document.getElementById('fieldsTable').getElementsByTagName('tbody')[0];
             if( ( document.getElementById("fieldsTable_"+data[i].name)) == null )
             {
               var newRow   = tableRef.insertRow();
               newRow.setAttribute("id", "fieldsTable_"+data[i].name, 0);
               // Insert a cell in the row at index 0
-              var newCell  = newRow.insertCell(0);
+              var newCell  = newRow.insertCell(0);									// name
               var newText  = document.createTextNode('');
               newCell.appendChild(newText);
-              newCell  = newRow.insertCell(1);
+              newCell  = newRow.insertCell(1);											// shortName
               newCell.appendChild(newText);
-              newCell  = newRow.insertCell(2);
+              newCell  = newRow.insertCell(2);											// value
               newCell.appendChild(newText);
-              newCell  = newRow.insertCell(3);
+              newCell  = newRow.insertCell(3);											// unit
               newCell.appendChild(newText);
             }
             tableCells = document.getElementById("fieldsTable_"+data[i].name).cells;
             tableCells[0].innerHTML = data[i].name;
-            tableCells[1].innerHTML = data[i].guiName;
+            tableCells[1].innerHTML = data[i].shortName;
             tableCells[2].innerHTML = data[i].value;
             if (data[i].hasOwnProperty('unit'))
             {
-              tableCells[2].style.textAlign = "right";
+              tableCells[2].style.textAlign = "right";							// value
+              tableCells[3].style.textAlign = "center";  						// unit
               tableCells[3].innerHTML = data[i].unit;
             }
           }
@@ -356,11 +354,10 @@
     fetch(APIGW+"v1/hist/hours/asc", {"setTimeout": 2000})
       .then(response => response.json())
       .then(json => {
-        console.log("Ok, now processJson() for Hours");
         //console.log(json);
         data = json.hours;
-        //console.log(data);
-        processJson(data, "Hours");
+        expandData(data);
+        showHist(data, "Hours");
       })
       .catch(function(error) {
         var p = document.createElement('p');
@@ -378,10 +375,9 @@
     fetch(APIGW+"v1/hist/days/asc", {"setTimeout": 2000})
       .then(response => response.json())
       .then(json => {
-        console.log("Ok, now processJson() for Days");
         data = json.days;
-        //console.log(data);
-        processJson(data, "Days");
+        expandData(data);
+        showHist(data, "Days");
       })
       .catch(function(error) {
         var p = document.createElement('p');
@@ -401,7 +397,8 @@
       .then(json => {
         //console.log(response);
         data = json.months;
-        processMonths(data);
+        expandData(data);
+        showMonthsHist(data);
       })
       .catch(function(error) {
         var p = document.createElement('p');
@@ -418,8 +415,8 @@
     fetch(APIGW+"v1/sm/telegram")
       .then(response => response.text())
       .then(response => {
-        console.log("parsed .., data is ["+ response+"]");
-        console.log('-------------------');
+        //console.log("parsed .., data is ["+ response+"]");
+        //console.log('-------------------');
         var divT = document.getElementById('rawTelegram');
         if ( document.getElementById("TelData") == null )
         {
@@ -440,19 +437,18 @@
         );
       });     
   } // refreshSmTelegram()
-      
-  
-  //============================================================================  
-  function processJson(data, type)
-  {
+
     
-     //for (var i in data) 
+  //============================================================================  
+  function expandData(data)
+  {
+     console.log("now in expandData() ..");
      for (let i=0; i<data.length; i++)
      {
-      //console.log("processJson(): data["+i+"] => data["+i+"].recid["+data[i].recid+"]");
       data[i].p_ed = {};
       data[i].p_er = {};
       data[i].p_gd = {};
+
       if (i < (data.length -1))
       {
         data[i].p_ed = (data[i].edt1 +data[i].edt2)-(data[i+1].edt1 +data[i+1].edt2);
@@ -469,52 +465,20 @@
       }
     } // for i ..
 
-    showTable(type);
-      
-  } // processJson()
-      
-  
-  //============================================================================  
-  function processMonths(data)
-  {
-     console.log("now in processMonths() ..");
-     for (let i=0; i<data.length; i++)
-     {
-      data[i].p_ed = {};
-      data[i].p_er = {};
-      data[i].p_gd = {};
-      if (i < (data.length -1))
-      {
-        data[i].p_ed = (data[i].edt1 +data[i].edt2)-(data[i+1].edt1 +data[i+1].edt2);
-        data[i].p_ed = (data[i].p_ed * 1000).toFixed(0);
-        data[i].p_er = (data[i].ert1 +data[i].ert2)-(data[i+1].ert1 +data[i+1].ert2);
-        data[i].p_er = (data[i].p_er * 1000).toFixed(0);
-        data[i].p_gd = ( data[i].gdt  -data[i+1].gdt).toFixed(3);
-      }
-      else
-      {
-        data[i].p_ed = (data[i].edt1 +data[i].edt2).toFixed(3);
-        data[i].p_er = (data[i].ert1 +data[i].ert2).toFixed(3);
-        data[i].p_gd = (data[i].gdt).toFixed(3);
-      }
-    } // for i ..
-
-    showMonthsTable(data);
-      
-  } // processMonths()
+  } // expandData()
 
     
   //============================================================================  
-  function showMonthsTable(data)
+  function showMonthsHist(data)
   { 
-    console.log("now in showMonthsTable() ..");
+    console.log("now in showMonthsHist() ..");
     var showRows = 0;
     if (data.length > 24) showRows = 12;
     else                  showRows = data.length / 2;
     //console.log("showRows is ["+showRows+"]");
     for (let i=0; i<showRows; i++)
     {
-      //console.log("showMonthsTable(): data["+i+"] => data["+i+"]name["+data[i].recid+"]");
+      //console.log("showMonthsHist(): data["+i+"] => data["+i+"]name["+data[i].recid+"]");
       var tableRef = document.getElementById('lastMonthsTable').getElementsByTagName('tbody')[0];
       //if( ( document.getElementById(type +"Table_"+data[i].recid)) == null )
       if( ( document.getElementById("lastMonthsTable_R"+i)) == null )
@@ -526,35 +490,31 @@
         var newCell  = newRow.insertCell(0);          // maand
         var newText  = document.createTextNode('-');
         newCell.appendChild(newText);
-        newCell  = newRow.insertCell(1);              // |
+        newCell  = newRow.insertCell(1);              // jaar
         newCell.appendChild(newText);
-        newCell  = newRow.insertCell(2);              // jaar
+        newCell  = newRow.insertCell(2);              // verbruik
         newCell.appendChild(newText);
-        newCell  = newRow.insertCell(3);              // verbruik
+        newCell  = newRow.insertCell(3);              // jaar
         newCell.appendChild(newText);
-        newCell  = newRow.insertCell(4);              // jaar
+        newCell  = newRow.insertCell(4);              // verbruik
         newCell.appendChild(newText);
-        newCell  = newRow.insertCell(5);              // verbruik
+
+        newCell  = newRow.insertCell(5);              // jaar
         newCell.appendChild(newText);
-        newCell  = newRow.insertCell(6);              // |
+        newCell  = newRow.insertCell(6);              // opgewekt
         newCell.appendChild(newText);
         newCell  = newRow.insertCell(7);              // jaar
         newCell.appendChild(newText);
-        newCell  = newRow.insertCell(8);              // opgewekt
+        newCell  = newRow.insertCell(8);             // opgewekt
         newCell.appendChild(newText);
-        newCell  = newRow.insertCell(9);              // jaar
+        
+        newCell  = newRow.insertCell(9);             // jaar
         newCell.appendChild(newText);
-        newCell  = newRow.insertCell(10);             // opgewekt
+        newCell  = newRow.insertCell(10);             // gas
         newCell.appendChild(newText);
-        newCell  = newRow.insertCell(11);             // |
+        newCell  = newRow.insertCell(11);             // jaar
         newCell.appendChild(newText);
-        newCell  = newRow.insertCell(12);             // jaar
-        newCell.appendChild(newText);
-        newCell  = newRow.insertCell(13);             // gas
-        newCell.appendChild(newText);
-        newCell  = newRow.insertCell(14);             // jaar
-        newCell.appendChild(newText);
-        newCell  = newRow.insertCell(15);             // jaar
+        newCell  = newRow.insertCell(12);             // gas
         newCell.appendChild(newText);
       }
       var mmNr = parseInt(data[i].recid.substring(2,4), 10);
@@ -565,56 +525,44 @@
       tableCells[0].innerHTML = monthNames[mmNr];                     // maand
       
       tableCells[1].style.textAlign = "center";
-      tableCells[1].innerHTML = "|";                                  // |
-      tableCells[1].style.fontWeight = 'bold';
-      
-      tableCells[2].style.textAlign = "center";
-      tableCells[2].innerHTML = "20"+data[i].recid.substring(0,2);    // jaar
-      tableCells[3].style.textAlign = "right";
-      tableCells[3].innerHTML = data[i].p_ed;                         // verbruik
-      tableCells[4].style.textAlign = "center";
-      tableCells[4].innerHTML = "20"+data[i+12].recid.substring(0,2); // jaar
-      tableCells[5].style.textAlign = "right";
-      tableCells[5].innerHTML = data[i+12].p_ed;                      // verbruik
+      tableCells[1].innerHTML = "20"+data[i].recid.substring(0,2);    // jaar
+      tableCells[2].style.textAlign = "right";
+      tableCells[2].innerHTML = data[i].p_ed;                         // verbruik
+      tableCells[3].style.textAlign = "center";
+      tableCells[3].innerHTML = "20"+data[i+12].recid.substring(0,2); // jaar
+      tableCells[4].style.textAlign = "right";
+      tableCells[4].innerHTML = data[i+12].p_ed;                      // verbruik
 
-      tableCells[6].style.textAlign = "center";
-      tableCells[6].innerHTML = "|";                                  // |
-      tableCells[6].style.fontWeight = 'bold';
-
+      tableCells[5].style.textAlign = "center";
+      tableCells[5].innerHTML = "20"+data[i].recid.substring(0,2);    // jaar
+      tableCells[6].style.textAlign = "right";
+      tableCells[6].innerHTML = data[i].p_er;                         // opgewekt
       tableCells[7].style.textAlign = "center";
-      tableCells[7].innerHTML = "20"+data[i].recid.substring(0,2);    // jaar
+      tableCells[7].innerHTML = "20"+data[i+12].recid.substring(0,2); // jaar
       tableCells[8].style.textAlign = "right";
-      tableCells[8].innerHTML = data[i].p_er;                         // verbruik
+      tableCells[8].innerHTML = data[i+12].p_er;                     // opgewekt
+
       tableCells[9].style.textAlign = "center";
-      tableCells[9].innerHTML = "20"+data[i+12].recid.substring(0,2); // jaar
+      tableCells[9].innerHTML = "20"+data[i].recid.substring(0,2);   // jaar
       tableCells[10].style.textAlign = "right";
-      tableCells[10].innerHTML = data[i+12].p_er;                     // verbruik
-
+      tableCells[10].innerHTML = data[i].p_gd;                        // gas
       tableCells[11].style.textAlign = "center";
-      tableCells[11].innerHTML = "|";                                 // |
-      tableCells[11].style.fontWeight = 'bold';
-
-      tableCells[12].style.textAlign = "center";
-      tableCells[12].innerHTML = "20"+data[i].recid.substring(0,2);   // jaar
-      tableCells[13].style.textAlign = "right";
-      tableCells[13].innerHTML = data[i].p_gd;                        // verbruik
-      tableCells[14].style.textAlign = "center";
-      tableCells[14].innerHTML = "20"+data[i+12].recid.substring(0,2);// jaar
-      tableCells[15].style.textAlign = "right";
-      tableCells[15].innerHTML = data[i+12].p_gd;                     // verbruik
+      tableCells[11].innerHTML = "20"+data[i+12].recid.substring(0,2);// jaar
+      tableCells[12].style.textAlign = "right";
+      tableCells[12].innerHTML = data[i+12].p_gd;                     // gas
 
     };
-  } // showMonthsTable()
+  } // showMonthsHist()
 
     
   //============================================================================  
-  function showTable(type)
+  function showHist(data, type)
   { 
-    console.log("showTable("+type+")");
+    console.log("showHist("+type+")");
     // the last element has the metervalue, so skip it
     for (let i=0; i<(data.length -1); i++)
     {
-      //console.log("showTable("+type+"): data["+i+"] => data["+i+"]name["+data[i].recid+"]");
+      //console.log("showHist("+type+"): data["+i+"] => data["+i+"]name["+data[i].recid+"]");
       var tableRef = document.getElementById('last'+type+'Table').getElementsByTagName('tbody')[0];
       //if( ( document.getElementById(type +"Table_"+data[i].recid)) == null )
       if( ( document.getElementById(type +"Table_"+type+"_R"+i)) == null )
@@ -656,7 +604,7 @@
       tableCells[5].style.textAlign = "right";
       tableCells[5].innerHTML = data[i].p_gd;
     };
-  } // showTable()
+  } // showHist()
 
   
   //============================================================================  
@@ -694,48 +642,6 @@
     var multiplier = Math.pow(10, precision || 0);
     return Math.round(value * multiplier) / multiplier;
   }
-
-  //============================================================================  
-  function setStyle(cell, width, Align, Border, Val) {
-    cell.style.width = width + 'px';
-    cell.style.textAlign = Align;
-    cell.style.border = "none";
-    cell.style.borderLeft = Border + " solid black";
-    cell.style.color = settingFontColor;
-    cell.style.fontWeight = "normal";
-    cell.innerHTML = Val;
-    return cell;
-    
-  };  // setStyle()
-
-  //============================================================================  
-  function cssrules() {
-      var rules = {};
-      for (var i=0; i<document.styleSheets.length; ++i) {
-        var cssRules = document.styleSheets[i].cssRules;
-        for (var j=0; j<cssRules.length; ++j)
-          rules[cssRules[j].selectorText] = cssRules[j];
-      }
-      return rules;
-  } // cssrules()
-
-  //============================================================================  
-  function css_getclass(name) {
-    var rules = cssrules();
-    if (!rules.hasOwnProperty(name))
-        throw 'TODO: deal_with_notfound_case';
-    return rules[name];
-  } // css_getclass()
-  
-  //============================================================================  
-  function existingId(elementId) {
-    if(document.getElementById(elementId)){
-      return true;
-    } 
-    console.log("cannot find elementId [" + elementId + "]");
-    return false;
-    
-  } // existingId()
   
 /*
 ***************************************************************************

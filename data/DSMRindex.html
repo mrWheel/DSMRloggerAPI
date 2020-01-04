@@ -43,15 +43,10 @@
       <a id='bTelegram'   class='nav-item tabButton'>Telegram</a>
       <a id='bFields'     class='nav-item tabButton'>all Fields</a>
       <a id='bSysInfo'    class='nav-item tabButton'>Systeem Info</a>
-      <a id='restAPI'    class='nav-item tabButton'>restAPI</a>
+      <a id='restAPI'     class='nav-item tabButton'>restAPI</a>
       <a id='FSexplorer'  class='nav-img'>
                       <img src='/FSexplorer.png' alt='FSexplorer'></a>
     </div>
-<!--
-    <div class='nav-right'>
-      <div id='theTime' class='nav-item nav-clock'>00:00</div>
-    </div>
--->
   </div>
   <!-- END Tabbladen -->
   
@@ -68,7 +63,9 @@
       <table id="actualTable">
       <thead>
         <tr>
-            <th align='left'>Name</th><th align='left'>Value</th><th>Unit</th>
+            <th style="text-align: left;   border-bottom: 2px solid #ddd;">Name</th>
+            <th style="text-align: left;   border-bottom: 2px solid #ddd;">Value</th>
+            <th style="text-align: center; border-bottom: 2px solid #ddd;">Unit</th>
         </tr>
       </thead>
       <tbody>
@@ -93,13 +90,13 @@
     <table id="lastHoursTable">
     <thead>
         <tr>
-            <th align='left'>RecNr</th>
-            <th align='center'>Slot</th>
-            <th align='center'>Date/Time</th>
-            <th align='right'>Energie Verbruik</th>
-            <th align='right'>Energie Teruglevering</th>
-            <th align='right'>Gasverbruik</th>
-            <th align='right'>Kosten</th>
+            <th style="text-align: left;   border-bottom: 2px solid #ddd;">RecNr</th>
+            <th style="text-align: center; border-bottom: 2px solid #ddd;">Slot</th>
+            <th style="text-align: center; border-bottom: 2px solid #ddd;">Date/Time</th>
+            <th style="text-align: right;  border-bottom: 2px solid #ddd;">Energie<br>Verbruik<br>(Watt)</th>
+            <th style="text-align: right;  border-bottom: 2px solid #ddd;">Energie<br>Teruglevering<br>(Watt)</th>
+            <th style="text-align: right;  border-bottom: 2px solid #ddd;">Gas-<br>verbruik<br>(m3)</th>
+            <th style="text-align: right;  border-bottom: 2px solid #ddd;">Kosten</th>
         </tr>
     </thead>
     <tbody>
@@ -124,13 +121,13 @@
       <table id="lastDaysTable">
       <thead>
         <tr>
-            <th align='left'>RecNr</th>
-            <th align='center'>Slot</th>
-            <th align='center'>Date/Time</th>
-            <th align='right'>Energie Verbruik</th>
-            <th align='right'>Energie Teruglevering</th>
-            <th align='right'>Gasverbruik</th>
-            <th align='right'>Kosten</th>
+            <th style="text-align: left;   border-bottom: 2px solid #ddd;">RecNr</th>
+            <th style="text-align: center; border-bottom: 2px solid #ddd;">Slot</th>
+            <th style="text-align: center; border-bottom: 2px solid #ddd;">Date/Time</th>
+            <th style="text-align: right;  border-bottom: 2px solid #ddd;">Energie<br>Verbruik<br>(Watt)</th>
+            <th style="text-align: right;  border-bottom: 2px solid #ddd;">Energie<br>Teruglevering<br>(Watt)</th>
+            <th style="text-align: right;  border-bottom: 2px solid #ddd;">Gas-<br>verbruik<br>(m3)</th>
+            <th style="text-align: right;  border-bottom: 2px solid #ddd;">Kosten</th>
         </tr>
       </thead>
       <tbody>
@@ -155,30 +152,26 @@
       <thead>
         <tr>
             <th align='center'></th>
-            <th align='center'>|</th>
             <th align='center' colspan=4>Verbruik</th>
-            <th align='center'>|</th>
             <th align='center' colspan=4>Opgewekt</th>
-            <th align='center'>|</th>
             <th align='center' colspan=4>Gasverbruik</th>
         </tr>
         <tr>
-            <th align='right'   width='80px'>Maand</th>
-            <th align='center'  width='10px'>|</th>
-            <th align='center'  width='50px'>Jaar</th>
-            <th align='right'   width='70px'>(kWh)</th>
-            <th align='center'  width='50px'>Jaar</th>
-            <th align='right'   width='70px'>(kWh)</th>
-            <th align='center'  width='10px'>|</th>
-            <th align='center'  width='50px'>Jaar</th>
-            <th align='right'   width='70px'>(kWh)</th>
-            <th align='center'  width='50px'>Jaar</th>
-            <th align='right'   width='70px'>(kWh)</th>
-            <th align='center'  width='10px'>|</th>
-            <th align='center'  width='50px'>Jaar</th>
-            <th align='right'   width='70px'>(m3)</th>
-            <th align='center'  width='50px'>Jaar</th>
-            <th align='right'   width='70px'>(m3)</th>
+            <th style="text-align: right;  border-bottom: 2px solid #ddd;" width='80px'>Maand</th>
+            <th style="text-align: center; border-bottom: 2px solid #ddd;" width='50px'>Jaar</th>
+            <th style="text-align: right;  border-bottom: 2px solid #ddd;" width='70px'>(kWh)</th>
+            <th style="text-align: center; border-bottom: 2px solid #ddd;" width='50px'>Jaar</th>
+            <th style="text-align: right;  border-bottom: 2px solid #ddd;" width='70px'>(kWh)</th>
+
+            <th style="text-align: center; border-bottom: 2px solid #ddd;" width='50px'>Jaar</th>
+            <th style="text-align: right;  border-bottom: 2px solid #ddd;" width='70px'>(kWh)</th>
+            <th style="text-align: center; border-bottom: 2px solid #ddd;" width='50px'>Jaar</th>
+            <th style="text-align: right;  border-bottom: 2px solid #ddd;" width='70px'>(kWh)</th>
+            
+            <th style="text-align: center; border-bottom: 2px solid #ddd;" width='50px'>Jaar</th>
+            <th style="text-align: right;  border-bottom: 2px solid #ddd;" width='70px'>(m3)</th>
+            <th style="text-align: center; border-bottom: 2px solid #ddd;" width='50px'>Jaar</th>
+            <th style="text-align: right;  border-bottom: 2px solid #ddd;" width='70px'>(m3)</th>
         </tr>
       </thead>
       <tbody>
@@ -202,9 +195,9 @@
       <table id="devInfoTable">
       <thead>
         <tr>
-            <th align='left'>Name</th>
-            <th align='left'>Value</th>
-            <th align='left'>Unit</th>
+            <th style="text-align: left;   border-bottom: 2px solid #ddd;">Name</th>
+            <th style="text-align: left;   border-bottom: 2px solid #ddd;">Value</th>
+            <th style="text-align: center; border-bottom: 2px solid #ddd;">Unit</th>
         </tr>
       </thead>
       <tbody>
@@ -231,7 +224,7 @@
   </div> <!-- END TelegramTab -->
 
   <!-- START Actual Tab -->
-  <div id="Fields" class="tabName" style="display:block">
+  <div id="Fields" class="tabName" style="display:none">
     <!-- START filedsTab Dummy -->
     <div>
         <span style="font-size: 30px;">all Fields &nbsp; &nbsp; </span>
@@ -241,10 +234,10 @@
       <table id="fieldsTable">
       <thead>
         <tr>
-            <th align='left'>DSMR Name</th>
-            <th align='left'>Display Name</th>
-            <th align='left'>Value</th>
-            <th>Unit</th>
+            <th style="text-align: left;   border-bottom: 2px solid #ddd;">DSMR Name</th>
+            <th style="text-align: left;   border-bottom: 2px solid #ddd;">short Name</th>
+            <th style="text-align: left;   border-bottom: 2px solid #ddd;">Value</th>
+            <th style="text-align: center; border-bottom: 2px solid #ddd;">Unit</th>
         </tr>
       </thead>
       <tbody>
