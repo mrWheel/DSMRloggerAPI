@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : jsonStuff, part of DSMRloggerAPI
-**  Version  : v0.1.2
+**  Version  : v0.1.7
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -206,6 +206,9 @@ void sendNestedJsonObj(const char *cName, float fValue)
 } // sendNestedJsonObj(*char, float)
 
 
+
+//=======================================================================
+// function to build Json Settings string
 //=======================================================================
 void sendJsonSettingObj(const char *cName, float fValue, const char *fType, int minValue, int maxValue)
 {
@@ -246,6 +249,140 @@ void sendJsonSettingObj(const char *cName, const char *cValue, const char *sType
   sprintf(objSprtr, ",\r\n");
 
 } // sendJsonSettingObj(*char, *char, *char, int, int)
+
+
+
+//=======================================================================
+// function to build MQTT Json string
+//=======================================================================
+void createMQTTjsonMessage(char *mqttBuff, const char *cName, const char *cValue, const char *cUnit)
+{
+  if (strlen(cUnit) == 0)
+  {
+    sprintf(mqttBuff, "{\"%s\": [{\"value\": \"%s\"}]}"
+                                      , cName, cValue);
+  }
+  else
+  {
+    sprintf(mqttBuff, "{\"%s\": [{\"value\": \"%s\", \"unit\": \"%s\"}]}"
+                                      , cName, cValue, cUnit);
+  }
+
+} // createMQTTjsonMessage(*char, *char, *char)
+
+//---------------------------------------------------------------
+void createMQTTjsonMessage(char *mqttBuff, const char *cName, const char *cValue)
+{
+  char noUnit[] = {'\0'};
+
+  createMQTTjsonMessage(mqttBuff, cName, cValue, noUnit);
+  
+} // createMQTTjsonMessage(*char, *char)
+
+
+//=======================================================================
+void createMQTTjsonMessage(char *mqttBuff, const char *cName, String sValue, const char *cUnit)
+{
+  if (strlen(cUnit) == 0)
+  {
+    sprintf(mqttBuff, "{\"%s\": [{\"value\": \"%s\"}]}"
+                                      , cName, sValue.c_str());
+  }
+  else
+  {
+    sprintf(mqttBuff, "{\"%s\": [{\"value\": \"%s\", \"unit\": \"%s\"}]}"
+                                      , cName, sValue.c_str(), cUnit);
+  }
+
+} // createMQTTjsonMessage(*char, String, *char)
+
+//---------------------------------------------------------------
+void createMQTTjsonMessage(char *mqttBuff, const char *cName, String sValue)
+{
+  char noUnit[] = {'\0'};
+
+  createMQTTjsonMessage(mqttBuff, cName, sValue, noUnit);
+  
+} // createMQTTjsonMessage(*char, String)
+
+
+//=======================================================================
+void createMQTTjsonMessage(char *mqttBuff, const char *cName, int32_t iValue, const char *cUnit)
+{
+  if (strlen(cUnit) == 0)
+  {
+    sprintf(mqttBuff, "{\"%s\": [{\"value\": %d}]}"
+                                      , cName, iValue);
+  }
+  else
+  {
+    sprintf(mqttBuff, "{\"%s\": [{\"value\": %d, \"unit\": \"%s\"}]}"
+                                      , cName, iValue, cUnit);
+  }
+
+} // createMQTTjsonMessage(*char, int, *char)
+
+//---------------------------------------------------------------
+void createMQTTjsonMessage(char *mqttBuff, const char *cName, int32_t iValue)
+{
+  char noUnit[] = {'\0'};
+
+  createMQTTjsonMessage(mqttBuff, cName, iValue, noUnit);
+  
+} // createMQTTjsonMessage(char *mqttBuff, *char, int)
+
+
+//=======================================================================
+void createMQTTjsonMessage(char *mqttBuff, const char *cName, uint32_t uValue, const char *cUnit)
+{
+  if (strlen(cUnit) == 0)
+  {
+    sprintf(mqttBuff, "{\"%s\": [{\"value\": %u}]}"
+                                      , cName, uValue);
+  }
+  else
+  {
+    sprintf(mqttBuff, "{\"%s\": [{\"value\": %u, \"unit\": \"%s\"}]}"
+                                      , cName, uValue, cUnit);
+  }
+
+} // createMQTTjsonMessage(*char, uint, *char)
+
+//---------------------------------------------------------------
+void createMQTTjsonMessage(char *mqttBuff, const char *cName, uint32_t uValue)
+{
+  char noUnit[] = {'\0'};
+
+  createMQTTjsonMessage(mqttBuff, cName, uValue, noUnit);
+  
+} // createMQTTjsonMessage(char *mqttBuff, *char, uint)
+
+
+//=======================================================================
+void createMQTTjsonMessage(char *mqttBuff, const char *cName, float fValue, const char *cUnit)
+{
+  if (strlen(cUnit) == 0)
+  {
+    sprintf(mqttBuff, "{\"%s\": [{\"value\": %.3f}]}"
+                                      , cName, fValue);
+  }
+  else
+  {
+    sprintf(mqttBuff, "{\"%s\": [{\"value\": %.3f, \"unit\": \"%s\"}]}"
+                                      , cName, fValue, cUnit);
+  }
+
+} // createMQTTjsonMessage(*char, float, *char)
+
+//---------------------------------------------------------------
+void createMQTTjsonMessage(char *mqttBuff, const char *cName, float fValue)
+{
+  char noUnit[] = {'\0'};
+
+  createMQTTjsonMessage(mqttBuff, cName, fValue, noUnit);
+  
+} // createMQTTjsonMessage(char *mqttBuff, *char, float)
+
 
 /***************************************************************************
 *

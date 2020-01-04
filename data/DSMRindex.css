@@ -23,20 +23,36 @@ html {
 
 table {
   color: black;
+  border-collapse: collapse;
   background: lightblue;
 }
 
-th td {
+th {
   padding-left: 15px;
-  padding-right: 50px;
+  padding-right: 15px;
   white-space: nowrap;
+  border-right: 1px solid #ddd;
+  border-left: 1px solid #ddd;
+  vertical-align: bottom;
+}
+
+td {
+  padding-left: 15px;
+  padding-right: 15px;
+  white-space: nowrap;
+  border-bottom: 1px solid #ddd;
+  border-right: 1px solid #ddd;
+  border-left: 1px solid #ddd;
+  vertical-align: bottom;
 }
 
 input {
    -moz-appearance: none;/* older firefox */
    -webkit-appearance: none; /* safari, chrome, edge and ie mobile */
    appearance: none; /* rest */
-   font-size: 14pt;
+   padding-top: 3px;
+   padding-bottom: 2px;
+   font-size: 12pt;
 }
 
 .settingDiv {

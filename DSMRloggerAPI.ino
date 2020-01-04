@@ -2,7 +2,7 @@
 ***************************************************************************  
 **  Program  : DSMRloggerAPI (restAPI)
 */
-#define _FW_VERSION "v0.1.3 (03-01-2020)"
+#define _FW_VERSION "v0.1.8 (09-01-2020)"
 /*
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -13,7 +13,7 @@
 
     - Board: "Generic ESP8266 Module"
     - Flash mode: "DOUT" | "DIO"    // if you change from one to the other OTA may fail!
-    - Flash size: "4M (1M SPIFFS)"  // ESP-01 "1M (256K SPIFFS)"  // PUYA flash chip won't work
+    - Flash size: "4MB (FS: 2MB OAT:~1019KB)"  
     - DebugT port: "Disabled"
     - DebugT Level: "None"
     - IwIP Variant: "v2 Lower Memory"
@@ -31,9 +31,9 @@
 /******************** compiler options  ********************************************/
 #define IS_ESP12                  // define if it's a 'bare' ESP-12 (no reset/flash functionality on board)
 #define USE_UPDATE_SERVER         // define if there is enough memory and updateServer to be used
-#define HAS_OLED_SSD1306          // define if a 0.96" OLED display is present
-#define HAS_NO_SLIMMEMETER        // define for testing only!
-//  #define HAS_OLED_SH1106           // define if a 1.3" OLED display is present
+//  #define HAS_OLED_SSD1306          // define if a 0.96" OLED display is present
+#define HAS_OLED_SH1106           // define if a 1.3" OLED display is present
+//  #define HAS_NO_SLIMMEMETER        // define for testing only!
 //  #define USE_PRE40_PROTOCOL        // define if Slimme Meter is pre DSMR 4.0 (2.2 .. 3.0)
 //  #define USE_NTP_TIME              // define to generate Timestamp from NTP (Only Winter Time for now)
 //  #define SM_HAS_NO_FASE_INFO       // if your SM does not give fase info use total delevered/returned
@@ -167,14 +167,30 @@ void setup()
                                                                     , slotErrors);
 
 //=============now test if SPIFFS is correct populated!============
-  DSMRfileExist("/DSMRindex.html");
-  DSMRfileExist("/DSMRindex.js");
-  DSMRfileExist("/DSMRindex.css");
-  //DSMRfileExist("/DSMRgraphics.js");
+  if (DSMRfileExist("/ADJindex.html", false) )
+  {
+    hasADJindex        = true;
+  }
+  if (!hasADJindex && !DSMRfileExist("/DSMRindex.html", false) )
+  {
+    spiffsNotPopulated = true;
+  }
+  if (!hasADJindex)
+  {
+    DSMRfileExist("/DSMRindex.js", false);
+    DSMRfileExist("/DSMRindex.css", false);
+    //DSMRfileExist("/DSMRgraphics.js");
+  }
   //DSMRfileExist("/DSMReditor.html");
   //DSMRfileExist("/DSMReditor.js");
-  DSMRfileExist("/FSexplorer.html");
-  DSMRfileExist("/FSexplorer.css");
+  if (!DSMRfileExist("/FSexplorer.html", true))
+  {
+    spiffsNotPopulated = true;
+  }
+  if (!DSMRfileExist("/FSexplorer.css", true))
+  {
+    spiffsNotPopulated = true;
+  }
 //=============end SPIFFS =========================================
 
 #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
@@ -283,10 +299,20 @@ void setup()
     oled_Print_Msg(2, "Verder met normale", 0);
     oled_Print_Msg(3, "Verwerking ;-)", 2500);
 #endif  // has_oled_ssd1306
-    httpServer.serveStatic("/",               SPIFFS, "/DSMRindex.html");
-    httpServer.serveStatic("/DSMRindex.html", SPIFFS, "/DSMRindex.html");
-    httpServer.serveStatic("/index",          SPIFFS, "/DSMRindex.html");
-    httpServer.serveStatic("/index.html",     SPIFFS, "/DSMRindex.html");
+    if (hasADJindex)
+    {
+      httpServer.serveStatic("/",               SPIFFS, "/ADJindex.html");
+      httpServer.serveStatic("/ADJindex.html",  SPIFFS, "/ADJindex.html");
+      httpServer.serveStatic("/index",          SPIFFS, "/ADJindex.html");
+      httpServer.serveStatic("/index.html",     SPIFFS, "/ADJindex.html");
+    }
+    else
+    {
+      httpServer.serveStatic("/",               SPIFFS, "/DSMRindex.html");
+      httpServer.serveStatic("/DSMRindex.html", SPIFFS, "/DSMRindex.html");
+      httpServer.serveStatic("/index",          SPIFFS, "/DSMRindex.html");
+      httpServer.serveStatic("/index.html",     SPIFFS, "/DSMRindex.html");
+    }
   } else {
     DebugTln(F("Oeps! not all files found on SPIFFS -> present FSexplorer!\r"));
     spiffsNotPopulated = true;

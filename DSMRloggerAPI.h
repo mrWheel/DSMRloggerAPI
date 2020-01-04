@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : processTelegram - part of DSMRloggerAPI
-**  Version  : v0.1.2
+**  Version  : v0.1.7
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -11,7 +11,6 @@
 
 #include <TimeLib.h>            // https://github.com/PaulStoffregen/Time
 #include <TelnetStream.h>       // Version 0.0.1 - https://github.com/jandrassy/TelnetStream
-#include <ArduinoJson.h>
 
 #ifdef USE_PRE40_PROTOCOL                                       //PRE40
   //  https://github.com/mrWheel/arduino-dsmr30.git             //PRE40
@@ -182,14 +181,13 @@ int strcicmp(const char *a, const char *b);
   char        newTimestamp[20] = "";
   uint32_t    slotErrors = 0;
   uint32_t    nrReboots  = 0;
-  DynamicJsonDocument jsonDoc(1000);  // generic doc to return, clear() before use!
-  JsonObject          root;
 
 //----------------- old var's -----(remove as soon as possible)-----------------
 uint32_t  telegramInterval, noMeterWait, telegramCount, telegramErrors, lastOledStatus;
 char      cMsg[150], fChar[10];
 String    lastReset = "";
-bool      spiffsNotPopulated = false; // v1.0.3b
+bool      spiffsNotPopulated = false;
+bool      hasADJindex        = false;
 bool      doLog = false, Verbose1 = false, Verbose2 = false, showRaw = false;
 int8_t    thisHour = -1, prevNtpHour = 0, thisDay = -1, thisMonth = -1, lastMonth, thisYear = 15;
 int8_t    showRawCount = 0;

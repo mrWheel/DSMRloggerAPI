@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : MQTTstuff, part of DSMRloggerAPI
-**  Version  : v0.1.2
+**  Version  : v0.1.7
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -13,8 +13,6 @@
 // Declare some variables within global scope
 
   static IPAddress  MQTTbrokerIP;
-//static char       MQTTbroker[101];
-//static uint16_t   MQTTbrokerPort = 1883;
   static char       MQTTbrokerIPchar[20];
   
 #ifdef USE_MQTT
@@ -29,6 +27,7 @@
   char              lastMQTTtimestamp[15] = "";
   uint32_t          timeMQTTLastRetry = 0;
   uint32_t          timeMQTTReconnect = 0;
+  char              mqttBuff[100];
 
   enum states_of_MQTT { MQTT_STATE_INIT, MQTT_STATE_TRY_TO_CONNECT, MQTT_STATE_WAIT_FOR_FIRST_TELEGRAM, MQTT_STATE_IS_CONNECTED, MQTT_STATE_WAIT_CONNECTION_ATTEMPT, MQTT_STATE_WAIT_FOR_RECONNECT, MQTT_STATE_ERROR };
   enum states_of_MQTT stateMQTT = MQTT_STATE_INIT;
@@ -195,11 +194,13 @@ String trimVal(char *in)
   return Out;
 } // trimVal()
 
+
 //=======================================================================
 struct buildJsonMQTT {
-  String jsonString;
-  char topicId[100];
-  
+#ifdef USE_MQTT
+
+    char topicId[100];
+
     template<typename Item>
     void apply(Item &i) {
       if (i.present()) 
@@ -211,29 +212,25 @@ struct buildJsonMQTT {
   #endif
         String Unit = Item::unit();
 
-        jsonDoc.clear();
-        jsonString = "";
-        
         sprintf(topicId, "%s/JSON/", settingMQTTtopTopic);
         strConcat(topicId, sizeof(topicId), Name.c_str());
-        //DebugTf("topicId[%s]\r\n", topicId);
-        
-        JsonArray array = jsonDoc.createNestedArray(Name);
-        JsonObject nested = array.createNestedObject();
-        
-        nested["value"] = typecastValue(i.val());
+        DebugTf("topicId[%s]\r\n", topicId);
         
         if (Unit.length() > 0)
         {
-          nested["unit"]  = Unit;
+          createMQTTjsonMessage(mqttBuff, Name.c_str(), typecastValue(i.val()), Unit.c_str());
         }
-        serializeJson(jsonDoc, jsonString); 
-        //DebugTf("jsonString[%s]\r\n", jsonString.c_str());
-        sprintf(cMsg, "%s", jsonString.c_str());
-        //DebugTf("topicId[%s] -> [%s]\r\n", topicId, cMsg);
-        MQTTclient.publish(topicId, cMsg); 
+        else
+        {
+          createMQTTjsonMessage(mqttBuff, Name.c_str(), typecastValue(i.val()));
+        }
+        
+        //sprintf(cMsg, "%s", jsonString.c_str());
+        //DebugTf("topicId[%s] -> [%s]\r\n", topicId, mqttBuff);
+        MQTTclient.publish(topicId, mqttBuff); 
       }
   }
+#endif
 };
 
 //===========================================================================================

@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : restAPI, part of DSMRloggerAPI
-**  Version  : v0.1.2
+**  Version  : v0.1.7
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -18,13 +18,15 @@ char fieldsArray[50][35] = {{0}}; // to lookup fields
 int  fieldsElements      = 0;
 
 int  actualElements = 20;
-char actualArray[][35] = { "timestamp","energy_delivered_tariff1","energy_delivered_tariff2"
+char actualArray[][35] = { "timestamp"
+                          ,"energy_delivered_tariff1","energy_delivered_tariff2"
                           ,"energy_returned_tariff1","energy_returned_tariff2"
                           ,"power_delivered","power_returned"
                           ,"voltage_l1","voltage_l2","voltage_l3"
                           ,"current_l1","current_l2","current_l3"
                           ,"power_delivered_l1","power_delivered_l2","power_delivered_l3"
                           ,"power_returned_l1","power_returned_l2","power_returned_l3"
+                          ,"gas_delivered"
                           ,"\0"};
 int  infoElements = 7;
 char infoArray[][35]   = { "identification","p1_version","equipment_id","electricity_tariff"
@@ -247,26 +249,6 @@ void handleSmApi(const char *word4, const char *word5, const char *word6)
 
 
 //=======================================================================
-// some helper functions
-/******
-void _returnJSON(JsonObject obj)
-{
-  String jsonString;
-
-  serializeJson(obj, jsonString);         // machine readable
-  DebugTf("JSON String is %d chars\r\n", jsonString.length());
-  httpServer.send(200, "application/json", jsonString);
-  
-} // _returnJSON()
-
-void _returnJSON400(const char * message)
-{
-  httpServer.send(400, "application/json", message);
-
-} // _returnJSON400()
-******/
-
-//=======================================================================
 void sendDeviceInfo() 
 {
   sendStartJsonObj("devinfo");
@@ -487,7 +469,7 @@ void copyToFieldsArray(const char inArray[][35], int elemts)
   for ( i=0; i<elemts; i++)
   {
     strncpy(fieldsArray[i], inArray[i], 34);
-    DebugTf("[%2d] => inArray[%s] fieldsArray[%s]\r\n", i, inArray[i], fieldsArray[i]); 
+    if (Verbose1) DebugTf("[%2d] => inArray[%s] fieldsArray[%s]\r\n", i, inArray[i], fieldsArray[i]); 
 
   }
   fieldsElements = i;
@@ -510,44 +492,8 @@ bool listFieldsArray(char inArray[][35])
 //====================================================
 void sendApiInfo()
 {
-  const char *APIhelp = \
-"<html>\
-  <head>\
-    <title>API reference</title>\
-    <style>\
-      body { background-color: #cccccc; font-family: Arial, Helvetica, Sans-Serif; Color: #000088; }\
-      table.padded-table td { padding-left:20px; padding-right:20px; padding-top:10px; vertical-align: top;}\
-    </style>\
-  </head>\
-  <body>\
-    <h1>API Reference</h1>\
-    <table class='padded-table'>\
-    <tr><td><b>/api/v1/dev/info</b></td><td>Device information in JSON format</td></tr>\
-    <tr><td><b>/api/v1/dev/time</b></td><td>Device time (epoch) in JSON format</td></tr>\
-    <tr><td><b>/api/v1/dev/settings</b></td><td>Device settings in JSON format</td></tr>\
-    <tr><td><b>/api/v1/dev/settings/&lt;json&gt;</b></td><td>POST/PUT update setting in JSON format<br>\
-                           test with:<br>\
-                           curl -X POST -H \"Content-Type: application/json\" --data '{\"name\":\"mqtt_broker\",\"value\":\"hassio.local\"}'\
-                           http://DSMR-API.local/api/v1/dev/settings\
-                           </td></tr>\
-    <tr><td><b>/api/v1/hist/hours/{desc|asc}</b></td><td>Readings from hours table in JSON format</td></tr>\
-    <tr><td><b>/api/v1/hist/days/{desc|asc}</b></td><td>Readings from days table in JSON format</td></tr>\
-    <tr><td><b>/api/v1/hist/months/{desc|asc}</b></td><td>Readings from months table in JSON format</td></tr>\
-    <tr><td><b>/api/v1/sm/info</b></td><td>Information about the Slimme Meter in JSON format</td></tr>\
-    <tr><td><b>/api/v1/sm/actual</b></td><td>Actual data from Slimme Meter in JSON format</td></tr>\
-    <tr><td><b>/api/v1/sm/fields</b></td><td>All available fields from the Slimme Meter in JSON format</td></tr>\
-    <tr><td><b>/api/v1/sm/fields/{fieldName}</b></td><td>Only the requested field from the Slimme Meter in JSON format</td></tr>\
-    <tr><td><b>/api/v1/sm/telegram</b></td><td>raw telegram including all \\r\\n line endings</td></tr>\
-    </table>\
-    <br>\
-    JSON format: {\"fields\":[{\"name\":\"&lt;fieldName&gt;\",\"value\":&lt;value&gt;,\"unit\":\"&lt;unit&gt;\"}]}\
-    <br>\
-    <br>\
-    <a href='/'>terug</a>\
-  </body>\
-</html>\r\n";
-
-  httpServer.send ( 200, "text/html", APIhelp );
+  httpServer.sendHeader("Location", String("/DSMRrestAPI.html"), true);
+  httpServer.send ( 302, "text/plain", "");
   
 } // sendApiInfo()
 
