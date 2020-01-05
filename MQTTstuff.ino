@@ -197,6 +197,8 @@ String trimVal(char *in)
 
 //=======================================================================
 struct buildJsonMQTT {
+#ifdef USE_MQTT
+
   String jsonString;
   char topicId[100];
   
@@ -234,6 +236,7 @@ struct buildJsonMQTT {
         MQTTclient.publish(topicId, cMsg); 
       }
   }
+#endif
 };
 
 //===========================================================================================
