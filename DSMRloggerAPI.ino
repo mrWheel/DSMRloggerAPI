@@ -2,7 +2,7 @@
 ***************************************************************************  
 **  Program  : DSMRloggerAPI (restAPI)
 */
-#define _FW_VERSION "v0.1.6 (05-01-2020)"
+#define _FW_VERSION "v0.1.6 (06-01-2020)"
 /*
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -13,7 +13,7 @@
 
     - Board: "Generic ESP8266 Module"
     - Flash mode: "DOUT" | "DIO"    // if you change from one to the other OTA may fail!
-    - Flash size: "4M (1M SPIFFS)"  // ESP-01 "1M (256K SPIFFS)"  // PUYA flash chip won't work
+    - Flash size: "4M (2M SPIFFS)"  // ESP-01 "1M (256K SPIFFS)"  // PUYA flash chip won't work
     - DebugT port: "Disabled"
     - DebugT Level: "None"
     - IwIP Variant: "v2 Lower Memory"
@@ -287,6 +287,7 @@ void setup()
     httpServer.serveStatic("/DSMRindex.html", SPIFFS, "/DSMRindex.html");
     httpServer.serveStatic("/index",          SPIFFS, "/DSMRindex.html");
     httpServer.serveStatic("/index.html",     SPIFFS, "/DSMRindex.html");
+    httpServer.serveStatic("/GUIindex.html",  SPIFFS, "/index.html");
   } else {
     DebugTln(F("Oeps! not all files found on SPIFFS -> present FSexplorer!\r"));
     spiffsNotPopulated = true;

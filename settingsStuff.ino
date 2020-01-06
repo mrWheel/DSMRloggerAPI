@@ -134,12 +134,12 @@ void readSettings(bool show)
   DebugTln(F("Reading settings:\r"));
   while(file.available()) 
   {
-    sTmp                = file.readStringUntil('\n');
+    sTmp      = file.readStringUntil('\n');
     sTmp.replace("\r", "");
     //DebugTf("[%s] (%d)\r\n", sTmp.c_str(), sTmp.length());
     int8_t wc = splitString(sTmp.c_str(), '=', words, 10);
     words[0].toLowerCase();
-    nColor = words[1].substring(0,15);
+    nColor    = words[1].substring(0,15);
 
     if (words[0].equalsIgnoreCase("EnergyDeliveredT1"))   settingEDT1         = words[1].toFloat();  
     if (words[0].equalsIgnoreCase("EnergyDeliveredT2"))   settingEDT2         = words[1].toFloat();  

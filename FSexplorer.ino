@@ -222,8 +222,12 @@ bool freeSpace(uint16_t const& printsize)
 //=====================================================================================
 void updateFirmware()
 {
+#ifdef USE_UPDATE_SERVER
   DebugTln(F("Redirect to updateIndex .."));
   doRedirect("wait ... ", 1, "/updateIndex", false);
+#else
+  doRedirect("UpdateServer not implemented", 10, "/", false);
+#endif
       
 } // updateFirmware()
 
