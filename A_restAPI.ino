@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : restAPI, part of DSMRloggerAPI
-**  Version  : v0.1.5
+**  Version  : v0.1.7
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -247,26 +247,6 @@ void handleSmApi(const char *word4, const char *word5, const char *word6)
 
 
 //=======================================================================
-// some helper functions
-/******
-void _returnJSON(JsonObject obj)
-{
-  String jsonString;
-
-  serializeJson(obj, jsonString);         // machine readable
-  DebugTf("JSON String is %d chars\r\n", jsonString.length());
-  httpServer.send(200, "application/json", jsonString);
-  
-} // _returnJSON()
-
-void _returnJSON400(const char * message)
-{
-  httpServer.send(400, "application/json", message);
-
-} // _returnJSON400()
-******/
-
-//=======================================================================
 void sendDeviceInfo() 
 {
   sendStartJsonObj("devinfo");
@@ -487,7 +467,7 @@ void copyToFieldsArray(const char inArray[][35], int elemts)
   for ( i=0; i<elemts; i++)
   {
     strncpy(fieldsArray[i], inArray[i], 34);
-    DebugTf("[%2d] => inArray[%s] fieldsArray[%s]\r\n", i, inArray[i], fieldsArray[i]); 
+    if (Verbose1) DebugTf("[%2d] => inArray[%s] fieldsArray[%s]\r\n", i, inArray[i], fieldsArray[i]); 
 
   }
   fieldsElements = i;

@@ -488,7 +488,7 @@ void listSPIFFS()
 
 
 //===========================================================================================
-void DSMRfileExist(const char* fileName) 
+bool DSMRfileExist(const char* fileName, bool doDisplay) 
 {
 
   DebugTf("check if [%s] exists .. ", fileName);
@@ -499,11 +499,22 @@ void DSMRfileExist(const char* fileName)
 #endif
   if (!SPIFFS.exists(fileName)) 
   {
-    Debugln(F("NO! Error!!"));
-    spiffsNotPopulated = true;
+    if (doDisplay)
+    {
+      Debugln(F("NO! Error!!"));
 #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
-    oled_Print_Msg(3, "Nee! FOUT!", 6000);
+      oled_Print_Msg(3, "Nee! FOUT!", 6000);
 #endif
+      return false;
+    }
+    else
+    {
+      Debugln(F("NO! "));
+#if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
+      oled_Print_Msg(3, "Nee! ", 6000);
+#endif
+      return false;
+    }
   } 
   else 
   {
@@ -511,9 +522,9 @@ void DSMRfileExist(const char* fileName)
 #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
     oled_Print_Msg(3, "JA! (OK!)", 250);
 #endif
-
   }
-
+  return true;
+  
 } //  DSMRfileExist()
 
 

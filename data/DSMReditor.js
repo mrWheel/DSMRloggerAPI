@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMReditor.js, part of DSMRloggerAPI
-**  Version  : v0.1.2
+**  Version  : v0.1.7
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -158,14 +158,16 @@
   //============================================================================  
   function refreshSettings()
   {
+    console.log("refreshSettings() ..");
+    data = {};
     fetch(APIGW+"v1/dev/settings")
       .then(response => response.json())
       .then(json => {
+        console.log("then(json => ..)");
         data = json.settings;
-        //data[i].changed = {};
         for( let i in data )
         {
-          //console.log("Field["+i+"] => ["+data[i].name+"]");
+          console.log("["+data[i].name+"]=>["+data[i].value+"]");
           var settings = document.getElementById('settings');
           if( ( document.getElementById("setting_"+data[i].name)) == null )
           {
@@ -258,8 +260,10 @@
         sendPutCall(fldId, newVal);
       }
     }    
-    data = {};
-    refreshSettings();
+    // delay refresh as all fetch functions are asynchroon!!
+    setTimeout(function() {
+      refreshSettings();
+    }, 1000);
     
   } // saveData()
   

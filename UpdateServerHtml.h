@@ -2,21 +2,19 @@
 static const char UpdateServerIndex[] PROGMEM =
   R"(<html charset="UTF-8">
      <style type='text/css'>
-        body {background-color: lightgray;}
+        body {background-color: lightblue;}
      </style>
      <body>
      <h1>DSMR-logger Flash utility</h1>
      <form method='POST' action='?cmd=0' enctype='multipart/form-data'>
-        Selecteer een "<b>.ino.bin</b>" bestand<br/>
-        <input type='hidden' name='cmd' value='0'>
-                  <input type='file' accept='ino.bin' name='update'>
-                  <input type='submit' value='Flash Firmware'>
+          Selecteer een "<b>.ino.bin</b>" bestand<br/>
+          <input type='file' accept='ino.bin' name='firmware'>
+          <input type='submit' value='Flash Firmware'>
       </form>
       <form method='POST' action='?cmd=100' enctype='multipart/form-data'> 
-        Selecteer een "<b>.spiffs.bin</b>" bestand<br/>
-        <input type='hidden' name='cmd' value='100'>
-                  <input type='file' accept='spiffs.bin' name='update'>
-                  <input type='submit' value='Flash Spiffs'>
+          Selecteer een "<b>.spiffs.bin</b>" bestand<br/>
+          <input type='file' accept='spiffs.bin' name='filesystem'>
+          <input type='submit' value='Flash Spiffs'>
       </form>
       <br/>Wacht nog <span style='font-size: 1.3em;' id="waitSeconds">120</span> seconden ..
       <br>Als het lijkt of er niets gebeurd, wacht dan tot de teller
