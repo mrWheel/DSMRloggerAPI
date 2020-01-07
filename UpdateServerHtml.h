@@ -6,6 +6,7 @@ static const char UpdateServerIndex[] PROGMEM =
      </style>
      <body>
      <h1>DSMR-logger Flash utility</h1>
+<<<<<<< HEAD
      <form method='POST' action='?cmd=0' enctype='multipart/form-data'>
           Selecteer een "<b>.ino.bin</b>" bestand<br/>
           <input type='file' accept='ino.bin' name='firmware'>
@@ -15,6 +16,17 @@ static const char UpdateServerIndex[] PROGMEM =
           Selecteer een "<b>.spiffs.bin</b>" bestand<br/>
           <input type='file' accept='spiffs.bin' name='filesystem'>
           <input type='submit' value='Flash Spiffs'>
+=======
+     <form method='POST' action='' enctype='multipart/form-data'>
+        Selecteer een "<b>.ino.bin</b>" bestand<br/>
+        <input type='file' accept='ino.bin' name='firmware'>
+        <input type='submit' value='Flash Firmware'>
+      </form>
+      <form method='POST' action='' enctype='multipart/form-data'> 
+        Selecteer een "<b>.spiffs.bin</b>" bestand<br/>
+        <input type='file' accept='spiffs.bin' name='filesystem'>
+        <input type='submit' value='Flash Spiffs'>
+>>>>>>> f537b35f0c5bfeba86ab88c2576c3f70a894eae4
       </form>
       <br/>Wacht nog <span style='font-size: 1.3em;' id="waitSeconds">120</span> seconden ..
       <br>Als het lijkt of er niets gebeurd, wacht dan tot de teller
