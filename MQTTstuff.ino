@@ -214,7 +214,7 @@ struct buildJsonMQTT {
 
         sprintf(topicId, "%s/JSON/", settingMQTTtopTopic);
         strConcat(topicId, sizeof(topicId), Name.c_str());
-        DebugTf("topicId[%s]\r\n", topicId);
+        //DebugTf("topicId[%s]\r\n", topicId);
         
         if (Unit.length() > 0)
         {
