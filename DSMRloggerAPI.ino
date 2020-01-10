@@ -33,7 +33,7 @@
 #define USE_UPDATE_SERVER         // define if there is enough memory and updateServer to be used
 //  #define HAS_OLED_SSD1306          // define if a 0.96" OLED display is present
 #define HAS_OLED_SH1106           // define if a 1.3" OLED display is present
-#define HAS_NO_SLIMMEMETER        // define for testing only!
+//#define HAS_NO_SLIMMEMETER        // define for testing only!
 //  #define USE_PRE40_PROTOCOL        // define if Slimme Meter is pre DSMR 4.0 (2.2 .. 3.0)
 //  #define USE_NTP_TIME              // define to generate Timestamp from NTP (Only Winter Time for now)
 //  #define SM_HAS_NO_FASE_INFO       // if your SM does not give fase info use total delevered/returned
