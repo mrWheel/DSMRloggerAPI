@@ -9,11 +9,16 @@
 ***************************************************************************      
 */
 
-#include <ESP8266WiFi.h>        // version 1.0.0 - part of ESP8266 Core https://github.com/esp8266/Arduino
-#include <ESP8266WebServer.h>   // Version 1.0.0 - part of ESP8266 Core https://github.com/esp8266/Arduino
-//#include <DNSServer.h>        // part of ESP8266 Core https://github.com/esp8266/Arduino
+#if defined(ESP8266)
+    #include <ESP8266WiFi.h>  //ESP8266 Core WiFi Library         
+    #include <ESP8266WebServer.h>   // Version 1.0.0 - part of ESP8266 Core https://github.com/esp8266/Arduino
+    #include <ESP8266mDNS.h>        // part of ESP8266 Core https://github.com/esp8266/Arduino
+#else
+    #include <WiFi.h>      //ESP32 Core WiFi Library    
+    #include <WebServer.h> //Local DNS Server used for redirecting all requests to the configuration portal (  https://github.com/zhouhan0126/DNSServer---esp32  )
+    #include <ESPmDNS.h>        // part of ESP8266 Core https://github.com/esp8266/Arduino
+#endif
 #include <WiFiUdp.h>            // part of ESP8266 Core https://github.com/esp8266/Arduino
-#include <ESP8266mDNS.h>        // part of ESP8266 Core https://github.com/esp8266/Arduino
 #ifdef USE_UPDATE_SERVER
   //#include "ESP8266HTTPUpdateServer.h"
   #include "ModUpdateServer.h"
@@ -24,9 +29,16 @@
 //#include <Hash.h>
 #include <FS.h>                 // part of ESP8266 Core https://github.com/esp8266/Arduino
 
-ESP8266WebServer        httpServer (80);
-#ifdef USE_UPDATE_SERVER
-  ESP8266HTTPUpdateServer httpUpdater(true);
+#if defined(ESP8266)
+  ESP8266WebServer        httpServer (80);
+  #ifdef USE_UPDATE_SERVER
+    ESP8266HTTPUpdateServer httpUpdater(true);
+  #endif
+#else
+  ESP32WebServer        httpServer (80);
+  #ifdef USE_UPDATE_SERVER
+    ESP32HTTPUpdateServer httpUpdater(true);
+  #endif
 #endif
 
 bool        OtaInProgress = false;
