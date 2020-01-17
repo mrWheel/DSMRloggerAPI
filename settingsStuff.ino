@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : settingsStuff, part of DSMRloggerAPI
-**  Version  : v0.1.2
+**  Version  : v0.2.1
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **

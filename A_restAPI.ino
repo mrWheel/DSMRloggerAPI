@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : restAPI, part of DSMRloggerAPI
-**  Version  : v0.1.7
+**  Version  : v0.2.1
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
