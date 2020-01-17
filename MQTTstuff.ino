@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : MQTTstuff, part of DSMRloggerAPI
-**  Version  : v0.1.7
+**  Version  : v0.2.5
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -22,6 +22,7 @@
   
   static            PubSubClient MQTTclient(wifiClient);
 
+  uint32_t          MQTThandleTimer   = 0;
   int8_t            reconnectAttempts = 0;
   uint32_t          timeMQTTPublish  = 0;
   char              lastMQTTtimestamp[15] = "";
@@ -48,6 +49,15 @@ void handleMQTT()
 {
 #ifdef USE_MQTT
 
+  if ((millis() - MQTThandleTimer) > 100)
+  {
+    MQTThandleTimer = millis();
+  }
+  else
+  {
+    return;
+  }
+  
   switch(stateMQTT) 
   {
     case MQTT_STATE_INIT:  
@@ -108,6 +118,7 @@ void handleMQTT()
       {
         reconnectAttempts = 0;  
         Debugln(F(" .. connected\r"));
+        mqttIsConnected   = true;
         stateMQTT = MQTT_STATE_IS_CONNECTED;
         //DebugTln(F("Next State: MQTT_STATE_IS_CONNECTED"));
       }
@@ -115,7 +126,8 @@ void handleMQTT()
       { // no connection, try again, do a non-blocking wait for 3 seconds.
         Debugln(F(" .. \r"));
         DebugTf("failed, retrycount=[%d], rc=[%d] ..  try again in 3 seconds\r\n", reconnectAttempts, MQTTclient.state());
-        timeMQTTLastRetry= millis();
+        mqttIsConnected   = false;
+        timeMQTTLastRetry = millis();
         stateMQTT = MQTT_STATE_WAIT_CONNECTION_ATTEMPT;  // if the re-connect did not work, then return to wait for reconnect
         //DebugTln(F("Next State: MQTT_STATE_WAIT_CONNECTION_ATTEMPT"));
       }
@@ -130,7 +142,6 @@ void handleMQTT()
     break;
     
     case MQTT_STATE_IS_CONNECTED:
-      if (Verbose1) DebugTln(F("MQTT State: MQTT is Connected"));
       if (MQTTclient.connected()) 
       { //if the MQTT client is connected, then please do a .loop call...
         MQTTclient.loop();
@@ -156,7 +167,7 @@ void handleMQTT()
     
     case MQTT_STATE_WAIT_FOR_RECONNECT:
       //do non-blocking wait for 10 minutes, then try to connect again. 
-      if (Verbose1) DebugTln(F("MQTT State: MQTT wait for reconnect"));
+      if (Verbose2) DebugTln(F("MQTT State: MQTT wait for reconnect"));
       if ((millis() - timeMQTTReconnect) > MQTT_WAITFORCONNECT) 
       {
         //remember when you tried last time to reconnect
@@ -214,7 +225,7 @@ struct buildJsonMQTT {
 
         sprintf(topicId, "%s/JSON/", settingMQTTtopTopic);
         strConcat(topicId, sizeof(topicId), Name.c_str());
-        DebugTf("topicId[%s]\r\n", topicId);
+        if (Verbose2) DebugTf("topicId[%s]\r\n", topicId);
         
         if (Unit.length() > 0)
         {
@@ -294,4 +305,5 @@ void sendMQTTData()
 * OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 * THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 * 
-***************************************************************************/
+****************************************************************************
+*/

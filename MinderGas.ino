@@ -45,13 +45,10 @@ enum states_of_MG { MG_INIT, MG_WAIT_FOR_FIRST_TELEGRAM, MG_WAIT_FOR_MIDNIGHT
 enum states_of_MG stateMindergas = MG_INIT;
 
 int8_t    MG_Today                      = -1;
-uint16_t  intStatuscodeMindergas        = 0; 
 uint32_t  lastTime                      = millis();
 uint32_t  MGcountdownTimer              = 0;
 bool      validToken                    = false;
 bool      handleMindergasSemaphore      = false;
-char      txtResponseMindergas[30]      = "";
-char      timeLastResponse[16]          = "";  
 
 
 //=======================================================================
@@ -227,12 +224,12 @@ void processMindergas()
       if ((validToken) && SPIFFS.exists(MG_FILENAME)) 
       {  
          // start the update of mindergas, when the countdown counter reaches 0
-          //WiFiClient client;   
+          WiFiClient MGclient;   
           //WiFiClientSecure client;          
           // try to connect to minderGas
           DebugTln(F("Connecting to Mindergas..."));
           //connect over http with mindergas
-          if (wifiClient.connect((char*)"mindergas.nl",80)) 
+          if (MGclient.connect((char*)"mindergas.nl",80)) 
           {
             // create a string with the date and the meter value
             minderGasFile = SPIFFS.open(MG_FILENAME, "r");
@@ -248,21 +245,21 @@ void processMindergas()
             DebugTln(F("Reading POST from file:"));
             Debugln(sBuffer);
             DebugTln(F("Send to Mindergas.nl..."));
-            wifiClient.println(sBuffer);
+            MGclient.println(sBuffer);
             // read response from mindergas.nl
             sprintf(timeLastResponse, "@%02d|%02d:%02d >> ", day(), hour(), minute());
             DebugTf("[%s] Mindergas response: ", timeLastResponse);
             bool bDoneResponse = false;
-            while (!bDoneResponse && (wifiClient.connected() || wifiClient.available())) 
+            while (!bDoneResponse && (MGclient.connected() || MGclient.available())) 
             {
-              if (wifiClient.available()) 
+              if (MGclient.available()) 
               {
                   // read the status code the response
-                  if (wifiClient.find("HTTP/1.1"))
+                  if (MGclient.find("HTTP/1.1"))
                   {
                     // skip to find HTTP/1.1
                     // then parse response code
-                    intStatuscodeMindergas = wifiClient.parseInt(); // parse status code
+                    intStatuscodeMindergas = MGclient.parseInt(); // parse status code
                     //Debugln();
                     Debugf("Statuscode: [%d]\r\n", intStatuscodeMindergas);
                     switch (intStatuscodeMindergas) {
@@ -299,7 +296,7 @@ void processMindergas()
                   }  // end-if find HTTP/1.1
                   
                   //close HTTP connection
-                  //??? client.stop();
+                  MGclient.stop();
                   DebugTln(F("Disconnected from mindergas.nl"));
                   // delete POST file from SPIFFS
                   if (SPIFFS.remove(MG_FILENAME)) 

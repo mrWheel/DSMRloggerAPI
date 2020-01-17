@@ -1,7 +1,7 @@
 <!--
 ***************************************************************************  
 **  Program  : DSMReditor.html, part of DSMRloggerAPI
-**  Version  : v0.1.7
+**  Version  : v0.2.9
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -17,7 +17,6 @@
 </head>
 <body>
   <font face="Arial">
-    <!-- <div class="dev-header"> -->
     <div class="header">
       <h1>
         <span id="sysName">DSMR-editor</span> &nbsp; &nbsp; &nbsp;
@@ -25,11 +24,9 @@
         <span id="devVersion" style='font-size: small;'>[version]</span>
         <span id='theTime' class='nav-item nav-clock'>00:00</span>
       </h1>
-   </div>
-<!--  <div style="clear:both"></div> -->
+    </div>  <!-- END header -->
   </font>
 
-  <!-- <div class="clock" id="theTime">-</div> -->
   <div class="nav-container">
     <div class='nav-left'>
       <a id='bTerug'        class='nav-item editButton'>Terug</a>
@@ -38,40 +35,37 @@
       <a id='bUndo'         class='nav-item editButton'>Herstel</a>
       <a id='bSave'         class='nav-item editButton'>Opslaan</a>
     </div>
-  </div>
+  </div>  <!-- END nav-container -->
 
   <!-- START Tabbladen -->
   <div id="tabMonths" class="tabName" style="display:none">
     <label for="Period"><b>Meterstand: </b></label>
       Energy Delivered
-      <input type="radio" name="editType" id="MED" onchange="setEditType('D')" checked/>
+      <input type="radio" name="editType" id="MED" onchange="setEditType('ED')" checked/>
       &nbsp;&nbsp;
       Energy Returned
-      <input type="radio" name="editType" id="MER" onchange="setEditType('R')"/>
+      <input type="radio" name="editType" id="MER" onchange="setEditType('ER')"/>
       &nbsp;&nbsp;
       Gas Delivered
-      <input type="radio" name="editType" id="MGD" onchange="setEditType('G')"/>
+      <input type="radio" name="editType" id="MGD" onchange="setEditType('GD')"/>
       &nbsp;&nbsp;
+  
+  <div id="tabMaanden" class="tabName outer-div" style="display:none">
+    <!-- START edit tabMonths -->
+    <br>
+      <div id="editMonths" class="inner-div">
+      </div> 
+  </div>  <!-- END tabMonthss -->
 
-    <!-- START Maanden -->
-    <div id="tabMaanden" class="tabName" style="display:none">
-      <br>
-      <div style="margin-left: 50px; background: white;">
-        <table id="maandenTable" border="1" bgcolor="deepskyblue"> 
-          <tbody>
-          </tbody>
-        </table>
-      </div>
-    </div> <!-- END Maanden -->
-  </div>
+  </div> <!-- tabMonths -->
   
   
-  <div id="tabSettings" class="tabName" style="display:none">
+  <div id="tabSettings" class="tabName outer-div" style="display:none">
     <!-- START settingsTab Settings -->
     <br>
-      <div id="settings">
+      <div id="settings" class="inner-div" style="width: 500px;">
       </div> 
-  </div>  <!-- END Settings -->
+  </div>  <!-- END tabSettings -->
   
   <!-- END Tabbladen -->
 
@@ -84,7 +78,7 @@
   
   <div class="footer">
     <span id="devIPaddress"></span>
-    <span>2019 &copy; Willem Aandewiel &nbsp; &nbsp;</span>
+    <span>2020 &copy; Willem Aandewiel &nbsp; &nbsp;</span>
   </div>
 
   <script src="/DSMReditor.js"></script>

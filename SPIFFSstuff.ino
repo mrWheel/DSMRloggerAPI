@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : SPIFFSstuff, part of DSMRloggerAPI
-**  Version  : v0.1.2
+**  Version  : v0.2.6
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -68,7 +68,7 @@ void writeLastStatus()
 } // writeLastStatus()
 
 //===========================================================================================
-bool buildDataRecord(char *recIn) 
+bool buildDataRecordFromSM(char *recIn) 
 {
   static float GG = 1;
   char record[DATA_RECLEN + 1] = "";
@@ -87,7 +87,58 @@ bool buildDataRecord(char *recIn)
 
   strcpy(recIn, record);
 
-} // buildDataRecord()
+} // buildDataRecordFromSM()
+
+//===========================================================================================
+uint16_t buildDataRecordFromJson(char *recIn, String jsonIn) 
+{
+  //static float GG = 1;
+  char      record[DATA_RECLEN + 1] = "";
+  String    wOut[10];
+  String    wPair[5];
+  char      uKey[15]  = "";
+  float     uEDT1     = 0.0;
+  float     uEDT2     = 0.0;
+  float     uERT1     = 0.0;
+  float     uERT2     = 0.0;
+  float     uGDT      = 0.0;
+  uint16_t  recSlot;
+
+  DebugTln(jsonIn);
+
+  jsonIn.replace("{", "");
+  jsonIn.replace("}", "");
+  jsonIn.replace("\"", "");
+  int8_t wp = splitString(jsonIn.c_str(), ',',  wOut, 9) ;
+  for(int f=0; f<wp; f++)
+  {
+    splitString(wOut[f].c_str(), ':', wPair, 4);
+    if (Verbose2) DebugTf("[%d] -> [%s]\r\n", f, wOut[f].c_str());
+    if (wPair[0].indexOf("recid") == 0)  strCopy(uKey, 10, wPair[1].c_str());
+    if (wPair[0].indexOf("edt1")  == 0)  uEDT1 = wPair[1].toFloat();
+    if (wPair[0].indexOf("edt2")  == 0)  uEDT2 = wPair[1].toFloat();
+    if (wPair[0].indexOf("ert1")  == 0)  uERT1 = wPair[1].toFloat();
+    if (wPair[0].indexOf("ert2")  == 0)  uERT2 = wPair[1].toFloat();
+    if (wPair[0].indexOf("gdt")   == 0)  uGDT  = wPair[1].toFloat();
+  }
+  strConcat(uKey, 15, "0101X");
+  recSlot = timestampToMonthSlot(uKey, strlen(uKey));
+ 
+  DebugTf("MONTHS: Write [%s] to slot[%02d] in %s\r\n", uKey, recSlot, MONTHS_FILE);
+  sprintf(record, (char*)DATA_FORMAT, uKey , (float)uEDT1
+                                           , (float)uEDT2
+                                           , (float)uERT1
+                                           , (float)uERT2
+                                           , (float)uGDT);
+
+  // DATA + \n + \0                                        
+  fillRecord(record, DATA_RECLEN);
+
+  strcpy(recIn, record);
+
+  return recSlot;
+
+} // buildDataRecordFromJson()
 
 
 //===========================================================================================
@@ -140,25 +191,23 @@ void writeDataToFiles()
   char record[DATA_RECLEN + 1] = "";
   uint16_t recSlot;
 
-  buildDataRecord(record);
+  buildDataRecordFromSM(record);
   DebugTf(">%s\r\n", record); // record ends in a \n
 
   // update HOURS
   recSlot = timestampToHourSlot(actTimestamp, strlen(actTimestamp));
-  DebugTf("HOURS:  Write to slot[%02d] in %s\r\n", recSlot, HOURS_FILE);
+  if (Verbose1) DebugTf("HOURS:  Write to slot[%02d] in %s\r\n", recSlot, HOURS_FILE);
   writeDataToFile(HOURS_FILE, record, recSlot, HOURS);
 
   // update DAYS
   recSlot = timestampToDaySlot(actTimestamp, strlen(actTimestamp));
-  DebugTf("DAYS:   Write to slot[%02d] in %s\r\n", recSlot, DAYS_FILE);
+  if (Verbose1) DebugTf("DAYS:   Write to slot[%02d] in %s\r\n", recSlot, DAYS_FILE);
   writeDataToFile(DAYS_FILE, record, recSlot, DAYS);
 
   // update MONTHS
   recSlot = timestampToMonthSlot(actTimestamp, strlen(actTimestamp));
-  DebugTf("MONTHS: Write to slot[%02d] in %s\r\n", recSlot, MONTHS_FILE);
+  if (Verbose1) DebugTf("MONTHS: Write to slot[%02d] in %s\r\n", recSlot, MONTHS_FILE);
   writeDataToFile(MONTHS_FILE, record, recSlot, MONTHS);
-  
-
 
 } // writeDataToFiles(fileType, dataStruct newDat, int8_t slotNr)
 
@@ -488,16 +537,69 @@ void listSPIFFS()
 
 
 //===========================================================================================
+bool eraseFile() 
+{
+  char eName[30] = "";
+
+  //--- erase buffer
+  while (TelnetStream.available() > 0) 
+  {
+    yield();
+    (char)TelnetStream.read();
+  }
+
+  Debug("Enter filename to erase: ");
+  TelnetStream.setTimeout(10000);
+  TelnetStream.readBytesUntil('\n', eName, sizeof(eName)); 
+  TelnetStream.setTimeout(1000);
+
+  //--- remove control chars like \r and \n ----
+  //--- and shift all char's one to the right --
+  for(int i=strlen(eName); i>0; i--) 
+  {
+    eName[i] = eName[i-1];
+    if (eName[i] < ' ') eName[i] = '\0';
+  }
+  //--- add leading slash on position 0
+  eName[0] = '/';
+
+  if (SPIFFS.exists(eName))
+  {
+    Debugf("\r\nErasing [%s] from SPIFFS\r\n\n", eName);
+    SPIFFS.remove(eName);
+  }
+  else
+  {
+    Debugf("\r\nfile [%s] not found..\r\n\n", eName);
+  }
+  //--- empty buffer ---
+  while (TelnetStream.available() > 0) 
+  {
+    yield();
+    (char)TelnetStream.read();
+  }
+
+} // eraseFile()
+
+
+//===========================================================================================
 bool DSMRfileExist(const char* fileName, bool doDisplay) 
 {
-
-  DebugTf("check if [%s] exists .. ", fileName);
+  char fName[30] = "";
+  if (fileName[0] != '/')
+  {
+    strConcat(fName, 5, "/");
+  }
+  strConcat(fName, 29, fileName);
+  
+  DebugTf("check if [%s] exists .. ", fName);
 #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
   oled_Print_Msg(1, "Bestaat:", 10);
-  oled_Print_Msg(2, fileName, 10);
+  oled_Print_Msg(2, fName, 10);
   oled_Print_Msg(3, "op SPIFFS?", 250);
 #endif
-  if (!SPIFFS.exists(fileName)) 
+
+  if (!SPIFFS.exists(fName) )
   {
     if (doDisplay)
     {

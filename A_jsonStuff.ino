@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : jsonStuff, part of DSMRloggerAPI
-**  Version  : v0.1.7
+**  Version  : v0.2.9
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -208,7 +208,7 @@ void sendNestedJsonObj(const char *cName, float fValue)
 
 
 //=======================================================================
-// function to build Json Settings string
+// ************ function to build Json Settings string ******************
 //=======================================================================
 void sendJsonSettingObj(const char *cName, float fValue, const char *fType, int minValue, int maxValue)
 {
@@ -221,6 +221,36 @@ void sendJsonSettingObj(const char *cName, float fValue, const char *fType, int 
   sprintf(objSprtr, ",\r\n");
 
 } // sendJsonSettingObj(*char, float, *char, int, int)
+
+
+//=======================================================================
+void sendJsonSettingObj(const char *cName, float fValue, const char *fType, int minValue, int maxValue, int decPlaces)
+{
+  char jsonBuff[200] = "";
+
+  switch(decPlaces) {
+    case 0:
+      sprintf(jsonBuff, "%s{\"name\": \"%s\", \"value\": %.0f, \"type\": \"%s\", \"min\": %d, \"max\": %d}"
+                                      , objSprtr, cName, fValue, fType, minValue, maxValue);
+      break;
+    case 2:
+      sprintf(jsonBuff, "%s{\"name\": \"%s\", \"value\": %.2f, \"type\": \"%s\", \"min\": %d, \"max\": %d}"
+                                      , objSprtr, cName, fValue, fType, minValue, maxValue);
+      break;
+    case 5:
+      sprintf(jsonBuff, "%s{\"name\": \"%s\", \"value\": %.5f, \"type\": \"%s\", \"min\": %d, \"max\": %d}"
+                                      , objSprtr, cName, fValue, fType, minValue, maxValue);
+      break;
+    default:
+      sprintf(jsonBuff, "%s{\"name\": \"%s\", \"value\": %f, \"type\": \"%s\", \"min\": %d, \"max\": %d}"
+                                      , objSprtr, cName, fValue, fType, minValue, maxValue);
+
+  }
+
+  httpServer.sendContent(jsonBuff);
+  sprintf(objSprtr, ",\r\n");
+
+} // sendJsonSettingObj(*char, float, *char, int, int, int)
 
 
 //=======================================================================
@@ -242,7 +272,7 @@ void sendJsonSettingObj(const char *cName, const char *cValue, const char *sType
 {
   char jsonBuff[200] = "";
 
-  sprintf(jsonBuff, "%s{\"name\": \"%s\", \"value\":\" %s\", \"type\": \"%s\", \"maxlen\": %d}"
+  sprintf(jsonBuff, "%s{\"name\": \"%s\", \"value\":\"%s\", \"type\": \"%s\", \"maxlen\": %d}"
                                       , objSprtr, cName, cValue, sType, maxLen);
 
   httpServer.sendContent(jsonBuff);

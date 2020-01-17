@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRindex.js, part of DSMRfirmwareAPI
-**  Version  : v0.1.3
+**  Version  : v0.2.8
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -12,9 +12,17 @@
 
 "use strict";
 
-  let needReload  = true;
-  let activeTab   = "none";
+  let needReload          = true;
+  let activeTab           = "none";
   let TimerTab;
+  
+  var ed_tariff1          = 0;
+  var ed_tariff2          = 0;
+  var er_tariff1          = 0;
+  var er_tariff2          = 0;
+  var gd_tariff           = 0;
+  var electr_netw_costs   = 0;
+  var electr_netw_costs   = 0;
   
   var data = [];
   var longFields = [ "identification","p1_version","timestamp","equipment_id"
@@ -40,7 +48,7 @@
                     ,"\0"
                   ];
                     
-  var shortFields = [ "Slimme Meter ID","P1 Versie","timestamp","Equipment ID"
+  var humanFields = [ "Slimme Meter ID","P1 Versie","timestamp","Equipment ID"
                     ,"Energie Gebruikt tarief 1","Energy Gebruikt tarief 2"
                     ,"Energie Opgewekt tarief 1","Energie Opgewekt tarief 2","Electriciteit tarief"
                     ,"Vermogen Gebruikt","Vermogen Opgewekt"
@@ -104,6 +112,7 @@
                                                 });
     needReload = false;
     refreshDevTime();
+    getDevSettings();
     refreshDevInfo();
     TimerTime = setInterval(refreshDevTime, 10 * 1000); // repeat every 10s
 
@@ -128,6 +137,8 @@
       x[i].style.outline        = 'none';  
       x[i].style.boxShadow      = 'none';
     }
+    //--- hide canvas -------
+    document.getElementById("dataChart").style.display = "none";
     //--- hide all tab's -------
     x = document.getElementsByClassName("tabName");
     for (i = 0; i < x.length; i++) {
@@ -262,19 +273,19 @@
           data = json.actual;
           for (var i in data) 
           {
-            data[i].shortName = long2Short(data[i].name);
+            data[i].shortName = smToHuman(data[i].name);
             var tableRef = document.getElementById('actualTable').getElementsByTagName('tbody')[0];
             if( ( document.getElementById("actualTable_"+data[i].name)) == null )
             {
               var newRow   = tableRef.insertRow();
               newRow.setAttribute("id", "actualTable_"+data[i].name, 0);
               // Insert a cell in the row at index 0
-              var newCell  = newRow.insertCell(0);						// (short)name
+              var newCell  = newRow.insertCell(0);            // (short)name
               var newText  = document.createTextNode('');
               newCell.appendChild(newText);
-              newCell  = newRow.insertCell(1);								// value
+              newCell  = newRow.insertCell(1);                // value
               newCell.appendChild(newText);
-              newCell  = newRow.insertCell(2);								// unit
+              newCell  = newRow.insertCell(2);                // unit
               newCell.appendChild(newText);
             }
             tableCells = document.getElementById("actualTable_"+data[i].name).cells;
@@ -282,8 +293,8 @@
             tableCells[1].innerHTML = data[i].value;
             if (data[i].hasOwnProperty('unit'))
             {
-              tableCells[1].style.textAlign = "right";				// value
-              tableCells[2].style.textAlign = "center";				// unit
+              tableCells[1].style.textAlign = "right";        // value
+              tableCells[2].style.textAlign = "center";       // unit
               tableCells[2].innerHTML = data[i].unit;
             }
           }
@@ -308,21 +319,21 @@
           data = json.fields;
           for (var i in data) 
           {
-            data[i].shortName = long2Short(data[i].name);
+            data[i].shortName = smToHuman(data[i].name);
             var tableRef = document.getElementById('fieldsTable').getElementsByTagName('tbody')[0];
             if( ( document.getElementById("fieldsTable_"+data[i].name)) == null )
             {
               var newRow   = tableRef.insertRow();
               newRow.setAttribute("id", "fieldsTable_"+data[i].name, 0);
               // Insert a cell in the row at index 0
-              var newCell  = newRow.insertCell(0);									// name
+              var newCell  = newRow.insertCell(0);                  // name
               var newText  = document.createTextNode('');
               newCell.appendChild(newText);
-              newCell  = newRow.insertCell(1);											// shortName
+              newCell  = newRow.insertCell(1);                      // shortName
               newCell.appendChild(newText);
-              newCell  = newRow.insertCell(2);											// value
+              newCell  = newRow.insertCell(2);                      // value
               newCell.appendChild(newText);
-              newCell  = newRow.insertCell(3);											// unit
+              newCell  = newRow.insertCell(3);                      // unit
               newCell.appendChild(newText);
             }
             tableCells = document.getElementById("fieldsTable_"+data[i].name).cells;
@@ -331,8 +342,8 @@
             tableCells[2].innerHTML = data[i].value;
             if (data[i].hasOwnProperty('unit'))
             {
-              tableCells[2].style.textAlign = "right";							// value
-              tableCells[3].style.textAlign = "center";  						// unit
+              tableCells[2].style.textAlign = "right";              // value
+              tableCells[3].style.textAlign = "center";             // unit
               tableCells[3].innerHTML = data[i].unit;
             }
           }
@@ -445,9 +456,10 @@
      console.log("now in expandData() ..");
      for (let i=0; i<data.length; i++)
      {
-      data[i].p_ed = {};
-      data[i].p_er = {};
-      data[i].p_gd = {};
+      data[i].p_ed  = {};
+      data[i].p_er  = {};
+      data[i].p_gd  = {};
+      data[i].costs = {};
 
       if (i < (data.length -1))
       {
@@ -456,12 +468,24 @@
         data[i].p_er = (data[i].ert1 +data[i].ert2)-(data[i+1].ert1 +data[i+1].ert2);
         data[i].p_er = (data[i].p_er * 1000).toFixed(0);
         data[i].p_gd = ( data[i].gdt  -data[i+1].gdt).toFixed(3);
+        //var  day = data[i].recid.substring(4,6) * 1;
+        //-- calculate Energy Delivered costs
+        var     costs = ( (data[i].edt1 - data[i+1].edt1) * ed_tariff1 );
+        costs = costs + ( (data[i].edt2 - data[i+1].edt2) * ed_tariff2 );
+        //-- add Energy Returned costs
+        costs = costs - ( (data[i].ert1 - data[i+1].ert1) * er_tariff1 );
+        costs = costs - ( (data[i].ert2 - data[i+1].ert2) * er_tariff2 );
+        //-- add network costs
+        costs = costs + ( electr_netw_costs / 30 );
+        costs = costs + ( gas_netw_costs / 30 );
+        data[i].costs = costs.toFixed(2)
       }
       else
       {
         data[i].p_ed = (data[i].edt1 +data[i].edt2).toFixed(3);
         data[i].p_er = (data[i].ert1 +data[i].ert2).toFixed(3);
         data[i].p_gd = (data[i].gdt).toFixed(3);
+        data[i].costs = 0.0;
       }
     } // for i ..
 
@@ -580,65 +604,152 @@
         newCell.appendChild(newText);
         newCell  = newRow.insertCell(3);
         newCell.appendChild(newText);
-        newCell  = newRow.insertCell(4);
-        newCell.appendChild(newText);
-        newCell  = newRow.insertCell(5);
-        newCell.appendChild(newText);
-        newCell  = newRow.insertCell(6);
-        newCell.appendChild(newText);
+        if (type == "Days")
+        {
+          newCell  = newRow.insertCell(4);
+          newCell.appendChild(newText);
+        }
       }
       //tableCells = document.getElementById(type+"Table_"+data[i].recid).cells;
       tableCells = document.getElementById(type+"Table_"+type+"_R"+i).cells;
-      tableCells[0].style.textAlign = "left";
-      tableCells[0].innerHTML = data[i].recnr;
-      tableCells[1].style.textAlign = "left";
-      tableCells[1].innerHTML = data[i].slot;
-      tableCells[2].style.textAlign = "center";
+      //tableCells[0].style.textAlign = "left";
+      //tableCells[0].innerHTML = data[i].recnr;
+      //tableCells[1].style.textAlign = "left";
+      //tableCells[1].innerHTML = data[i].slot;
+      tableCells[0].style.textAlign = "right";
       //tableCells[2].innerHTML = data[i].recid;
 //      let date = "20"+data[i].recid.substring(0,2)+"-"+data[i].recid.substring(2,4)+"-"+data[i].recid.substring(4,6)+" ["+data[i].recid.substring(6,8)+"]";
-      tableCells[2].innerHTML = formatDate(type, data[i].recid);
+      tableCells[0].innerHTML = formatDate(type, data[i].recid);
+      tableCells[1].style.textAlign = "right";
+      tableCells[1].innerHTML = data[i].p_ed;
+      tableCells[2].style.textAlign = "right";
+      tableCells[2].innerHTML = data[i].p_er;
       tableCells[3].style.textAlign = "right";
-      tableCells[3].innerHTML = data[i].p_ed;
-      tableCells[4].style.textAlign = "right";
-      tableCells[4].innerHTML = data[i].p_er;
-      tableCells[5].style.textAlign = "right";
-      tableCells[5].innerHTML = data[i].p_gd;
+      tableCells[3].innerHTML = data[i].p_gd;
+      if (type == "Days")
+      {
+        tableCells[4].style.textAlign = "right";
+        tableCells[4].innerHTML = data[i].costs;
+      }
     };
+
+    copyDataToChart(data, type);
+    renderEnergyChart(chartData);
+    myEnergyChart.update();
+
   } // showHist()
 
   
   //============================================================================  
-  function long2Short(longName) {
-    //console.log("long2Short("+longName+") for ["+longFields.length+"] elements");
+  function getDevSettings()
+  {
+    fetch(APIGW+"v1/dev/settings")
+      .then(response => response.json())
+      .then(json => {
+        //console.log("parsed .., data is ["+ JSON.stringify(json)+"]");
+        for( let i in json.settings ){
+            if (json.settings[i].name == "ed_tariff1")
+            {
+              ed_tariff1 = json.settings[i].value;
+            }
+            else if (json.settings[i].name == "ed_tariff2")
+            {
+              ed_tariff2 = json.settings[i].value;
+            }
+            else if (json.settings[i].name == "er_tariff1")
+            {
+              er_tariff1 = json.settings[i].value;
+            }
+            else if (json.settings[i].name == "er_tariff2")
+            {
+              er_tariff2 = json.settings[i].value;
+            }
+            else if (json.settings[i].name == "gd_tariff")
+            {
+              gd_tariff = json.settings[i].value;
+            }
+            else if (json.settings[i].name == "electr_netw_costs")
+            {
+              electr_netw_costs = json.settings[i].value;
+            }
+            else if (json.settings[i].name == "gas_netw_costs")
+            {
+              gas_netw_costs = json.settings[i].value;
+            }
+          }
+      })
+      .catch(function(error) {
+        var p = document.createElement('p');
+        p.appendChild(
+          document.createTextNode('Error: ' + error.message)
+        );
+      });     
+  } // getDevSettings()
+
+  
+  //============================================================================  
+  function smToHuman(longName) {
+    //console.log("smToHuman("+longName+") for ["+longFields.length+"] elements");
     for(var index = 0; index < (longFields.length -1); index++) 
     {
         if (longFields[index] == longName)
         {
-          return shortFields[index];
+          return humanFields[index];
         }
     };
     return longName;
     
-  } // long2Short()
+  } // smToHuman()
 
   
   //============================================================================  
-  function formatDate(type, dateIn) {
+  function formatDate(type, dateIn) 
+  {
     let dateOut = "";
     if (type == "Hours")
-      date = "20"+dateIn.substring(0,2)+"-"+dateIn.substring(2,4)+"-"+dateIn.substring(4,6)+" ["+dateIn.substring(6,8)+"]";
+    {
+      //date = "20"+dateIn.substring(0,2)+"-"+dateIn.substring(2,4)+"-"+dateIn.substring(4,6)+" ["+dateIn.substring(6,8)+"]";
+      dateOut = "("+dateIn.substring(4,6)+") ["+dateIn.substring(6,8)+":00 - "+dateIn.substring(6,8)+":59]";
+    }
     else if (type == "Days")
-      date = "20"+dateIn.substring(0,2)+"-"+dateIn.substring(2,4)+"-["+dateIn.substring(4,6)+"]:"+dateIn.substring(6,8);
+      dateOut = recidToWeekday(dateIn)+" "+dateIn.substring(4,6)+"-"+dateIn.substring(2,4)+"-20"+dateIn.substring(0,2);
     else if (type == "Months")
-      date = "20"+dateIn.substring(0,2)+"-["+dateIn.substring(2,4)+"]-"+dateIn.substring(4,6)+":"+dateIn.substring(6,8);
+      dateOut = "20"+dateIn.substring(0,2)+"-["+dateIn.substring(2,4)+"]-"+dateIn.substring(4,6)+":"+dateIn.substring(6,8);
     else
-      date = "20"+dateIn.substring(0,2)+"-"+dateIn.substring(2,4)+"-"+dateIn.substring(4,6)+":"+dateIn.substring(6,8);
-    return date;
+      dateOut = "20"+dateIn.substring(0,2)+"-"+dateIn.substring(2,4)+"-"+dateIn.substring(4,6)+":"+dateIn.substring(6,8);
+    return dateOut;
   }
 
   
   //============================================================================  
-  function round(value, precision) {
+  function recidToEpoch(dateIn) 
+  {
+    var YY = "20"+dateIn.substring(0,2);
+    console.log("["+YY+"]["+(dateIn.substring(2,4)-1)+"]["+dateIn.substring(4,6)+"]");
+    //-------------------YY-------------------(MM-1)----------------------DD---------------------HH--MM--SS
+    var epoch = Date.UTC(YY, (dateIn.substring(2,4)-1), dateIn.substring(4,6), dateIn.substring(6,8), 1, 1);
+    //console.log("epoch is ["+epoch+"]");
+
+    return epoch;
+    
+  } // recidToEpoch()
+  
+  
+  //============================================================================  
+  function recidToWeekday(dateIn)
+  {
+    var YY = "20"+dateIn.substring(0,2);
+    //-------------------YY-------------------(MM-1)----------------------DD---------------------HH--MM--SS
+    var dt = new Date(Date.UTC(YY, (dateIn.substring(2,4)-1), dateIn.substring(4,6), 1, 1, 1));
+
+    return dt.toLocaleDateString('nl-NL', {weekday: 'long'});
+    
+  } // epochToWeekday()
+  
+    
+  //============================================================================  
+  function round(value, precision) 
+  {
     var multiplier = Math.pow(10, precision || 0);
     return Math.round(value * multiplier) / multiplier;
   }
