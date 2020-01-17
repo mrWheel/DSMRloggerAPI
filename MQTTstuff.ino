@@ -226,7 +226,7 @@ struct buildJsonMQTT {
         }
         
         //sprintf(cMsg, "%s", jsonString.c_str());
-        DebugTf("topicId[%s] -> [%s]\r\n", topicId, mqttBuff);
+        //DebugTf("topicId[%s] -> [%s]\r\n", topicId, mqttBuff);
         MQTTclient.publish(topicId, mqttBuff); 
       }
   }
