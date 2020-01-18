@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : restAPI, part of DSMRloggerAPI
-**  Version  : v0.2.1
+**  Version  : v0.2.2
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -326,13 +326,13 @@ void sendDeviceSettings()
 
   sendStartJsonObj("settings");
   
-  sendJsonSettingObj("ed_tariff1",        settingEDT1,            "f", 0, 10);
-  sendJsonSettingObj("ed_tariff2",        settingEDT2,            "f", 0, 10);
-  sendJsonSettingObj("er_tariff1",        settingERT1,            "f", 0, 10);
-  sendJsonSettingObj("er_tariff2",        settingERT2,            "f", 0, 10);
-  sendJsonSettingObj("gd_tariff",         settingGDT,             "f", 0, 10);
-  sendJsonSettingObj("electr_netw_costs", settingENBK,            "f", 0, 100);
-  sendJsonSettingObj("gas_netw_costs",    settingGNBK,            "f", 0, 100);
+  sendJsonSettingObj("ed_tariff1",        settingEDT1,            "f", 0, 10,  5);
+  sendJsonSettingObj("ed_tariff2",        settingEDT2,            "f", 0, 10,  5);
+  sendJsonSettingObj("er_tariff1",        settingERT1,            "f", 0, 10,  5);
+  sendJsonSettingObj("er_tariff2",        settingERT2,            "f", 0, 10,  5);
+  sendJsonSettingObj("gd_tariff",         settingGDT,             "f", 0, 10,  5);
+  sendJsonSettingObj("electr_netw_costs", settingENBK,            "f", 0, 100, 2);
+  sendJsonSettingObj("gas_netw_costs",    settingGNBK,            "f", 0, 100, 2);
   sendJsonSettingObj("tlgrm_interval",    settingInterval,        "i", 1, 60);
   sendJsonSettingObj("mqtt_broker",       settingMQTTbroker,      "s", sizeof(settingMQTTbroker));
   sendJsonSettingObj("mqtt_broker_port",  settingMQTTbrokerPort,  "i", 0, 9999);
