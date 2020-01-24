@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMReditor.js, part of DSMRloggerAPI
-**  Version  : v0.1.7
+**  Version  : v0.2.4
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -15,7 +15,7 @@
 
   let needReload  = true;
   let activeTab   = "none";
-  let monthType   = "D";
+  let monthType   = "ED";
   let settingBgColor   = 'deepskyblue';
   let settingFontColor = 'white'
   var data = [];
@@ -74,8 +74,8 @@
     let x = document.getElementsByClassName("tabName"); // set all fields to "none"
     for (i = 0; i < x.length; i++) {
       console.log("Field["+i+"] set to none");
-      x[i].style.display    = "none";  
-      x[i].style.background     = settingBgColor;
+      x[i].style.display        = "none";  
+      x[i].style.background     = 'white'; /*'deepskyblue';*/
       x[i].style.border         = 'none';
       x[i].style.textDecoration = 'none';  
       x[i].style.outline        = 'none';  
@@ -92,6 +92,8 @@
     document.getElementById(tabName).style.display = "block";  
     if (tabName == "tabMonths") {
       console.log("newTab: tabMonths");
+      document.getElementById('tabMaanden').style.display = 'block';
+      getMonths();
 
     } else if (tabName == "tabSettings") {
       console.log("newTab: tabSettings");
@@ -228,8 +230,106 @@
         );
       });     
   } // refreshSettings()
+  
+  
+  //============================================================================  
+  function getMonths()
+  {
+    console.log("fetch("+APIGW+"v1/hist/months/asc)");
+    fetch(APIGW+"v1/hist/months/asc", {"setprocessWithTimeout": 2000})
+      .then(response => response.json())
+      .then(json => {
+        //console.log(response);
+        data = json.months;
+        showMonths(data, monthType);
+      })
+      .catch(function(error) {
+        var p = document.createElement('p');
+        p.appendChild(
+          document.createTextNode('Error: ' + error.message)
+        );
+      });
+  } // getMonths()
 
+  
+  //============================================================================  
+  function showMonths(data, type)
+  { 
+    console.log("showMonths("+type+")");
+    //--- first remove all Children ----
+    var allChildren = document.getElementById('editMonths');
+    while (allChildren.firstChild) {
+      allChildren.removeChild(allChildren.firstChild);
+    }
     
+    for (let i=0; i<data.length; i++)
+    {
+      console.log("["+i+"] >>>["+data[i].recid+"]");
+      var em = document.getElementById('editMonths');
+    //if( ( document.getElementById("em_R"+i)) == null )
+      if( ( document.getElementById("em_R"+i)) == null )
+      {
+        var div1 = document.createElement("div");
+            div1.setAttribute("class", "settingDiv");
+            div1.setAttribute("id", "em_R"+i);
+            div1.style.marginLeft = "150px";
+            div1.style.marginRight = "300px";
+            //div1.style.width = "100px";
+        var div2 = document.createElement("div");
+            div2.style.width = "100px";
+            div2.style.float = 'left';
+            div2.style.textAlign = 'center';
+            
+            div2.textContent = "20"+data[i].recid.substring(0,2)+"-"+data[i].recid.substring(2,4);
+            div1.appendChild(div2);
+              div2 = document.createElement("span");
+              var sInput = document.createElement("INPUT");
+                sInput.setAttribute("id", "em_in1_"+i);
+                sInput.setAttribute("type", "number");
+                sInput.addEventListener('change',
+                           function() { setChanged("em_in1_"+i); },
+                              false
+                           );
+                div2.appendChild(sInput);
+              if (type != "GD")
+              {
+                var sInput = document.createElement("INPUT");
+                sInput.setAttribute("id", "em_in2_"+i);
+                sInput.setAttribute("type", "number");
+                sInput.addEventListener('change',
+                           function() { setChanged("em_in2_"+i); },
+                              false
+                           );
+                div2.appendChild(sInput);
+              }
+              div1.appendChild(div2);
+              em.appendChild(div1);
+      }
+      
+      if (type == "ED")
+      {
+        document.getElementById("em_in1_"+i).style.background = "white";
+        document.getElementById("em_in1_"+i).value = data[i].edt1.toFixed(3);
+        document.getElementById("em_in2_"+i).style.background = "white";
+        document.getElementById("em_in2_"+i).value = data[i].edt2.toFixed(3);
+      }
+      else if (type == "ER")
+      {
+        document.getElementById("em_in1_"+i).style.background = "white";
+        document.getElementById("em_in1_"+i).value = data[i].ert1.toFixed(3);
+        document.getElementById("em_in2_"+i).style.background = "white";
+        document.getElementById("em_in2_"+i).value = data[i].ert2.toFixed(3);
+      }
+      else if (type == "GD")
+      {
+        document.getElementById("em_in1_"+i).style.background = "white";
+        document.getElementById("em_in1_"+i).value = data[i].gdt.toFixed(3);
+      }
+    } // for all elements in data
+
+  } // showMonths()
+
+      
   //============================================================================  
   function undoReload()
   {
@@ -250,6 +350,20 @@
   
   //============================================================================  
   function saveData() {
+    if (activeTab == "tabSettings")
+    {
+      saveSettings();
+    } 
+    else if (activeTab == "tabMonths")
+    {
+      saveMeterreadings();
+    }
+    
+  } // saveData()
+  
+  
+  //============================================================================  
+  function saveSettings() {
     for(var i in data)
     {
       var fldId  = data[i].name;
@@ -257,42 +371,142 @@
       if (data[i].value != newVal)
       {
         console.log("save data ["+data[i].name+"] => from["+data[i].value+"] to["+newVal+"]");
-        sendPutCall(fldId, newVal);
+        sendPostSetting(fldId, newVal);
       }
     }    
     // delay refresh as all fetch functions are asynchroon!!
-    setTimeout(function() {
+    setprocessWithTimeout(function() {
       refreshSettings();
     }, 1000);
     
-  } // saveData()
+  } // saveSettings()
+  
   
   //============================================================================  
-  function sendPutCall(field, value) {
-        //document.getElementById('message').innerHTML = "sending data ..";
+  function saveMeterreadings() {
+    console.log("Saving months-data ..");
+    let changes = false;
+    //--- has enything changed?
+    for (i in data)
+    {
+      if (document.getElementById("em_in1_"+i).style.background != 'white')
+      {
+        changes = true;
+        document.getElementById("em_in1_"+i).style.background = 'white';
+      }
+      if (document.getElementById("em_in2_"+i).style.background != 'white')
+      {
+        changes = true;
+        document.getElementById("em_in2_"+i).style.background = 'white';
+      }
+    } 
+    if (changes)
+          console.log("Changes where made!!");
+    else  console.log("No changes found.");
+    
+    processWithTimeout([(data.length -1), 0], 2, data, sendPostReading);
+    
+  } // saveMeterreadings()
 
-        const jsonString = {"name" : field, "value" : value};
-        //console.log("send JSON:["+jsonString+"]");
-        const other_params = {
-            headers : { "content-type" : "application/json; charset=UTF-8"},
-            body : JSON.stringify(jsonString),
-            method : "POST",
-            mode : "cors"
-        };
+    
+  //============================================================================  
+  function sendPostSetting(field, value) {
+    //document.getElementById('message').innerHTML = "sending data ..";
 
-        fetch(APIGW+"v1/dev/settings", other_params)
-          .then(function(response) {
+    const jsonString = {"name" : field, "value" : value};
+    //console.log("send JSON:["+jsonString+"]");
+    const other_params = {
+        headers : { "content-type" : "application/json; charset=UTF-8"},
+        body : JSON.stringify(jsonString),
+        method : "POST",
+        mode : "cors"
+    };
+
+    fetch(APIGW+"v1/dev/settings", other_params)
+      .then(function(response) {
             //console.log(response.status );    //=> number 100–599
             //console.log(response.statusText); //=> String
             //console.log(response.headers);    //=> Headers
             //console.log(response.url);        //=> String
             //console.log(response.text());
             //return response.text()
-          }, function(error) {
-            console.log("Error["+error.message+"]"); //=> String
-          });
-        //document.getElementById('message').innerHTML = "Ok";
+      }, function(error) {
+        console.log("Error["+error.message+"]"); //=> String
+      });
+      
+  } // sendPostSetting()
+
+    
+  //============================================================================  
+  function sendPostReading(i, row) {
+    //document.getElementById('message').innerHTML = "sending data ..";
+    console.log("["+i+"] => ["+row[i].recid+"]");
+    
+    const jsonString = {"recid": row[i].recid, "edt1": row[i].edt1, "edt2": row[i].edt2,
+                         "ert1": row[i].ert1,  "ert2": row[i].ert2, "gdt":  row[i].gdt };
+    //console.log("send JSON:["+jsonString+"]");
+    const other_params = {
+        headers : { "content-type" : "application/json; charset=UTF-8"},
+        body : JSON.stringify(jsonString),
+        method : "POST",
+        mode : "cors"
+    };
+    const postRequest = async () => {
+      const response = await fetch(APIGW+"v1/hist/months", other_params, processWithTimeout = 7000);
+      const json = await response.json();
+      console.log(json);
     }
+
+    postRequest();  
+      
+  } // sendPostReading()
+  
+  
+  //============================================================================  
+  function processWithTimeout(range, time, row, callback)
+  {
+    var i = range[0];                
+    callback(i, row);
+    Loop();
+    function Loop()
+    {
+      setTimeout(function() {
+          i--;
+          if (i>=range[1]){
+              callback(i, row);
+              Loop();
+          }
+      }, time*100)
+    } 
+  } // processWithTimeout()
+  
+  //============================================================================  
+  //This function prints the loop number every second
+  //processWithTimeout([0, 5], 1, function(i) {
+  //  console.log(i);
+  //});
+
+    
+  //============================================================================  
+  function setEditType(eType) {
+    if (eType == "ED") {
+      console.log("Edit Energy Delivered!");
+      monthType = eType;
+      showMonths(data, monthType);
+    } else if (eType == "ER") {
+      console.log("Edit Energy Returned!");
+      monthType = eType;
+      showMonths(data, monthType);
+    } else if (eType == "GD") {
+      console.log("Edit Gas Delivered!");
+      monthType = eType;
+      showMonths(data, monthType);
+    } else {
+      console.log("setEditType to ["+eType+"] is quit shitty!");
+      monthType = "";
+    }
+
+  } // setEditType()
 
    
   //============================================================================  

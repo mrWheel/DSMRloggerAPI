@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : restAPI, part of DSMRloggerAPI
-**  Version  : v0.2.2
+**  Version  : v0.2.4
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -155,7 +155,18 @@ void handleHistApi(const char *word4, const char *word5, const char *word6)
   else if (strcmp(word4, "months") == 0)
   {
     fileType = MONTHS;
-    strCopy(fileName, sizeof(fileName), MONTHS_FILE);
+    if (httpServer.method() == HTTP_PUT || httpServer.method() == HTTP_POST)
+    {
+      //------------------------------------------------------------ 
+      String jsonIn  = httpServer.arg(0).c_str();
+      DebugTln(jsonIn);
+      httpServer.send(200, "application/json", httpServer.arg(0));
+      return;
+    }
+    else 
+    {
+      strCopy(fileName, sizeof(fileName), MONTHS_FILE);
+    }
   }
   else 
   {

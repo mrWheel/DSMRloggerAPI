@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : SPIFFSstuff, part of DSMRloggerAPI
-**  Version  : v0.1.2
+**  Version  : v0.2.3
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -488,9 +488,54 @@ void listSPIFFS()
 
 
 //===========================================================================================
+bool eraseFile() 
+{
+  char eName[30] = "";
+
+  //--- erase buffer
+  while (TelnetStream.available() > 0) 
+  {
+    yield();
+    (char)TelnetStream.read();
+  }
+
+  Debug("Enter filename to erase: ");
+  TelnetStream.setTimeout(10000);
+  TelnetStream.readBytesUntil('\n', eName, sizeof(eName)); 
+  TelnetStream.setTimeout(1000);
+
+  //--- remove control chars like \r and \n ----
+  //--- and shift all char's one to the right --
+  for(int i=strlen(eName); i>0; i--) 
+  {
+    eName[i] = eName[i-1];
+    if (eName[i] < ' ') eName[i] = '\0';
+  }
+  //--- add leading slash on position 0
+  eName[0] = '/';
+
+  if (SPIFFS.exists(eName))
+  {
+    Debugf("\r\nErasing [%s] from SPIFFS\r\n\n", eName);
+    SPIFFS.remove(eName);
+  }
+  else
+  {
+    Debugf("\r\nfile [%s] not found..\r\n\n", eName);
+  }
+  //--- empty buffer ---
+  while (TelnetStream.available() > 0) 
+  {
+    yield();
+    (char)TelnetStream.read();
+  }
+
+} // eraseFile()
+
+
+//===========================================================================================
 bool DSMRfileExist(const char* fileName, bool doDisplay) 
 {
-
   DebugTf("check if [%s] exists .. ", fileName);
 #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
   oled_Print_Msg(1, "Bestaat:", 10);
