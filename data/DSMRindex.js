@@ -48,7 +48,7 @@
                     ,"\0"
                   ];
                     
-  var shortFields = [ "Slimme Meter ID","P1 Versie","timestamp","Equipment ID"
+  var humanFields = [ "Slimme Meter ID","P1 Versie","timestamp","Equipment ID"
                     ,"Energie Gebruikt tarief 1","Energy Gebruikt tarief 2"
                     ,"Energie Opgewekt tarief 1","Energie Opgewekt tarief 2","Electriciteit tarief"
                     ,"Vermogen Gebruikt","Vermogen Opgewekt"
@@ -687,7 +687,7 @@
     {
         if (longFields[index] == longName)
         {
-          return shortFields[index];
+          return humanFields[index];
         }
     };
     return longName;

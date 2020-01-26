@@ -2,7 +2,7 @@
 ***************************************************************************  
 **  Program  : DSMRloggerAPI (restAPI)
 */
-#define _FW_VERSION "v0.2.4 (24-01-2020)"
+#define _FW_VERSION "v0.2.5 (26-01-2020)"
 /*
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -165,17 +165,21 @@ void setup()
   DebugTf("===> actTimestamp[%s]-> nrReboots[%u] - Errors[%u]\r\n\n", actTimestamp
                                                                     , nrReboots++
                                                                     , slotErrors);
+                                                                    
+  readSettings(true);
 
 //=============now test if SPIFFS is correct populated!============
-  if (DSMRfileExist("/ADJindex.html", false) )
+  if (DSMRfileExist(settingIndexPage, false) )
   {
-    hasADJindex        = true;
+    if (strcmp(settingIndexPage, "DSMRindex.html") != 0)
+          hasAlternativeIndex        = true;
+    else  hasAlternativeIndex        = false;
   }
-  if (!hasADJindex && !DSMRfileExist("/DSMRindex.html", false) )
+  if (!hasAlternativeIndex && !DSMRfileExist("/DSMRindex.html", false) )
   {
     spiffsNotPopulated = true;
   }
-  if (!hasADJindex)
+  if (!hasAlternativeIndex)
   {
     DSMRfileExist("/DSMRindex.js", false);
     DSMRfileExist("/DSMRindex.css", false);
@@ -277,9 +281,6 @@ void setup()
   oled_Print_Msg(3, cMsg, 1500);
 #endif  // has_oled_ssd1306
 
-  readSettings(false);
-  //readColors(false);
-
 #ifdef USE_MQTT                                               //USE_MQTT
   startMQTT();
   #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )    //USE_MQTT
@@ -299,7 +300,7 @@ void setup()
     oled_Print_Msg(2, "Verder met normale", 0);
     oled_Print_Msg(3, "Verwerking ;-)", 2500);
 #endif  // has_oled_ssd1306
-    if (hasADJindex)
+    if (hasAlternativeIndex)
     {
       httpServer.serveStatic("/",               SPIFFS, "/ADJindex.html");
       httpServer.serveStatic("/ADJindex.html",  SPIFFS, "/ADJindex.html");
