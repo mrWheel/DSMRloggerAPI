@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : SPIFFSstuff, part of DSMRloggerAPI
-**  Version  : v0.2.3
+**  Version  : v0.2.5
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -536,13 +536,21 @@ bool eraseFile()
 //===========================================================================================
 bool DSMRfileExist(const char* fileName, bool doDisplay) 
 {
-  DebugTf("check if [%s] exists .. ", fileName);
+  char fName[30] = "";
+  if (fileName[0] != '/')
+  {
+    strConcat(fName, 5, "/");
+  }
+  strConcat(fName, 29, fileName);
+  
+  DebugTf("check if [%s] exists .. ", fName);
 #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
   oled_Print_Msg(1, "Bestaat:", 10);
-  oled_Print_Msg(2, fileName, 10);
+  oled_Print_Msg(2, fName, 10);
   oled_Print_Msg(3, "op SPIFFS?", 250);
 #endif
-  if (!SPIFFS.exists(fileName)) 
+
+  if (!SPIFFS.exists(fName) )
   {
     if (doDisplay)
     {

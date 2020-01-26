@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : MQTTstuff, part of DSMRloggerAPI
-**  Version  : v0.2.1
+**  Version  : v0.2.5
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -22,6 +22,7 @@
   
   static            PubSubClient MQTTclient(wifiClient);
 
+  uint32_t          MQTThandleTimer   = 0;
   int8_t            reconnectAttempts = 0;
   uint32_t          timeMQTTPublish  = 0;
   char              lastMQTTtimestamp[15] = "";
@@ -48,6 +49,15 @@ void handleMQTT()
 {
 #ifdef USE_MQTT
 
+  if ((millis() - MQTThandleTimer) > 100)
+  {
+    MQTThandleTimer = millis();
+  }
+  else
+  {
+    return;
+  }
+  
   switch(stateMQTT) 
   {
     case MQTT_STATE_INIT:  
@@ -130,7 +140,6 @@ void handleMQTT()
     break;
     
     case MQTT_STATE_IS_CONNECTED:
-      if (Verbose1) DebugTln(F("MQTT State: MQTT is Connected"));
       if (MQTTclient.connected()) 
       { //if the MQTT client is connected, then please do a .loop call...
         MQTTclient.loop();

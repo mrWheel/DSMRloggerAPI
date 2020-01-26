@@ -236,7 +236,7 @@
   function getMonths()
   {
     console.log("fetch("+APIGW+"v1/hist/months/asc)");
-    fetch(APIGW+"v1/hist/months/asc", {"setprocessWithTimeout": 2000})
+    fetch(APIGW+"v1/hist/months/asc", {"setTimeout": 2000})
       .then(response => response.json())
       .then(json => {
         //console.log(response);
@@ -356,7 +356,7 @@
     } 
     else if (activeTab == "tabMonths")
     {
-      saveMeterreadings();
+      saveMeterReadings();
     }
     
   } // saveData()
@@ -375,7 +375,7 @@
       }
     }    
     // delay refresh as all fetch functions are asynchroon!!
-    setprocessWithTimeout(function() {
+    setTimeout(function() {
       refreshSettings();
     }, 1000);
     
@@ -383,7 +383,7 @@
   
   
   //============================================================================  
-  function saveMeterreadings() {
+  function saveMeterReadings() {
     console.log("Saving months-data ..");
     let changes = false;
     //--- has enything changed?
@@ -406,7 +406,7 @@
     
     processWithTimeout([(data.length -1), 0], 2, data, sendPostReading);
     
-  } // saveMeterreadings()
+  } // saveMeterReadings()
 
     
   //============================================================================  
