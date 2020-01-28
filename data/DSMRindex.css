@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRindex.css, part of DSMRfirmwareAPI
-**  Version  : v0.2.4
+**  Version  : v0.2.6
 **
 **  Copyright (c) 2019 Willem Aandewiel
 **
@@ -90,6 +90,20 @@ input[type="radio"]:checked:after {
 .settingDiv {
   background: lightblue;  
   white-space: nowrap;  
+}
+
+.outer-div {
+  /*width: 90%; */
+  text-align: center;
+  background-color: #e6ffff 
+}
+.inner-div {
+  display: inline-block; 
+  /*
+  margin: 0 auto;
+  padding: 3px;
+  background-color: lightblue
+  */
 }
 
 .container-card {
@@ -270,12 +284,14 @@ input[type="radio"]:checked:after {
   }
 }
 
+/*
 #logWindow {
     font-size: 14px;
     margin-left: 20px;
     width: 90vw;
     height: 20vh;
 }
+*/
 
 .editButton {
   background-color: white;

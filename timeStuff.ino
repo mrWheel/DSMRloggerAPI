@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : timeStuff, part of DSMRloggerAPI
-**  Version  : v0.1.2
+**  Version  : v0.1.6
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -138,11 +138,29 @@ int32_t HoursKeyTimestamp(const char *timeStamp)
 // if syncTime is true, set system time to calculated epoch-time
 time_t epoch(const char *timeStamp, int8_t len, bool syncTime) 
 {
-  //DebugTf("epoch(%s)\r\n", timeStamp.c_str());  Serial.flush();
+  char fullTimeStamp[16] = "";
 
-  if (len < 13) return now();
-  /*
-  DebugTf("DateTime: [%02d]-[%02d]-[%02d] [%02d]:[%02d]:[%02d]\r\n"
+  strConcat(fullTimeStamp, 15, timeStamp);
+  if (Verbose2) DebugTf("epoch(%s) strlen([%d])\r\n", fullTimeStamp, strlen(fullTimeStamp));  
+  switch(strlen(fullTimeStamp)) {
+    case  6:  //--- timeStamp is YYMMDD
+              strConcat(fullTimeStamp, 15, "010101X");
+              break;
+    case  8:  //--- timeStamp is YYMMDDHH
+              strConcat(fullTimeStamp, 15, "0101X");
+              break;
+    case  10:  //--- timeStamp is YYMMDDHHMM
+              strConcat(fullTimeStamp, 15, "01X");
+              break;
+    case  12:  //--- timeStamp is YYMMDDHHMMSS
+              strConcat(fullTimeStamp, 15, "X");
+              break;
+    //default:  return now();
+  }
+  
+  if (strlen(fullTimeStamp) < 13) return now();
+  
+  if (Verbose2) DebugTf("DateTime: [%02d]-[%02d]-[%02d] [%02d]:[%02d]:[%02d]\r\n"
                                                                  ,DayFromTimestamp(timeStamp)
                                                                  ,MonthFromTimestamp(timeStamp)
                                                                  ,YearFromTimestamp(timeStamp)
@@ -150,23 +168,22 @@ time_t epoch(const char *timeStamp, int8_t len, bool syncTime)
                                                                  ,MinuteFromTimestamp(timeStamp)
                                                                  ,0
                        );
-  */ 
+   
  
   time_t nT;
   time_t savEpoch = now();
   
-  setTime(HourFromTimestamp(timeStamp)
-         ,MinuteFromTimestamp(timeStamp)
-         ,SecondFromTimestamp(timeStamp)
-         ,DayFromTimestamp(timeStamp)
-         ,MonthFromTimestamp(timeStamp)
-         ,YearFromTimestamp(timeStamp));
+  setTime(HourFromTimestamp(fullTimeStamp)
+         ,MinuteFromTimestamp(fullTimeStamp)
+         ,SecondFromTimestamp(fullTimeStamp)
+         ,DayFromTimestamp(fullTimeStamp)
+         ,MonthFromTimestamp(fullTimeStamp)
+         ,YearFromTimestamp(fullTimeStamp));
 
   nT = now();
   if (!syncTime)
   {
     setTime(savEpoch);
-    //DebugTln("Restore saved time");
   }
   return nT;
 

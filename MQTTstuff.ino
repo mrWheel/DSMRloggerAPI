@@ -165,7 +165,7 @@ void handleMQTT()
     
     case MQTT_STATE_WAIT_FOR_RECONNECT:
       //do non-blocking wait for 10 minutes, then try to connect again. 
-      if (Verbose1) DebugTln(F("MQTT State: MQTT wait for reconnect"));
+      if (Verbose2) DebugTln(F("MQTT State: MQTT wait for reconnect"));
       if ((millis() - timeMQTTReconnect) > MQTT_WAITFORCONNECT) 
       {
         //remember when you tried last time to reconnect
