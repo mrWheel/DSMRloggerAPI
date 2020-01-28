@@ -1,7 +1,7 @@
 <!--
 ***************************************************************************  
 **  Program  : DSMReditor.html, part of DSMRloggerAPI
-**  Version  : v0.2.4
+**  Version  : v0.2.6
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -50,20 +50,20 @@
       <input type="radio" name="editType" id="MGD" onchange="setEditType('GD')"/>
       &nbsp;&nbsp;
   
-  <div id="tabMaanden" class="tabName" style="display:none">
+  <div id="tabMaanden" class="tabName outer-div" style="display:none">
     <!-- START edit tabMonths -->
     <br>
-      <div id="editMonths">
+      <div id="editMonths" class="inner-div">
       </div> 
   </div>  <!-- END tabMonthss -->
 
   </div> <!-- tabMonths -->
   
   
-  <div id="tabSettings" class="tabName" style="display:none">
+  <div id="tabSettings" class="tabName outer-div" style="display:none">
     <!-- START settingsTab Settings -->
     <br>
-      <div id="settings">
+      <div id="settings" class="inner-div">
       </div> 
   </div>  <!-- END tabSettings -->
   
@@ -78,7 +78,7 @@
   
   <div class="footer">
     <span id="devIPaddress"></span>
-    <span>2019 &copy; Willem Aandewiel &nbsp; &nbsp;</span>
+    <span>2020 &copy; Willem Aandewiel &nbsp; &nbsp;</span>
   </div>
 
   <script src="/DSMReditor.js"></script>

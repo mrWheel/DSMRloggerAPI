@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : restAPI, part of DSMRloggerAPI
-**  Version  : v0.2.5
+**  Version  : v0.2.6
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -138,8 +138,8 @@ void handleDevApi(const char *URI, const char *word4, const char *word5, const c
 //====================================================
 void handleHistApi(const char *word4, const char *word5, const char *word6)
 {
-  int8_t    fileType = 0;
-  char      fileName[20] = "";
+  int8_t  fileType     = 0;
+  char    fileName[20] = "";
   
   //DebugTf("word4[%s], word5[%s], word6[%s]\r\n", word4, word5, word6);
   if (   strcmp(word4, "hours") == 0 )
@@ -158,9 +158,24 @@ void handleHistApi(const char *word4, const char *word5, const char *word6)
     if (httpServer.method() == HTTP_PUT || httpServer.method() == HTTP_POST)
     {
       //------------------------------------------------------------ 
+      // json string: {"recid":"29013023"
+      //               ,"edt1":2601.146,"edt2":"9535.555"
+      //               ,"ert1":378.074,"ert2":208.746
+      //               ,"gdt":3314.404}
+      //------------------------------------------------------------ 
+      char      record[DATA_RECLEN + 1] = "";
+      uint16_t  recSlot;
+
       String jsonIn  = httpServer.arg(0).c_str();
       DebugTln(jsonIn);
+      
+      recSlot = buildDataRecordFromJson(record, jsonIn);
+      
+      //--- update MONTHS
+      writeDataToFile(MONTHS_FILE, record, recSlot, MONTHS);
+      //--- send OK response --
       httpServer.send(200, "application/json", httpServer.arg(0));
+      
       return;
     }
     else 
