@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRindex.js, part of DSMRfirmwareAPI
-**  Version  : v0.2.7
+**  Version  : v0.2.8
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -137,6 +137,8 @@
       x[i].style.outline        = 'none';  
       x[i].style.boxShadow      = 'none';
     }
+    //--- hide canvas -------
+    document.getElementById("dataChart").style.display = "none";
     //--- hide all tab's -------
     x = document.getElementsByClassName("tabName");
     for (i = 0; i < x.length; i++) {
@@ -630,6 +632,11 @@
         tableCells[4].innerHTML = data[i].costs;
       }
     };
+
+    copyDataToChart(data, type);
+    renderEnergyChart(chartData);
+    myEnergyChart.update();
+
   } // showHist()
 
   
@@ -702,15 +709,15 @@
     if (type == "Hours")
     {
       //date = "20"+dateIn.substring(0,2)+"-"+dateIn.substring(2,4)+"-"+dateIn.substring(4,6)+" ["+dateIn.substring(6,8)+"]";
-      date = "("+dateIn.substring(4,6)+") ["+dateIn.substring(6,8)+":00 - "+dateIn.substring(6,8)+":59]";
+      dateOut = "("+dateIn.substring(4,6)+") ["+dateIn.substring(6,8)+":00 - "+dateIn.substring(6,8)+":59]";
     }
     else if (type == "Days")
-      date = recidToWeekday(dateIn)+" "+dateIn.substring(4,6)+"-"+dateIn.substring(2,4)+"-20"+dateIn.substring(0,2);
+      dateOut = recidToWeekday(dateIn)+" "+dateIn.substring(4,6)+"-"+dateIn.substring(2,4)+"-20"+dateIn.substring(0,2);
     else if (type == "Months")
-      date = "20"+dateIn.substring(0,2)+"-["+dateIn.substring(2,4)+"]-"+dateIn.substring(4,6)+":"+dateIn.substring(6,8);
+      dateOut = "20"+dateIn.substring(0,2)+"-["+dateIn.substring(2,4)+"]-"+dateIn.substring(4,6)+":"+dateIn.substring(6,8);
     else
-      date = "20"+dateIn.substring(0,2)+"-"+dateIn.substring(2,4)+"-"+dateIn.substring(4,6)+":"+dateIn.substring(6,8);
-    return date;
+      dateOut = "20"+dateIn.substring(0,2)+"-"+dateIn.substring(2,4)+"-"+dateIn.substring(4,6)+":"+dateIn.substring(6,8);
+    return dateOut;
   }
 
   
