@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRindex.js, part of DSMRfirmwareAPI
-**  Version  : v0.2.4
+**  Version  : v0.2.7
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -271,7 +271,7 @@
           data = json.actual;
           for (var i in data) 
           {
-            data[i].shortName = long2Short(data[i].name);
+            data[i].shortName = smToHuman(data[i].name);
             var tableRef = document.getElementById('actualTable').getElementsByTagName('tbody')[0];
             if( ( document.getElementById("actualTable_"+data[i].name)) == null )
             {
@@ -317,7 +317,7 @@
           data = json.fields;
           for (var i in data) 
           {
-            data[i].shortName = long2Short(data[i].name);
+            data[i].shortName = smToHuman(data[i].name);
             var tableRef = document.getElementById('fieldsTable').getElementsByTagName('tbody')[0];
             if( ( document.getElementById("fieldsTable_"+data[i].name)) == null )
             {
@@ -681,8 +681,8 @@
 
   
   //============================================================================  
-  function long2Short(longName) {
-    //console.log("long2Short("+longName+") for ["+longFields.length+"] elements");
+  function smToHuman(longName) {
+    //console.log("smToHuman("+longName+") for ["+longFields.length+"] elements");
     for(var index = 0; index < (longFields.length -1); index++) 
     {
         if (longFields[index] == longName)
@@ -692,7 +692,7 @@
     };
     return longName;
     
-  } // long2Short()
+  } // smToHuman()
 
   
   //============================================================================  
