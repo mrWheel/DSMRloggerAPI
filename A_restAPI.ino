@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : restAPI, part of DSMRloggerAPI
-**  Version  : v0.2.6
+**  Version  : v0.2.7
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -365,7 +365,7 @@ void sendDeviceSettings()
   sendJsonSettingObj("mqtt_broker_port",  settingMQTTbrokerPort,  "i", 0, 9999);
   sendJsonSettingObj("mqtt_user",         settingMQTTuser,        "s", sizeof(settingMQTTuser));
   sendJsonSettingObj("mqtt_passwd",       settingMQTTpasswd,      "s", sizeof(settingMQTTpasswd));
-  sendJsonSettingObj("mqtt_topTopic",     settingMQTTtopTopic,    "s", sizeof(settingMQTTtopTopic));
+  sendJsonSettingObj("mqtt_toptopic",     settingMQTTtopTopic,    "s", sizeof(settingMQTTtopTopic));
   sendJsonSettingObj("mqtt_interval",     settingMQTTinterval,    "i", 0, 600);
 #if defined (USE_MINDERGAS )
   sendJsonSettingObj("mindergastoken",  settingMindergasToken,    "s", sizeof(settingMindergasToken));

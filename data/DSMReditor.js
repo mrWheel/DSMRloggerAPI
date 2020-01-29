@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMReditor.js, part of DSMRloggerAPI
-**  Version  : v0.2.6
+**  Version  : v0.2.7
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -19,7 +19,29 @@
   let settingBgColor   = 'deepskyblue';
   let settingFontColor = 'white'
   var data = [];
-  
+    var longFields = [ "ed_tariff1","ed_tariff2"
+                    ,"er_tariff1","er_tariff2"
+                    ,"gd_tariff","electr_netw_costs"
+                    ,"gas_netw_costs","tlgrm_interval","index_page"
+                    ,"mqtt_broker","mqtt_broker_port"
+                    ,"mqtt_user","mqtt_passwd","mqtt_toptopic"
+                    ,"mqtt_interval","mindergas_token"
+                    ,"\0"
+                  ];
+                    
+  var humanFields = [ "Energy Verbruik Tarief-1/kWh","Energy Verbruik Tarief-2/kWh"
+                    ,"Energy Opgewekt Tarief-1/kWh","Energy Opgewekt Tarief-2/kWh"
+                    ,"Gas Verbruik Tarief/m3","Netwerkkosten Energie/maand"
+                    ,"Netwerkkosten Gas/maand","Telegram Lees Interval"
+                    ,"Te Gebruiken index.html Pagina"
+                    ,"MQTT Broker IP/URL","MQTT Broker Poort"
+                    ,"MQTT Gebruiker","Password MQTT Gebruiker"
+                    ,"MQTT Top Topic"
+                    ,"Verzend Interval MQTT Berichten"
+                    ,"Mindergas Token"
+                    ,"\0"
+                  ];
+
   window.onload=bootsTrap;
   /*
   window.onfocus = function() {
@@ -171,24 +193,30 @@
         {
           console.log("["+data[i].name+"]=>["+data[i].value+"]");
           var settings = document.getElementById('settings');
-          if( ( document.getElementById("setting_"+data[i].name)) == null )
+          if( ( document.getElementById("settingR_"+data[i].name)) == null )
           {
-              var div1 = document.createElement("div");
-                  div1.setAttribute("class", "settingDiv");
-                  //div1.setAttribute("class", "outer-div");
-                  div1.style.marginLeft = "200px";
-                  div1.style.marginRight = "200px";
-            			div1.style.border = "thick solid lightblue";
-              var div2 = document.createElement("div");
-                  //div2.setAttribute("class", "inner-div");
-                  div2.style.width = "200px";
-                  div2.style.float = 'left';
-                  div2.textContent = data[i].name;
-              div1.appendChild(div2);
-                  div2 = document.createElement("span");
-                  //---span2.style.float = 'left';
-                  var sInput = document.createElement("INPUT");
-                    sInput.setAttribute("id", "setting_"+data[i].name);
+            var rowDiv = document.createElement("div");
+            rowDiv.setAttribute("class", "settingDiv");
+            rowDiv.setAttribute("id", "settingR_"+data[i].name);
+            rowDiv.setAttribute("style", "text-align: right;");
+            rowDiv.style.marginLeft = "10px";
+            rowDiv.style.marginRight = "10px";
+            rowDiv.style.width = "450px";
+            rowDiv.style.border = "thick solid lightblue";
+            rowDiv.style.background = "lightblue";
+            //--- field Name ---
+              var fldDiv = document.createElement("div");
+                  fldDiv.setAttribute("style", "margin-right: 10px;");
+                  fldDiv.style.width = "250px";
+                  fldDiv.style.float = 'left';
+                  fldDiv.textContent = smToHuman(data[i].name);
+                  rowDiv.appendChild(fldDiv);
+            //--- input ---
+              var inputDiv = document.createElement("div");
+                  inputDiv.setAttribute("style", "text-align: left;");
+
+                    var sInput = document.createElement("INPUT");
+                    sInput.setAttribute("id", "setFld_"+data[i].name);
 
                     if (data[i].type == "s")
                     {
@@ -212,18 +240,18 @@
                     }
                     sInput.setAttribute("value", data[i].value);
                     sInput.addEventListener('change',
-                              	function() { setBackGround("setting_"+data[i].name, "lightgray"); },
-                                						false
+                                function() { setBackGround("setFld_"+data[i].name, "lightgray"); },
+                                            false
                                 );
-                  div2.appendChild(sInput);
-              //---div2.appendChild(span2);
-              div1.appendChild(div2);
-              settings.appendChild(div1);
+                  inputDiv.appendChild(sInput);
+                  
+            rowDiv.appendChild(inputDiv);
+            settings.appendChild(rowDiv);
           }
           else
           {
-            document.getElementById("setting_"+data[i].name).style.background = "white";
-            document.getElementById("setting_"+data[i].name).value = data[i].value;
+            document.getElementById("setFld_"+data[i].name).style.background = "white";
+            document.getElementById("setFld_"+data[i].name).value = data[i].value;
           }
         }
         //console.log("-->done..");
@@ -279,15 +307,15 @@
             div1.setAttribute("class", "settingDiv");
             div1.setAttribute("id", "em_R"+i);
             div1.style.borderTop = "thick solid lightblue";
-            if (i == (data.length -1))	// last row
+            if (i == (data.length -1))  // last row
             {
- 	            div1.style.borderBottom = "thick solid lightblue";
+              div1.style.borderBottom = "thick solid lightblue";
             }
             div1.style.marginLeft = "150px";
             div1.style.marginRight = "400px";
             var span2 = document.createElement("span");
             span2.style.borderTop = "thick solid lightblue";
-							//--- create input for EEYY
+              //--- create input for EEYY
               var sInput = document.createElement("INPUT");
               sInput.setAttribute("id", "em_YY_"+i);
               sInput.setAttribute("type", "number");
@@ -299,7 +327,7 @@
               sInput.addEventListener('change',
                       function() { setNewValue(i, "EEYY", "em_YY_"+i); }, false);
               span2.appendChild(sInput);
-							//--- create input for months
+              //--- create input for months
               var sInput = document.createElement("INPUT");
               sInput.setAttribute("id", "em_MM_"+i);
               sInput.setAttribute("type", "number");
@@ -310,7 +338,7 @@
               sInput.addEventListener('change',
                       function() { setNewValue(i, "MM", "em_MM_"+i); }, false);
               span2.appendChild(sInput);
-							//--- create input for data column 1
+              //--- create input for data column 1
               sInput = document.createElement("INPUT");
               sInput.setAttribute("id", "em_in1_"+i);
               sInput.setAttribute("type", "number");
@@ -402,18 +430,18 @@
   { 
     for (let i=0; i<data.length; i++)
     {
-    	data[i].EEYY = {};
-    	data[i].MM   = {};
-    	data[i].EEYY = parseInt("20"+data[i].recid.substring(0,2));
-    	data[i].MM   = parseInt(data[i].recid.substring(2,4));
-    	//data[i].edt1 = data[i].edt1.toFixed(3);
-    	//data[i].edt2 = data[i].edt2.toFixed(3);
-    	//data[i].ert1 = data[i].ert1.toFixed(3);
-    	//data[i].ert2 = data[i].ert2.toFixed(3);
-    	//data[i].gdt  = data[i].gdt.toFixed(3);
+      data[i].EEYY = {};
+      data[i].MM   = {};
+      data[i].EEYY = parseInt("20"+data[i].recid.substring(0,2));
+      data[i].MM   = parseInt(data[i].recid.substring(2,4));
+      //data[i].edt1 = data[i].edt1.toFixed(3);
+      //data[i].edt2 = data[i].edt2.toFixed(3);
+      //data[i].ert1 = data[i].ert1.toFixed(3);
+      //data[i].ert2 = data[i].ert2.toFixed(3);
+      //data[i].gdt  = data[i].gdt.toFixed(3);
     }
 
-  }	// expandData()
+  } // expandData()
   
       
   //============================================================================  
@@ -421,7 +449,7 @@
   {
     if (activeTab == "tabMonths") {
       console.log("getMonths");
-			getMonths();
+      getMonths();
     } else if (activeTab == "tabSettings") {
       console.log("undoReload(): reload Settings..");
       data = {};
@@ -455,7 +483,7 @@
     for(var i in data)
     {
       var fldId  = data[i].name;
-      var newVal = document.getElementById("setting_"+fldId).value;
+      var newVal = document.getElementById("setFld_"+fldId).value;
       if (data[i].value != newVal)
       {
         console.log("save data ["+data[i].name+"] => from["+data[i].value+"] to["+newVal+"]");
@@ -478,7 +506,7 @@
     
     if (!validateReadings(monthType))
     {
-    	return;
+      return;
     }
     
     //--- has anything changed?
@@ -492,14 +520,14 @@
       }
       if (monthType != "GD")
       {
-	      if (document.getElementById("em_in2_"+i).style.background == 'lightgray')
-  	    {
-    	    changes = true;
-      	  document.getElementById("em_in2_"+i).style.background = 'white';
-      	}
+        if (document.getElementById("em_in2_"+i).style.background == 'lightgray')
+        {
+          changes = true;
+          document.getElementById("em_in2_"+i).style.background = 'white';
+        }
       }
       if (changes) {
-       	console.log("Changes where made in ["+i+"]["+data[i].EEYY+"-"+data[i].MM+"]");
+        console.log("Changes where made in ["+i+"]["+data[i].EEYY+"-"+data[i].MM+"]");
         //processWithTimeout([(data.length -1), 0], 2, data, sendPostReading);
         sendPostReading(i, data);
       }
@@ -554,20 +582,20 @@
       }
       if ( data[i].EEYY == data[i+1].EEYY )
       {
-      	console.log("["+i+"].EEYY == ["+(i+1)+"].EEYY => ["+data[i].EEYY+"] prevMM["+(data[i].MM -1)+"]");
+        console.log("["+i+"].EEYY == ["+(i+1)+"].EEYY => ["+data[i].EEYY+"] prevMM["+(data[i].MM -1)+"]");
         prevMM = data[i].MM -1;
       }
       else if ( data[i].EEYY == (data[i+1].EEYY +1) )
       {
-      	console.log("["+i+"].EEYY == ["+(i+1)+"].EEYY +1 => ["+data[i].EEYY+"]/["+data[i+1].EEYY+"] (12)");
+        console.log("["+i+"].EEYY == ["+(i+1)+"].EEYY +1 => ["+data[i].EEYY+"]/["+data[i+1].EEYY+"] (12)");
         prevMM = 12;
       }
       else
       {
-     		setBackGround("em_YY_"+i, "red");
-     		withErrors = true;
-      	console.log("["+i+"].EEYY == ["+(i+1)+"].EEYY +1 => ["+data[i].EEYY+"]/["+data[i+1].EEYY+"] (?)");
-     		prevMM = data[i].MM -1;
+        setBackGround("em_YY_"+i, "red");
+        withErrors = true;
+        console.log("["+i+"].EEYY == ["+(i+1)+"].EEYY +1 => ["+data[i].EEYY+"]/["+data[i+1].EEYY+"] (?)");
+        prevMM = data[i].MM -1;
       }
       
       if (getBackGround("em_MM_"+(i+1)) == "red")
@@ -576,12 +604,12 @@
       }
       if (data[i+1].MM != prevMM && data[i].MM != data[i+1].MM)
       {
-      	setBackGround("em_MM_"+(i+1), "red");
-     		withErrors = true;
+        setBackGround("em_MM_"+(i+1), "red");
+        withErrors = true;
       }
       else
       {
-      	//setBackGround("em_MM_"+i, "lightgreen");
+        //setBackGround("em_MM_"+i, "lightgreen");
       }
       if (type == "ED")
       {
@@ -591,8 +619,8 @@
         }
         if (data[i].edt1 < data[i+1].edt1)
         {
-        	setBackGround("em_in1_"+(i+1), "red");
-     		  withErrors = true;
+          setBackGround("em_in1_"+(i+1), "red");
+          withErrors = true;
         }
         if (getBackGround("em_in2_"+(i+1)) == "red")
         {
@@ -601,7 +629,7 @@
         if (data[i].edt2 < data[i+1].edt2)
         {
           setBackGround("em_in2_"+(i+1), "red");
-     		  withErrors = true;
+          withErrors = true;
         }
       }
       else if (type == "ER")
@@ -612,8 +640,8 @@
         }
         if (data[i].ert1 < data[i+1].ert1)
         {
-        	setBackGround("em_in1_"+(i+1), "red");
-     		  withErrors = true;
+          setBackGround("em_in1_"+(i+1), "red");
+          withErrors = true;
         }
         if (getBackGround("em_in2_"+(i+1)) == "red")
         {
@@ -622,7 +650,7 @@
         if (data[i].ert2 < data[i+1].ert2)
         {
           setBackGround("em_in2_"+(i+1), "red");
-     		  withErrors = true;
+          withErrors = true;
         }
       }
       else if (type == "GD")
@@ -633,8 +661,8 @@
         }
         if (data[i].gdt < data[i+1].gdt)
         {
-        	setBackGround("em_in1_"+(i+1), "red");
-     		  withErrors = true;
+          setBackGround("em_in1_"+(i+1), "red");
+          withErrors = true;
         }
       }
       
@@ -643,7 +671,7 @@
           return false;
     else  return true;
     
-  }	// validateReadings()
+  } // validateReadings()
   
     
   //============================================================================  
@@ -653,12 +681,12 @@
     let sMM = "";
     if (row[i].MM < 1 || row[i].MM > 12)
     {
-    	console.log("send: ERROR MM["+row[i].MM+"]");
-    	return;
+      console.log("send: ERROR MM["+row[i].MM+"]");
+      return;
     }
     if (row[i].MM < 10)
-			    sMM = "0"+(row[i].MM).toString();
-		else  sMM = (row[i].MM).toString();
+          sMM = "0"+(row[i].MM).toString();
+    else  sMM = (row[i].MM).toString();
     let sDDHH = "0101";
     let recId = sYY + sMM + sDDHH;
     console.log("send["+i+"] => ["+recId+"]");
@@ -762,31 +790,20 @@
     
   } // validateNumber()
 
-  //============================================================================  
-  function round(value, precision) {
-    var multiplier = Math.pow(10, precision || 0);
-    return Math.round(value * multiplier) / multiplier;
-  }
-
-  //============================================================================  
-  function hoverOn(field) {
-    document.getElementById(field).style.background = "lightgray";
-  } // hoverOn()
   
   //============================================================================  
-  function hoverOff(field) {
-    document.getElementById(field).style.background = "red";
-  } // hoverOff()
-
-  //============================================================================  
-  function existingId(elementId) {
-    if(document.getElementById(elementId)){
-      return true;
-    } 
-  //console.log("cannot find elementId [" + elementId + "]");
-    return false;
+  function smToHuman(longName) {
+    //console.log("smToHuman("+longName+") for ["+longFields.length+"] elements");
+    for(var index = 0; index < (longFields.length -1); index++) 
+    {
+        if (longFields[index] == longName)
+        {
+          return humanFields[index];
+        }
+    };
+    return longName;
     
-  } // existingId()
+  } // smToHuman()
   
 /*
 ***************************************************************************
