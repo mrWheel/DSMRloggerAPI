@@ -44,7 +44,7 @@ enum states_of_MG { MG_INIT, MG_WAIT_FOR_FIRST_TELEGRAM, MG_WAIT_FOR_MIDNIGHT
                            
 enum states_of_MG stateMindergas = MG_INIT;
 
-int8_t    MG_Today                      = -1;
+uint32_t  longToday                     = -1;
 uint16_t  intStatuscodeMindergas        = 0; 
 uint32_t  lastTime                      = millis();
 uint32_t  MGcountdownTimer              = 0;
@@ -64,8 +64,8 @@ void forceMindergasUpdate()
 
   if (SPIFFS.exists(MG_FILENAME))
   {
-    MGcountdownTimer = millis() + (1 *MINUTES);
-    MG_Today = thisDay;                 // make it thisDay...
+    MGcountdownTimer = millis() + (1 *MINUTE);
+    longToday = day();                 // make it thisDay...
     strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "force Mindergas countdown");
     DebugTln(F("Force send data to mindergas.nl in ~1 minute"));
     stateMindergas = MG_DO_COUNTDOWN;
@@ -101,11 +101,12 @@ void processMindergas()
   
   switch(stateMindergas) {
     case MG_INIT:  // only after reboot
+      longToday = day();          // It's today....
       DebugTln(F("Mindergas State: MG_INIT"));
       sprintf(timeLastResponse, "@%02d|%02d:%02d -> ", day(), hour(), minute());
       if (SPIFFS.exists(MG_FILENAME))
       {
-        MGcountdownTimer = millis() + (1 * MINUTES);
+        MGcountdownTimer = millis() + (1 * MINUTE);
         strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "found Mindergas.post");
         validToken     = true;
         stateMindergas = MG_SEND_MINDERGAS;
@@ -134,8 +135,8 @@ void processMindergas()
       // if you received at least one telegram, then wait for midnight
       if (telegramCount > 0) 
       {
-        // Now you know what day it is, do setup MG_Today. This to enable day change detection.
-        MG_Today = thisDay; 
+        // Now you know what day it is, do setup longToday. This to enable day change detection.
+        longToday = day(); 
         //DebugTln(F("Next State: MG_WAIT_FOR_MIDNIGHT"));
         stateMindergas = MG_WAIT_FOR_MIDNIGHT;
       }
@@ -144,9 +145,9 @@ void processMindergas()
     case MG_WAIT_FOR_MIDNIGHT:
       DebugTln(F("Mindergas State: MG_WAIT_FOR_MIDNIGHT"));
       // Detect day change at midnight, then...
-      if (thisDay != MG_Today)              // It is no longer the same day, so it must be midnight
+      if (longToday != day())              // It is no longer the same day, so it must be midnight
       {
-        MG_Today = thisDay;                 // make it thisDay...
+        longToday = day();                 // remember today...
         //DebugTln(F("Next State: MG_WRITE_TO_FILE"));
         stateMindergas = MG_WRITE_TO_FILE;  // write file is next state
       }
@@ -193,7 +194,7 @@ void processMindergas()
 
       // start countdown
       MGminuten = random(10,120);
-      MGcountdownTimer = millis() + (MGminuten * MINUTES); //within one hour   
+      MGcountdownTimer = millis() + (MGminuten * MINUTE); //within one hour   
 
       DebugTf("MinderGas update in [%d] minute(s)\r\n", MGminuten);
       // Lets'do the countdown
@@ -207,8 +208,8 @@ void processMindergas()
       strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "countdown for sending");
       if (millis() < MGcountdownTimer) 
       {
-        DebugTf("MinderGas update in less than [%d] minutes\r\n", ((MGcountdownTimer - millis()) / MINUTES) +1);
-        intStatuscodeMindergas = ((MGcountdownTimer - millis()) / MINUTES) +1;
+        DebugTf("MinderGas update in less than [%d] minutes\r\n", ((MGcountdownTimer - millis()) / MINUTE) +1);
+        intStatuscodeMindergas = ((MGcountdownTimer - millis()) / MINUTE) +1;
       }
       else 
       {
