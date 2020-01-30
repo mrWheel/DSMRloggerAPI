@@ -4,7 +4,8 @@
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
 * Inspired by the code from Harold - SolarMeter code
-* Created by Robert van den Breemen (26 nov 2019)
+* Created by Robert van den Breemen (30 jan 2020)
+*   - RvdB - day change detection within scope of mindergas only
 *   - AaW  - cleanup code
 *   - RvdB - changing into a statemachine and survive reboot
 *   - RvdB - added AuthToken to settings
@@ -16,9 +17,8 @@
 *
 */
 #define MINUTE             (60*1000)
-#define MINDERGAS_INTERVAL  (1*MINUTE)  // 2 minuten -> mag ook 5 zijn .. toch?
+#define MINDERGAS_INTERVAL  (1*MINUTE)
 #define MG_FILENAME         "/Mindergas.post"
-#define WAIT_TIME           (60*1000)       // 60 seconden
 
 uint32_t  mindergasTime                 = millis();
 
@@ -38,10 +38,7 @@ void handleMindergas()
 
 #ifdef USE_MINDERGAS
 
-enum states_of_MG { MG_INIT, MG_WAIT_FOR_FIRST_TELEGRAM, MG_WAIT_FOR_MIDNIGHT
-                           , MG_WRITE_TO_FILE, MG_DO_COUNTDOWN
-                           , MG_SEND_MINDERGAS, MG_NO_AUTHTOKEN, MG_ERROR };
-                           
+enum states_of_MG { MG_INIT, MG_WAIT_FOR_FIRST_TELEGRAM, MG_WAIT_FOR_MIDNIGHT, MG_WRITE_TO_FILE, MG_DO_COUNTDOWN, MG_SEND_MINDERGAS, MG_NO_AUTHTOKEN, MG_ERROR }; 
 enum states_of_MG stateMindergas = MG_INIT;
 
 uint32_t  longToday                     = -1;
