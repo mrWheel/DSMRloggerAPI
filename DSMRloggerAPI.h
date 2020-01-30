@@ -200,7 +200,7 @@ uint8_t   settingInterval;
 char      settingBgColor[MAXCOLORNAME], settingFontColor[MAXCOLORNAME];
 char      settingMQTTbroker[101], settingMQTTuser[40], settingMQTTpasswd[30], settingMQTTtopTopic[21];
 int32_t   settingMQTTinterval, settingMQTTbrokerPort;
-#if defined( USE_MINDERGAS )
+#ifdef USE_MINDERGAS 
   char      settingMindergasToken[21] = "";
 #endif
 

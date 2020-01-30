@@ -130,7 +130,7 @@ void handleMQTT()
     break;
     
     case MQTT_STATE_IS_CONNECTED:
-      if (Verbose1) DebugTln(F("MQTT State: MQTT is Connected"));
+      if (Verbose2) DebugTln(F("MQTT State: MQTT is Connected"));
       if (MQTTclient.connected()) 
       { //if the MQTT client is connected, then please do a .loop call...
         MQTTclient.loop();

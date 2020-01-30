@@ -15,20 +15,20 @@
 *   - RvdB - added initial support for mindergas
 *
 */
-#define MINUTES             (60*1000)
-#define MINDERGAS_INTERVAL  (5*MINUTES)  // 2 minuten -> mag ook 5 zijn .. toch?
+#define MINUTE             (60*1000)
+#define MINDERGAS_INTERVAL  (1*MINUTE)  // 2 minuten -> mag ook 5 zijn .. toch?
 #define MG_FILENAME         "/Mindergas.post"
-#define WAIT_TIME           60000       // 60 seconden
+#define WAIT_TIME           (60*1000)       // 60 seconden
 
 uint32_t  mindergasTime                 = millis();
 
 //=======================================================================
 void handleMindergas()
 {
+  #ifdef USE_MINDERGAS
   if ((millis() - mindergasTime) > MINDERGAS_INTERVAL) 
   {
     mindergasTime = millis();
-  #ifdef USE_MINDERGAS
     processMindergas();
   #endif
   }

@@ -299,7 +299,8 @@ void sendDeviceInfo()
   sendNestedJsonObj("telegramerrors", (int)telegramErrors);
   sendNestedJsonObj("reboots", (int)nrReboots);
   sendNestedJsonObj("lastreset", lastReset);
-
+  sendNestedJsonObj("mindergaslastresponse", txtResponseMindergas[0]);
+  sendNestedJsonObj("mindergaslastupdate", timeLastResponse[6]);
   httpServer.sendContent("\r\n]}\r\n");
 
 } // sendDeviceInfo()
