@@ -187,7 +187,7 @@ uint32_t  telegramInterval, noMeterWait, telegramCount, telegramErrors, lastOled
 char      cMsg[150], fChar[10];
 String    lastReset = "";
 bool      spiffsNotPopulated = false;
-bool      hasADJindex        = false;
+bool      hasAlternativeIndex        = false;
 bool      doLog = false, Verbose1 = false, Verbose2 = false, showRaw = false;
 int8_t    thisHour = -1, prevNtpHour = 0, thisDay = -1, thisMonth = -1, lastMonth, thisYear = 15;
 int8_t    showRawCount = 0;
@@ -197,7 +197,7 @@ IPAddress ipDNS, ipGateWay, ipSubnet;
 float     settingEDT1, settingEDT2, settingERT1, settingERT2, settingGDT;
 float     settingENBK, settingGNBK;
 uint8_t   settingInterval;
-char      settingBgColor[MAXCOLORNAME], settingFontColor[MAXCOLORNAME];
+char      settingIndexPage[50];
 char      settingMQTTbroker[101], settingMQTTuser[40], settingMQTTpasswd[30], settingMQTTtopTopic[21];
 int32_t   settingMQTTinterval, settingMQTTbrokerPort;
 #ifdef USE_MINDERGAS 

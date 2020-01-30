@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : MQTTstuff, part of DSMRloggerAPI
-**  Version  : v0.1.7
+**  Version  : v0.2.5
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -22,6 +22,7 @@
   
   static            PubSubClient MQTTclient(wifiClient);
 
+  uint32_t          MQTThandleTimer   = 0;
   int8_t            reconnectAttempts = 0;
   uint32_t          timeMQTTPublish  = 0;
   char              lastMQTTtimestamp[15] = "";
@@ -48,6 +49,15 @@ void handleMQTT()
 {
 #ifdef USE_MQTT
 
+  if ((millis() - MQTThandleTimer) > 100)
+  {
+    MQTThandleTimer = millis();
+  }
+  else
+  {
+    return;
+  }
+  
   switch(stateMQTT) 
   {
     case MQTT_STATE_INIT:  
@@ -130,7 +140,6 @@ void handleMQTT()
     break;
     
     case MQTT_STATE_IS_CONNECTED:
-      if (Verbose2) DebugTln(F("MQTT State: MQTT is Connected"));
       if (MQTTclient.connected()) 
       { //if the MQTT client is connected, then please do a .loop call...
         MQTTclient.loop();
@@ -156,7 +165,7 @@ void handleMQTT()
     
     case MQTT_STATE_WAIT_FOR_RECONNECT:
       //do non-blocking wait for 10 minutes, then try to connect again. 
-      if (Verbose1) DebugTln(F("MQTT State: MQTT wait for reconnect"));
+      if (Verbose2) DebugTln(F("MQTT State: MQTT wait for reconnect"));
       if ((millis() - timeMQTTReconnect) > MQTT_WAITFORCONNECT) 
       {
         //remember when you tried last time to reconnect
@@ -214,7 +223,7 @@ struct buildJsonMQTT {
 
         sprintf(topicId, "%s/JSON/", settingMQTTtopTopic);
         strConcat(topicId, sizeof(topicId), Name.c_str());
-        //DebugTf("topicId[%s]\r\n", topicId);
+        if (Verbose2) DebugTf("topicId[%s]\r\n", topicId);
         
         if (Unit.length() > 0)
         {
@@ -226,7 +235,7 @@ struct buildJsonMQTT {
         }
         
         //sprintf(cMsg, "%s", jsonString.c_str());
-        DebugTf("topicId[%s] -> [%s]\r\n", topicId, mqttBuff);
+        //DebugTf("topicId[%s] -> [%s]\r\n", topicId, mqttBuff);
         MQTTclient.publish(topicId, mqttBuff); 
       }
   }

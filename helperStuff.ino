@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : helperStuff, part of DSMRloggerAPI
-**  Version  : v0.1.2
+**  Version  : v0.2.1
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -13,13 +13,11 @@
 //===========================================================================================
 bool compare(String x, String y) 
 { 
-  // Map to store the characters with their order 
-  // in the new alphabetical order 
-    char h[21] = ""; 
     for (int i = 0; i < min(x.length(), y.length()); i++) { 
-        if (h[x[i]] == h[y[i]]) 
-            continue; 
-        return h[x[i]] < h[y[i]]; 
+      if (x[i] != y[i]) 
+      {
+        return (bool)(x[i] < y[i]); 
+      }
     } 
     return x.length() < y.length(); 
     
@@ -271,6 +269,21 @@ float formatFloat(float v, int dec)
 
 } //  formatFloat()
 
+//===========================================================================================
+float strToFloat(const char *s, int dec)
+{
+  float r =  0.0;
+  int   p =  0;
+  int   d = -1;
+  
+  r = strtof(s, NULL);
+  p = (int)(r*pow(10, dec));
+  r = p / pow(10, dec);
+  //DebugTf("[%s][%d] => p[%d] -> r[%f]\r\n", s, dec, p, r);
+  return r; 
+
+} //  strToFloat()
+
 
 //=======================================================================        
 template<typename Item>
@@ -279,11 +292,16 @@ Item& typecastValue(Item& i)
   return i;
 }
 
+float typecastValue(TimestampedFixedValue i) 
+{
+  return strToFloat(String(i).c_str(), 3);
+}
+/**
 String typecastValue(TimestampedFixedValue i) 
 {
   return String(i);
 }
-  
+**/
 float typecastValue(FixedValue i) 
 {
   return i;

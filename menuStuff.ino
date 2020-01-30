@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : menuStuff, part of DSMRloggerAPI
-**  Version  : v0.1.2
+**  Version  : v0.2.3
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -170,6 +170,8 @@ void handleKeyInput()
       case 'd':
       case 'D':     displayDaysHist(true);
                     break;
+      case 'E':     eraseFile();
+                    break;
 #if defined(HAS_NO_SLIMMEMETER)
       case 'F':     forceBuildRingFiles = true;
                     runMode = SInit;
@@ -244,6 +246,7 @@ void handleKeyInput()
                     break;
       default:      Debugln(F("\r\nCommands are:\r\n"));
                     Debugln(F("   B - Board Info\r"));
+                    Debugln(F("  *E - erase file from SPIFFS\r"));
                     Debugln(F("   L - list Settings\r"));
                     Debugln(F("   D - Display Day table from SPIFFS\r"));
                     Debugln(F("   H - Display Hour table from SPIFFS\r"));
