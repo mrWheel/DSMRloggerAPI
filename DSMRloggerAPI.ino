@@ -2,7 +2,7 @@
 ***************************************************************************  
 **  Program  : DSMRloggerAPI (restAPI)
 */
-#define _FW_VERSION "v0.2.8 (29-01-2020)"
+#define _FW_VERSION "v0.2.9 (31-01-2020)"
 /*
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -183,10 +183,10 @@ void setup()
   {
     DSMRfileExist("/DSMRindex.js", false);
     DSMRfileExist("/DSMRindex.css", false);
-    //DSMRfileExist("/DSMRgraphics.js");
+    DSMRfileExist("/DSMRgraphics.js", false);
+    DSMRfileExist("/DSMReditor.html", false);
+    DSMRfileExist("/DSMReditor.js", false);
   }
-  //DSMRfileExist("/DSMReditor.html");
-  //DSMRfileExist("/DSMReditor.js");
   if (!DSMRfileExist("/FSexplorer.html", true))
   {
     spiffsNotPopulated = true;
@@ -195,6 +195,7 @@ void setup()
   {
     spiffsNotPopulated = true;
   }
+
 //=============end SPIFFS =========================================
 
 #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
@@ -264,6 +265,12 @@ void setup()
   Serial.print("\nGebruik 'telnet ");
   Serial.print (WiFi.localIP());
   Serial.println("' voor verdere debugging\r\n");
+  
+//=============now test if "convertPRD" file exists================
+  if (DSMRfileExist("!PRDconvert", false) )
+  {
+    convertPRD2RING();
+  }
 
 //===========================================================================================
 

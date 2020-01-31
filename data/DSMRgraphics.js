@@ -62,6 +62,9 @@ var myEnergyChart;
         */      
         scales: {
           yAxes: [{
+            ticks : {
+              beginAtZero : true
+            },
             scaleLabel: {
               display: true,
               labelString: 'Watt/Uur',

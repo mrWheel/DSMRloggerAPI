@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : jsonStuff, part of DSMRloggerAPI
-**  Version  : v0.2.4
+**  Version  : v0.2.9
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -272,7 +272,7 @@ void sendJsonSettingObj(const char *cName, const char *cValue, const char *sType
 {
   char jsonBuff[200] = "";
 
-  sprintf(jsonBuff, "%s{\"name\": \"%s\", \"value\":\" %s\", \"type\": \"%s\", \"maxlen\": %d}"
+  sprintf(jsonBuff, "%s{\"name\": \"%s\", \"value\":\"%s\", \"type\": \"%s\", \"maxlen\": %d}"
                                       , objSprtr, cName, cValue, sType, maxLen);
 
   httpServer.sendContent(jsonBuff);

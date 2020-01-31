@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : menuStuff, part of DSMRloggerAPI
-**  Version  : v0.2.3
+**  Version  : v0.2.9
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -241,6 +241,8 @@ void handleKeyInput()
                       Verbose2 = false;
                     }
                     break;
+//    case 'X':     convertPRD2RING();
+//                  break;
       case 'Z':     slotErrors  = 0;
                     nrReboots   = 0;
                     break;
