@@ -118,6 +118,7 @@ void handleMQTT()
       {
         reconnectAttempts = 0;  
         Debugln(F(" .. connected\r"));
+        mqttIsConnected   = true;
         stateMQTT = MQTT_STATE_IS_CONNECTED;
         //DebugTln(F("Next State: MQTT_STATE_IS_CONNECTED"));
       }
@@ -125,7 +126,8 @@ void handleMQTT()
       { // no connection, try again, do a non-blocking wait for 3 seconds.
         Debugln(F(" .. \r"));
         DebugTf("failed, retrycount=[%d], rc=[%d] ..  try again in 3 seconds\r\n", reconnectAttempts, MQTTclient.state());
-        timeMQTTLastRetry= millis();
+        mqttIsConnected   = false;
+        timeMQTTLastRetry = millis();
         stateMQTT = MQTT_STATE_WAIT_CONNECTION_ATTEMPT;  // if the re-connect did not work, then return to wait for reconnect
         //DebugTln(F("Next State: MQTT_STATE_WAIT_CONNECTION_ATTEMPT"));
       }
@@ -303,4 +305,5 @@ void sendMQTTData()
 * OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 * THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 * 
-***************************************************************************/
+****************************************************************************
+*/
