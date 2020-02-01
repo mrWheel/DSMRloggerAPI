@@ -2,7 +2,6 @@
 
 #if defined(HAS_NO_SLIMMEMETER)
 
-#define   TELEGRAM_INTERVAL 5000
 #define   MAXLINELENGTH     128   // longest normal line is 47 char (+3 for \r\n\0)
 
 enum runStates { SInit, SMonth, SDay, SHour, SNormal };
@@ -13,7 +12,6 @@ char        telegram[1000] = "";
 uint16_t    currentCRC; 
 int16_t     calcCRC;
 uint32_t    actInterval = 5, nextMinute = 0, nextESPcheck = 0, nextGuiUpdate;
-uint32_t    telegramTimer = millis() + TELEGRAM_INTERVAL;
 int8_t      State;
 int16_t     actSec, actMinute, actHour, actDay, actMonth, actYear, actSpeed;
 char        actDSMR[3] = "40", savDSMR[3] = "40";
@@ -25,14 +23,16 @@ float       GDelivered;
 bool        forceBuildRingFiles = false;
 int16_t     forceBuildRecs;
 
+#define   TELEGRAM_INTERVAL   5 //seconds
+DECLARE_TIMER_SEC(telegramTimer, TELEGRAM_INTERVAL);
+
 //==================================================================================================
 void handleTestdata()
 {
   time_t nt;
   int16_t slot;
-  
-  if (!forceBuildRingFiles && (millis() - telegramTimer) < TELEGRAM_INTERVAL)  return;   // not yet time for new Telegram
-  telegramTimer = millis();
+ 
+  if (!forceBuildRingFiles && ( DUE( telegramTimer) )  return;   // not yet time for new Telegram
 
 //  DebugTf("Time for a new Telegram ..");
   if (forceBuildRingFiles)
@@ -141,7 +141,7 @@ void handleTestdata()
   processTelegram();
   if (!forceBuildRingFiles)
   {
-        sendMQTTData();
+      sendMQTTData();
   }
   
   Debugf("==>> act date/time [%s] is [%s]\r\n\n", actTimestamp, buildDateTimeString(actTimestamp, sizeof(actTimestamp)).c_str());
@@ -282,7 +282,8 @@ int16_t buildTelegram40(int16_t line, char telegramLine[])
 
 
 //==================================================================================================
-int16_t buildTelegram30(int16_t line, char telegramLine[]) {
+int16_t buildTelegram30(int16_t line, char telegramLine[]) 
+{
 /*
 **  /KMP5 KA6U001585575011                - Telegram begin-marker + manufacturer + serial number
 **  

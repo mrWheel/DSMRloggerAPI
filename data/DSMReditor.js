@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMReditor.js, part of DSMRloggerAPI
-**  Version  : v0.2.9
+**  Version  : v0.3.4
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -23,6 +23,7 @@
                     ,"er_tariff1","er_tariff2"
                     ,"gd_tariff","electr_netw_costs"
                     ,"gas_netw_costs","tlgrm_interval","index_page"
+                    ,"oled_screen_time"
                     ,"mqtt_broker","mqtt_broker_port"
                     ,"mqtt_user","mqtt_passwd","mqtt_toptopic"
                     ,"mqtt_interval","mindergas_token"
@@ -32,12 +33,13 @@
   var humanFields = [ "Energy Verbruik Tarief-1/kWh","Energy Verbruik Tarief-2/kWh"
                     ,"Energy Opgewekt Tarief-1/kWh","Energy Opgewekt Tarief-2/kWh"
                     ,"Gas Verbruik Tarief/m3","Netwerkkosten Energie/maand"
-                    ,"Netwerkkosten Gas/maand","Telegram Lees Interval"
+                    ,"Netwerkkosten Gas/maand","Telegram Lees Interval (Sec.)"
                     ,"Te Gebruiken index.html Pagina"
+                    ,"Oled Screen Time (Min., 0=infinite)"
                     ,"MQTT Broker IP/URL","MQTT Broker Poort"
                     ,"MQTT Gebruiker","Password MQTT Gebruiker"
                     ,"MQTT Top Topic"
-                    ,"Verzend Interval MQTT Berichten"
+                    ,"Verzend MQTT Berichten (Sec.)"
                     ,"Mindergas Token"
                     ,"\0"
                   ];

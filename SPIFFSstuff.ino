@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : SPIFFSstuff, part of DSMRloggerAPI
-**  Version  : v0.2.6
+**  Version  : v0.3.4
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -12,7 +12,6 @@
 int16_t   bytesWritten;
 
 //static    FSInfo SPIFFSinfo;
-
 
 //====================================================================
 void readLastStatus()

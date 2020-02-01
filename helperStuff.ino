@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : helperStuff, part of DSMRloggerAPI
-**  Version  : v0.2.1
+**  Version  : v0.3.4
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -31,33 +31,54 @@ boolean isValidIP(IPAddress ip)
    *  example: 
    *  127.0.0.1 
    *   1 => 127||0||0||1 = 128>0 = true 
-   *   2 => !(true && true && true && true) = false
-   *   3 => !(false) = true
-   *   true && false && true = false ==> correct, this is an invalid addres
+   *   2 => !(false || false) = true
+   *   3 => !(false || false || false || false ) = true
+   *   4 => !(true && true && true && true) = false
+   *   5 => !(false) = true
+   *   true && true & true && false && true = false ==> correct, this is an invalid addres
    *   
    *   0.0.0.0
    *   1 => 0||0||0||0 = 0>0 = false 
-   *   2 => !(true && true && true && tfalse) = true
-   *   3 => !(false) = true
-   *   false && true && true = false ==> correct, this is an invalid addres
+   *   2 => !(true || true) = false
+   *   3 => !(false || false || false || false) = true
+   *   4 => !(true && true && true && tfalse) = true
+   *   5 => !(false) = true
+   *   false && false && true && true && true = false ==> correct, this is an invalid addres
    *   
    *   192.168.0.1 
    *   1 => 192||168||0||1 =233>0 = true 
-   *   2 => !(false && false && true && true) = true
-   *   3 => !(false) = true
-   *   true && true && true = true ==> correct, this is a valid address
+   *   2 => !(false || false) = true
+   *   3 +> !(false || false || false || false) = true
+   *   4 => !(false && false && true && true) = true
+   *   5 => !(false) = true
+   *   true & true & true && true && true = true ==> correct, this is a valid address
    *   
    *   255.255.255.255
    *   1 => 255||255||255||255 =255>0 = true 
-   *   2 => !(false && false && false && false) = true
-   *   3 => !(true) = false
-   *   true && true && falseue = false ==> correct, this is an invalid address
+   *   2 => !(false || false ) = true
+   *   3 +> !(true || true || true || true) = false
+   *   4 => !(false && false && false && false) = true
+   *   5 => !(true) = false
+   *   true && true && false && true && false = false ==> correct, this is an invalid address
+   *   
+   *   0.123.12.1       => true && false && true && true && true = false  ==> correct, this is an invalid address 
+   *   10.0.0.0         => true && false && true && true && true = false  ==> correct, this is an invalid address 
+   *   10.255.0.1       => true && true && false && true && true = false  ==> correct, this is an invalid address 
+   *   150.150.255.150  => true && true && false && true && true = false  ==> correct, this is an invalid address 
+   *   
+   *   123.21.1.99      => true && true && true && true && true = true    ==> correct, this is annvalid address 
+   *   1.1.1.1          => true && true && true && true && true = true    ==> correct, this is annvalid address 
+   *   
+   *   Some references on valid ip addresses: 
+   *   - https://www.quora.com/How-do-you-identify-an-invalid-IP-address
    *   
    */
   boolean _isValidIP = false;
-  _isValidIP = ((ip[0] || ip[1] || ip[2] || ip[3])>0);              // if any bits are set, then it is not 0.0.0.0
-  _isValidIP &= !(ip[0]==127 && ip[1]==0 && ip[2]==0 && ip[3]==1);  // if not 127.0.0.0 then it might be valid
-  _isValidIP &= !(ip[0]>=223); // if ip[0] >223 then reserved space  
+  _isValidIP = ((ip[0] || ip[1] || ip[2] || ip[3])>0);                             // if any bits are set, then it is not 0.0.0.0
+  _isValidIP &= !((ip[0]==0) || (ip[3]==0));                                       // if either the first or last is a 0, then it is invalid
+  _isValidIP &= !((ip[0]==255) || (ip[1]==255) || (ip[2]==255) || (ip[3]==255)) ;  // if any of the octets is 255, then it is invalid  
+  _isValidIP &= !(ip[0]==127 && ip[1]==0 && ip[2]==0 && ip[3]==1);                 // if not 127.0.0.0 then it might be valid
+  _isValidIP &= !(ip[0]>=224);                                                     // if ip[0] >=224 then reserved space  
   
   DebugTf( "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
   if (_isValidIP) 
@@ -66,6 +87,7 @@ boolean isValidIP(IPAddress ip)
     Debugln(F(" = Invalid IP!"));
     
   return _isValidIP;
+  
 } //  isValidIP()
 
 
@@ -236,6 +258,7 @@ int stricmp(const char *a, const char *b)
         if (d != 0 || !*a)
             return d;
     }
+    
 } // stricmp()
 
 //===========================================================================================
@@ -292,16 +315,13 @@ Item& typecastValue(Item& i)
   return i;
 }
 
+//=======================================================================        
 float typecastValue(TimestampedFixedValue i) 
 {
   return strToFloat(String(i).c_str(), 3);
 }
-/**
-String typecastValue(TimestampedFixedValue i) 
-{
-  return String(i);
-}
-**/
+
+//=======================================================================        
 float typecastValue(FixedValue i) 
 {
   return i;
