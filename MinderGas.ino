@@ -38,7 +38,7 @@ void handleMindergas()
 
 #ifdef USE_MINDERGAS
 
-enum states_of_MG { MG_INIT, MG_WAIT_FOR_FIRST_TELEGRAM, MG_WAIT_FOR_MIDNIGHT, MG_WRITE_TO_FILE, MG_DO_COUNTDOWN, MG_SEND_MINDERGAS, MG_NO_AUTHTOKEN, MG_ERROR }; 
+enum states_of_MG { MG_INIT, MG_WAIT_FOR_FIRST_TELEGRAM, MG_WAIT_FOR_NEXT_DAY, MG_WRITE_TO_FILE, MG_DO_COUNTDOWN, MG_SEND_MINDERGAS, MG_NO_AUTHTOKEN, MG_ERROR }; 
 enum states_of_MG stateMindergas = MG_INIT;
 
 uint16_t  intStatuscodeMindergas        = 0; 
@@ -128,17 +128,17 @@ void processMindergas()
     case MG_WAIT_FOR_FIRST_TELEGRAM:
       DebugTln(F("Mindergas State: MG_WAIT_FOR_FIRST_TELEGRAM"));
       // if you received at least one telegram, then wait for midnight
-      if ((telegramCount - telegramErrors) > 1) 
+      if ((telegramCount - telegramErrors) > 0) 
       {
         // Now you know what day it is, do setup longToday. This to enable day change detection.
         MG_Day = day();
-        //DebugTln(F("Next State: MG_WAIT_FOR_MIDNIGHT"));
-        stateMindergas = MG_WAIT_FOR_MIDNIGHT;
+        //DebugTln(F("Next State: MG_WAIT_FOR_NEXT_DAY"));
+        stateMindergas = MG_WAIT_FOR_NEXT_DAY;
       }
       break;
       
-    case MG_WAIT_FOR_MIDNIGHT:
-      DebugTln(F("Mindergas State: MG_WAIT_FOR_MIDNIGHT"));
+    case MG_WAIT_FOR_NEXT_DAY:
+      DebugTln(F("Mindergas State: MG_WAIT_FOR_NEXT_DAY"));
       // Detect day change at midnight, then...
       if (MG_Day != day())              // It is no longer the same day, so it must be midnight
       {
