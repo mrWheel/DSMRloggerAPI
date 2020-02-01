@@ -128,7 +128,7 @@ void processMindergas()
     case MG_WAIT_FOR_FIRST_TELEGRAM:
       DebugTln(F("Mindergas State: MG_WAIT_FOR_FIRST_TELEGRAM"));
       // if you received at least one telegram, then wait for midnight
-      if (telegramCount > 0) 
+      if ((telegramCount - telegramErrors) > 1) 
       {
         // Now you know what day it is, do setup longToday. This to enable day change detection.
         MG_Day = day();
@@ -211,7 +211,6 @@ void processMindergas()
         // when waitime is done, then it's time to send the POST string
         //DebugTln(F("Next State: MG_SEND_MINDERGAS"));
         intStatuscodeMindergas = 0;
-        MG_Day = day() ;  //remember today, this is needed after reboot, then it can goto DO_COUNTDOWN directly, without a First Telegram.
         stateMindergas = MG_SEND_MINDERGAS;
       }
       break;
