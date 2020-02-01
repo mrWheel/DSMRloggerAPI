@@ -81,7 +81,7 @@ void forceMindergasUpdate()
 void processMindergas()
 {
   int8_t MGminuten = 0;
-  int8_t intMGday = -1;
+  int8_t MG_Day = -1;
   time_t t;
   File   minderGasFile;
 
@@ -131,7 +131,7 @@ void processMindergas()
       if (telegramCount > 0) 
       {
         // Now you know what day it is, do setup longToday. This to enable day change detection.
-        intMGday = day();
+        MG_Day = day();
         //DebugTln(F("Next State: MG_WAIT_FOR_MIDNIGHT"));
         stateMindergas = MG_WAIT_FOR_MIDNIGHT;
       }
@@ -140,9 +140,9 @@ void processMindergas()
     case MG_WAIT_FOR_MIDNIGHT:
       DebugTln(F("Mindergas State: MG_WAIT_FOR_MIDNIGHT"));
       // Detect day change at midnight, then...
-      if (intMGday != day())              // It is no longer the same day, so it must be midnight
+      if (MG_Day != day())              // It is no longer the same day, so it must be midnight
       {
-        intMGday = day(); // remember today...
+        MG_Day = day(); // remember today...
         //DebugTln(F("Next State: MG_WRITE_TO_FILE"));
         stateMindergas = MG_WRITE_TO_FILE;  // write file is next state
       }
@@ -211,7 +211,7 @@ void processMindergas()
         // when waitime is done, then it's time to send the POST string
         //DebugTln(F("Next State: MG_SEND_MINDERGAS"));
         intStatuscodeMindergas = 0;
-        intMGday = day() ;  //remember today, this is needed after reboot, then it can goto DO_COUNTDOWN directly, without a First Telegram.
+        MG_Day = day() ;  //remember today, this is needed after reboot, then it can goto DO_COUNTDOWN directly, without a First Telegram.
         stateMindergas = MG_SEND_MINDERGAS;
       }
       break;
