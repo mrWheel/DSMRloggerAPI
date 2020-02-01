@@ -274,22 +274,22 @@ void processMindergas()
                         validToken = true;
                         strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "Unprocessed entity"); // report error back to see in settings page
                         DebugTln(F("Unprocessed entity, goto website mindergas for more information")); 
-                        stateMindergas = MG_WAIT_FOR_MIDNIGHT;              
+                        stateMindergas = MG_WAIT_FOR_NEXT_DAY;              
                         break;
                         
                       case 201:  
                         validToken = true;
                         strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "Created entry"); // report error back to see in settings page
                         DebugTln(F("Succes, the gas delivered has been added to your mindergas.nl account"));
-                        DebugTln(F("Next State: MG_WAIT_FOR_MIDNIGHT"));
-                        stateMindergas = MG_WAIT_FOR_MIDNIGHT;               
+                        DebugTln(F("Next State: MG_WAIT_FOR_NEXT_DAY"));
+                        stateMindergas = MG_WAIT_FOR_NEXT_DAY;               
                         break;
                         
                       default:
                         validToken = true;
                         strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "Unknown response code"); // report error back to see in settings page
                         DebugTln(F("Unknown responsecode, goto mindergas for information"));
-                        stateMindergas = MG_WAIT_FOR_MIDNIGHT;           
+                        stateMindergas = MG_WAIT_FOR_NEXT_DAY;           
                         break;
                     } // end switch-case             
                   }  // end-if find HTTP/1.1
