@@ -10,10 +10,44 @@
 */  
 
 #if !defined(HAS_NO_SLIMMEMETER)
+//==================================================================================
+void handleSlimmemeterRaw(){
+  #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
+    if (showRawCount == 0) 
+    {
+      oled_Print_Msg(0, "<DSMRloggerAPI>", 0);
+      oled_Print_Msg(1, "-------------------------",0);
+      oled_Print_Msg(2, "Raw Format",0);
+      sprintf(cMsg, "Raw Count %4d", showRawCount);
+      oled_Print_Msg(3, cMsg, 0);
+    }
+  #endif
 
+  while(Serial.available() > 0) 
+  {   
+    char rIn = Serial.read();       
+    if (rIn == '!') 
+    {
+      showRawCount++;
+#if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
+      sprintf(cMsg, "Raw Count %4d", showRawCount);
+      oled_Print_Msg(3, cMsg, 0);
+#endif
+    }
+    TelnetStream.write((char)rIn);
+  }   // while Serial.available()
+      
+  if (showRawCount > 20) 
+  {
+    showRaw       = false;
+    showRawCount  = 0;
+  }
+  return;
+}
 //==================================================================================
 void handleSlimmeMeter()
 {
+  slimmeMeter.loop();
   if (slimmeMeter.available()) 
   {
     DebugTln(F("\r\n[Time----][FreeHeap/mBlck][Function----(line):\r"));

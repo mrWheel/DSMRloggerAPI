@@ -27,9 +27,8 @@ uint32_t  mindergasTime     = millis();
 //=======================================================================
 void handleMindergas()
 {
-  if (DUE( minderGasTimer) )
+  if (DUE(minderGasTimer) )
   {
-    //===mindergasTime = millis();
   #ifdef USE_MINDERGAS
     processMindergas();
   #endif

@@ -185,6 +185,7 @@ int strcicmp(const char *a, const char *b);
 
 //----------------- old var's -----(remove as soon as possible)-----------------
 uint32_t  telegramInterval, noMeterWait, telegramCount, telegramErrors, lastOledStatus;
+uint32_t  loopCount=0;
 char      cMsg[150], fChar[10];
 String    lastReset           = "";
 bool      spiffsNotPopulated  = false;
@@ -202,7 +203,7 @@ uint8_t   settingInterval;
 char      settingIndexPage[50];
 char      settingMQTTbroker[101], settingMQTTuser[40], settingMQTTpasswd[30], settingMQTTtopTopic[21];
 int32_t   settingMQTTinterval, settingMQTTbrokerPort;
-#ifdef USE_MINDERGAS 
+#if defined( USE_MINDERGAS )
   char      settingMindergasToken[21] = "";
   uint16_t  intStatuscodeMindergas    = 0; 
   char      txtResponseMindergas[30]  = "";

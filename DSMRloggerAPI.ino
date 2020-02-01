@@ -31,8 +31,8 @@
 /******************** compiler options  ********************************************/
 #define IS_ESP12                  // define if it's a 'bare' ESP-12 (no reset/flash functionality on board)
 #define USE_UPDATE_SERVER         // define if there is enough memory and updateServer to be used
-  #define HAS_OLED_SSD1306          // define if a 0.96" OLED display is present
-//#define HAS_OLED_SH1106           // define if a 1.3" OLED display is present
+//  #define HAS_OLED_SSD1306          // define if a 0.96" OLED display is present
+#define HAS_OLED_SH1106           // define if a 1.3" OLED display is present
 //  #define HAS_NO_SLIMMEMETER        // define for testing only!
 //  #define USE_PRE40_PROTOCOL        // define if Slimme Meter is pre DSMR 4.0 (2.2 .. 3.0)
 //  #define USE_NTP_TIME              // define to generate Timestamp from NTP (Only Winter Time for now)
@@ -384,108 +384,134 @@ void setup()
     oled_Print_Msg(2, "Wait for first", 0);
     oled_Print_Msg(3, "telegram .....", 500);
 #endif  // has_oled_ssd1306
-  
+
+
 } // setup()
 
 
 //===========================================================================================
 void loop () 
 {
-  httpServer.handleClient();
-  MDNS.update();
-  handleKeyInput();
-  //handleRefresh();  // webSocket
-  handleMQTT();
-  handleMindergas();
+  // setup timers
+  DECLARE_TIMER_MS(timer100ms, 100);
+  DECLARE_TIMER_MS(timer1s, 1000);
+  DECLARE_TIMER_MS(timer5s, 5000);
+  DECLARE_TIMER_MS(timer30s, 30000);
+  DECLARE_TIMER_MIN(timer10min, 10);
+  DECLARE_TIMER_MIN(timer60min, 60);
+  DECLARE_TIMER_SEC(timerTelegram, settingInterval)
 
-  // once every second, increment uptime seconds
-  if (millis() > nextSecond) 
-  {
-    nextSecond += 1000; // nextSecond is ahead of millis() so it will "rollover" 
-    upTimeSeconds++;    // before millis() and this will probably work just fine
-  }
+  loopCount++;
+
+  if DUE(timer100ms)
+    doTaskEvery100ms();
+
+  if DUE(timer1s)
+    doTaskEvery1s();
+
+  if DUE(timer5s)
+    doTaskEvery5s();
+
+  if DUE(timer30s)
+    doTaskEvery30s();
+
+  if DUE(timerTelegram) 
+    doTaskTelegram();
+
+  doBackgroundTasks();
   
-#if defined(USE_NTP_TIME)                                                         //USE_NTP
+} // loop()
+
+//==[ Do Telegram Processing ]==
+void doTaskTelegram(){
+  if (showRaw) {
+    //-- process telegrams in raw mode
+    handleSlimmemeterRaw();
+  } 
+  else 
+  {
+    //---- this part is processed in 'normal' operation mode!
+    slimmeMeter.enable(true); // enable a telegram processing from slimme meter
+    blinkLEDnow();
+    #if defined(HAS_NO_SLIMMEMETER)
+      handleTestdata();
+    #else
+      handleSlimmeMeter();
+    #endif
+  }
+}
+
+//===[ Do task every 100ms ]===
+void doTaskEvery100ms(){
+  //== do tasks ==
+  #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
+  checkFlashButton();
+  #endif
+}
+
+//===[ Do task every 1s ]===
+void doTaskEvery1s(){
+  //== do tasks ==
+  upTimeSeconds++;
+}
+
+//===[ Do task every 5s ]===
+void doTaskEvery5s(){
+  //== do tasks ==
+  #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
+    displayStatus();
+  #endif
+}
+
+//===[ Do task every 30s ]===
+void doTaskEvery30s(){
+  //== do tasks ==
+  #if defined(USE_NTP_TIME)                                                         //USE_NTP
   if (timeStatus() == timeNeedsSync || prevNtpHour != hour())                     //USE_NTP
   {                                                                               //USE_NTP
     prevNtpHour = hour();                                                         //USE_NTP
     setSyncProvider(getNtpTime);                                                  //USE_NTP
     setSyncInterval(600);                                                         //USE_NTP
   }                                                                               //USE_NTP
-#endif                                                                            //USE_NTP
+  #endif                                                                            //USE_NTP
+}
 
-#if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
-  checkFlashButton();
-  if (millis() - lastOledStatus > 5000) 
-  {
-    lastOledStatus = millis();
-    displayStatus();
+//===[ Do the background tasks ]===
+void doBackgroundTasks()
+{
+  httpServer.handleClient();
+  MDNS.update();
+  handleKeyInput();
+  handleMQTT();                 // MQTT transmissions
+  handleMindergas();            // Mindergas update 
+  blinkLEDms(1000);               // 'blink' the status led every x ms
+  yield();
+
+}
+
+//===[ blink status led in ms ]===
+void blinkLEDms(uint32_t iDelay){
+  //blink the statusled, when time passed
+  static uint32_t timerBlink = millis();
+  if (millis() - timerBlink > iDelay) {
+    timerBlink = millis();
+    blinkLEDnow();
   }
-#endif
+}
 
-  if (!showRaw) 
-  {
-    slimmeMeter.loop();
-    //---- capture new telegram ??
-    if (millis() > telegramInterval) 
-    {
-      telegramInterval = millis() + (settingInterval * 1000);  // test 10 seconden
-      slimmeMeter.enable(true);
-#ifdef ARDUINO_ESP8266_GENERIC
-      digitalWrite(LED_BUILTIN, LED_ON);
-#else
-      digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
-#endif
-    }
-  } // !showRaw 
-  
-  //---- this part is processed in 'normal' operation mode!
-  if (!showRaw) 
-  {
-  #if defined(HAS_NO_SLIMMEMETER)
-    handleTestdata();
-  #else
-    handleSlimmeMeter();
-  #endif
-  }
-  else   
-  {
-#if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
-      if (showRawCount == 0) 
-      {
-        oled_Print_Msg(0, "<DSMRloggerAPI>", 0);
-        oled_Print_Msg(1, "-------------------------",0);
-        oled_Print_Msg(2, "Raw Format",0);
-        sprintf(cMsg, "Raw Count %4d", showRawCount);
-        oled_Print_Msg(3, cMsg, 0);
-      }
-#endif
+//===[ blink status now ]===
+void blinkLEDnow(){
+    pinMode(LED_BUILTIN, OUTPUT);
+    digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
+}
 
-      while(Serial.available() > 0) 
-      {   
-        char rIn = Serial.read();       
-        if (rIn == '!') 
-        {
-          showRawCount++;
-#if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
-          sprintf(cMsg, "Raw Count %4d", showRawCount);
-          oled_Print_Msg(3, cMsg, 0);
-#endif
-        }
-        TelnetStream.write((char)rIn);
-      }   // while Serial.available()
-      
-      if (showRawCount > 20) 
-      {
-        showRaw       = false;
-        showRawCount  = 0;
-      }
-  } 
-
-} // loop()
-
-
-
+//===[ no-blocking delay with running background tasks in ms ]===
+void delayms(unsigned long delay_ms)
+{
+  DECLARE_TIMER_MS(timer, delay_ms);
+  while (!DUE(timer))
+    doBackgroundTasks();
+}
 /***************************************************************************
 *
 * Permission is hereby granted, free of charge, to any person obtaining a
