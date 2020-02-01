@@ -166,7 +166,8 @@ void readSettings(bool show)
     if (words[0].equalsIgnoreCase("MQTTbrokerPort"))      settingMQTTbrokerPort    = words[1].toInt();  
     if (words[0].equalsIgnoreCase("MQTTuser"))            strCopy(settingMQTTuser    ,35 ,words[1].c_str());  
     if (words[0].equalsIgnoreCase("MQTTpasswd"))          strCopy(settingMQTTpasswd  ,25, words[1].c_str());  
-    if (words[0].equalsIgnoreCase("MQTTinterval"))        settingMQTTinterval        = words[1].toInt();  
+    if (words[0].equalsIgnoreCase("MQTTinterval"))        settingMQTTinterval        = words[1].toInt(); 
+    if (settingMQTTinterval < settingInterval)            settingMQTTinterval = (settingInterval + 1); 
     if (words[0].equalsIgnoreCase("MQTTtopTopic"))        strCopy(settingMQTTtopTopic, 20, words[1].c_str());  
 #endif
     
