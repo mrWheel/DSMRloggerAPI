@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRgraphics.js, part of DSMRloggerAPI
-**  Version  : v0.2.8
+**  Version  : v0.3.0
 **
 **  Copyright (c) 2019 Willem Aandewiel
 **
@@ -95,14 +95,14 @@ var myEnergyChart;
     chartData.datasets[0].fill            = 'false';
     chartData.datasets[0].borderColor     = "red";
     chartData.datasets[0].backgroundColor = "red";
-    chartData.datasets[0].data          = []; //contains the 'Y; axis data
+    chartData.datasets[0].data            = []; //contains the 'Y; axis data
     chartData.datasets[0].label           = "ED"; //"S"+s; //contains the 'Y; axis label
     // idx 0 => ER
     chartData.datasets.push({}); //create a new dataset
     chartData.datasets[1].fill            = 'false';
     chartData.datasets[1].borderColor     = "green";
     chartData.datasets[1].backgroundColor = "green";
-    chartData.datasets[1].data          = []; //contains the 'Y; axis data
+    chartData.datasets[1].data            = []; //contains the 'Y; axis data
     chartData.datasets[1].label           = "ER"; //"S"+s; //contains the 'Y; axis label
     
     for(let i=(data.length -2); i>=0; i--)
@@ -110,8 +110,8 @@ var myEnergyChart;
       let y = (data.length -2) - i;
       console.log("["+i+"] label["+data[i].recid+"] => y["+y+"]");
       chartData.labels.push(formatDateShort(type, data[i].recid)); // adds x axis labels (timestamp)
-      if (data[i].p_ed > 0) chartData.datasets[0].data[y]  = data[i].p_ed;
-      if (data[i].p_er > 0) chartData.datasets[1].data[y]  = data[i].p_er * -1.0;
+      if (data[i].p_edw > 0) chartData.datasets[0].data[y]  = data[i].p_edw;
+      if (data[i].p_erw > 0) chartData.datasets[1].data[y]  = data[i].p_erw * -1.0;
 
     }
     //--- show canvas

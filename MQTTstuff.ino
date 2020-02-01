@@ -18,15 +18,18 @@
 #ifdef USE_MQTT
   #include <PubSubClient.h>           // MQTT client publish and subscribe functionality
   #define MQTT_WAITFORCONNECT 600000  // 10 minutes
-  #define MQTT_WAITFORRETRY     3000  // 3 seconden backoff
-  
+  #define MQTT_WAITFORRETRY     3     // 3 seconden backoff
+
+  DECLARE_TIMER_MS(mqttTimer, 500);   // 500 milliseconds
+  DECLARE_TIMER_SEC(mqttRetryTimer, MQTT_WAITFORRETRY);
+
   static            PubSubClient MQTTclient(wifiClient);
 
   uint32_t          MQTThandleTimer   = 0;
   int8_t            reconnectAttempts = 0;
   uint32_t          timeMQTTPublish  = 0;
   char              lastMQTTtimestamp[15] = "";
-  uint32_t          timeMQTTLastRetry = 0;
+//uint32_t          timeMQTTLastRetry = 0;
   uint32_t          timeMQTTReconnect = 0;
   char              mqttBuff[100];
 
@@ -49,14 +52,7 @@ void handleMQTT()
 {
 #ifdef USE_MQTT
 
-  if ((millis() - MQTThandleTimer) > 100)
-  {
-    MQTThandleTimer = millis();
-  }
-  else
-  {
-    return;
-  }
+  if ( !DUE(mqttTimer) ) return;  // only every 500 ms
   
   switch(stateMQTT) 
   {
@@ -127,7 +123,7 @@ void handleMQTT()
         Debugln(F(" .. \r"));
         DebugTf("failed, retrycount=[%d], rc=[%d] ..  try again in 3 seconds\r\n", reconnectAttempts, MQTTclient.state());
         mqttIsConnected   = false;
-        timeMQTTLastRetry = millis();
+        mqttRetryTimer_last = millis();
         stateMQTT = MQTT_STATE_WAIT_CONNECTION_ATTEMPT;  // if the re-connect did not work, then return to wait for reconnect
         //DebugTln(F("Next State: MQTT_STATE_WAIT_CONNECTION_ATTEMPT"));
       }
@@ -157,7 +153,8 @@ void handleMQTT()
       //do non-blocking wait for 3 seconds
       //--vvvv --> dit geeft érg veel debugregels-op-niets-af!
       //DebugTln(F("MQTT State: MQTT_WAIT_CONNECTION_ATTEMPT"));
-      if ((millis() - timeMQTTLastRetry) > MQTT_WAITFORRETRY) 
+      //===if ((millis() - timeMQTTLastRetry) > MQTT_WAITFORRETRY) 
+      if ( DUE(mqttRetryTimer) )
       {
         //Try again... after waitforretry non-blocking delay
         stateMQTT = MQTT_STATE_TRY_TO_CONNECT;
