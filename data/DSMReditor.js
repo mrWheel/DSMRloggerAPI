@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMReditor.js, part of DSMRloggerAPI
-**  Version  : v0.2.7
+**  Version  : v0.2.9
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -104,10 +104,10 @@
       x[i].style.boxShadow      = 'none';
     }
     //--- hide all tab's -------
-//    x = document.getElementsByClassName("tabName");
-//    for (i = 0; i < x.length; i++) {
-//      x[i].style.display    = "none";  
-//    }
+    x = document.getElementsByClassName("tabName");
+    for (i = 0; i < x.length; i++) {
+      x[i].style.display    = "none";  
+    }
     //--- and set active tab to 'block'
     console.log("openTab: now set all fields in ["+bID+"] to block ..");
     //document.getElementById(tabName).style.background='white';
@@ -119,6 +119,7 @@
 
     } else if (tabName == "tabSettings") {
       console.log("newTab: tabSettings");
+      document.getElementById('tabSettings').style.display = 'block';
       refreshSettings();
 
     }

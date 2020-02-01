@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRindex.js, part of DSMRfirmwareAPI
-**  Version  : v0.2.8
+**  Version  : v0.3.0
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -457,17 +457,19 @@
      for (let i=0; i<data.length; i++)
      {
       data[i].p_ed  = {};
+      data[i].p_edw = {};
       data[i].p_er  = {};
+      data[i].p_erw = {};
       data[i].p_gd  = {};
       data[i].costs = {};
 
       if (i < (data.length -1))
       {
-        data[i].p_ed = (data[i].edt1 +data[i].edt2)-(data[i+1].edt1 +data[i+1].edt2);
-        data[i].p_ed = (data[i].p_ed * 1000).toFixed(0);
-        data[i].p_er = (data[i].ert1 +data[i].ert2)-(data[i+1].ert1 +data[i+1].ert2);
-        data[i].p_er = (data[i].p_er * 1000).toFixed(0);
-        data[i].p_gd = ( data[i].gdt  -data[i+1].gdt).toFixed(3);
+        data[i].p_ed  = (data[i].edt1 +data[i].edt2)-(data[i+1].edt1 +data[i+1].edt2).toFixed(3);
+        data[i].p_edw = (data[i].p_ed * 1000).toFixed(0);
+        data[i].p_er  = (data[i].ert1 +data[i].ert2)-(data[i+1].ert1 +data[i+1].ert2).toFixed(3);
+        data[i].p_erw = (data[i].p_er * 1000).toFixed(0);
+        data[i].p_gd  = ( data[i].gdt  -data[i+1].gdt).toFixed(3);
         //var  day = data[i].recid.substring(4,6) * 1;
         //-- calculate Energy Delivered costs
         var     costs = ( (data[i].edt1 - data[i+1].edt1) * ed_tariff1 );
@@ -482,9 +484,11 @@
       }
       else
       {
-        data[i].p_ed = (data[i].edt1 +data[i].edt2).toFixed(3);
-        data[i].p_er = (data[i].ert1 +data[i].ert2).toFixed(3);
-        data[i].p_gd = (data[i].gdt).toFixed(3);
+        data[i].p_ed  = (data[i].edt1 +data[i].edt2).toFixed(3);
+        data[i].p_edw = (data[i].p_ed * 1000).toFixed(0);
+        data[i].p_er  = (data[i].ert1 +data[i].ert2).toFixed(3);
+        data[i].p_erw = (data[i].p_ed * 1000).toFixed(0);
+        data[i].p_gd  = (data[i].gdt).toFixed(3);
         data[i].costs = 0.0;
       }
     } // for i ..
@@ -546,34 +550,46 @@
 
       tableCells = document.getElementById("lastMonthsTable_R"+i).cells;
       tableCells[0].style.textAlign = "right";
-      tableCells[0].innerHTML = monthNames[mmNr];                     // maand
+      tableCells[0].innerHTML = monthNames[mmNr];                           // maand
       
       tableCells[1].style.textAlign = "center";
-      tableCells[1].innerHTML = "20"+data[i].recid.substring(0,2);    // jaar
+      tableCells[1].innerHTML = "20"+data[i].recid.substring(0,2);          // jaar
       tableCells[2].style.textAlign = "right";
-      tableCells[2].innerHTML = data[i].p_ed;                         // verbruik
+      if (data[i].p_ed >= 0)
+            tableCells[2].innerHTML = (data[i].p_ed).toFixed(3);            // verbruik
+      else  tableCells[2].innerHTML = "-";     
       tableCells[3].style.textAlign = "center";
-      tableCells[3].innerHTML = "20"+data[i+12].recid.substring(0,2); // jaar
+      tableCells[3].innerHTML = "20"+data[i+12].recid.substring(0,2);       // jaar
       tableCells[4].style.textAlign = "right";
-      tableCells[4].innerHTML = data[i+12].p_ed;                      // verbruik
+      if (data[i+12].p_ed >= 0)
+            tableCells[4].innerHTML = (data[i+12].p_ed).toFixed(3);         // verbruik
+      else  tableCells[4].innerHTML = "-";     
 
       tableCells[5].style.textAlign = "center";
-      tableCells[5].innerHTML = "20"+data[i].recid.substring(0,2);    // jaar
+      tableCells[5].innerHTML = "20"+data[i].recid.substring(0,2);          // jaar
       tableCells[6].style.textAlign = "right";
-      tableCells[6].innerHTML = data[i].p_er;                         // opgewekt
+      if (data[i].p_er >= 0)
+            tableCells[6].innerHTML = (data[i].p_er).toFixed(3);            // opgewekt
+      else  tableCells[6].innerHTML = "-";     
       tableCells[7].style.textAlign = "center";
-      tableCells[7].innerHTML = "20"+data[i+12].recid.substring(0,2); // jaar
+      tableCells[7].innerHTML = "20"+data[i+12].recid.substring(0,2);       // jaar
       tableCells[8].style.textAlign = "right";
-      tableCells[8].innerHTML = data[i+12].p_er;                     // opgewekt
+      if (data[i+12].p_er >= 0)
+            tableCells[8].innerHTML = (data[i+12].p_er).toFixed(3);         // opgewekt
+      else  tableCells[8].innerHTML = "-";     
 
       tableCells[9].style.textAlign = "center";
-      tableCells[9].innerHTML = "20"+data[i].recid.substring(0,2);   // jaar
+      tableCells[9].innerHTML = "20"+data[i].recid.substring(0,2);          // jaar
       tableCells[10].style.textAlign = "right";
-      tableCells[10].innerHTML = data[i].p_gd;                        // gas
+      if (data[i].p_gd >= 0)
+            tableCells[10].innerHTML = (data[i].p_gd * 1).toFixed(3);       // gas
+      else  tableCells[10].innerHTML = "-";     
       tableCells[11].style.textAlign = "center";
-      tableCells[11].innerHTML = "20"+data[i+12].recid.substring(0,2);// jaar
+      tableCells[11].innerHTML = "20"+data[i+12].recid.substring(0,2);      // jaar
       tableCells[12].style.textAlign = "right";
-      tableCells[12].innerHTML = data[i+12].p_gd;                     // gas
+      if (data[i+12].p_gd >= 0)
+            tableCells[12].innerHTML = (data[i+12].p_gd * 1).toFixed(3);    // gas
+      else  tableCells[12].innerHTML = "-";     
 
     };
   } // showMonthsHist()
@@ -610,22 +626,22 @@
           newCell.appendChild(newText);
         }
       }
-      //tableCells = document.getElementById(type+"Table_"+data[i].recid).cells;
+
       tableCells = document.getElementById(type+"Table_"+type+"_R"+i).cells;
-      //tableCells[0].style.textAlign = "left";
-      //tableCells[0].innerHTML = data[i].recnr;
-      //tableCells[1].style.textAlign = "left";
-      //tableCells[1].innerHTML = data[i].slot;
       tableCells[0].style.textAlign = "right";
-      //tableCells[2].innerHTML = data[i].recid;
-//      let date = "20"+data[i].recid.substring(0,2)+"-"+data[i].recid.substring(2,4)+"-"+data[i].recid.substring(4,6)+" ["+data[i].recid.substring(6,8)+"]";
       tableCells[0].innerHTML = formatDate(type, data[i].recid);
       tableCells[1].style.textAlign = "right";
-      tableCells[1].innerHTML = data[i].p_ed;
+      if (data[i].p_edw >= 0)
+            tableCells[1].innerHTML = data[i].p_edw;
+      else  tableCells[1].innerHTML = "-";
       tableCells[2].style.textAlign = "right";
-      tableCells[2].innerHTML = data[i].p_er;
+      if (data[i].p_erw >= 0)
+            tableCells[2].innerHTML = data[i].p_erw;
+      else  tableCells[2].innerHTML = "-";
       tableCells[3].style.textAlign = "right";
-      tableCells[3].innerHTML = data[i].p_gd;
+      if (data[i].p_edw >= 0)
+            tableCells[3].innerHTML = data[i].p_gd;
+      else  tableCells[3].innerHTML = "-";
       if (type == "Days")
       {
         tableCells[4].style.textAlign = "right";

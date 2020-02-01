@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : jsonStuff, part of DSMRloggerAPI
-**  Version  : v0.2.4
+**  Version  : v0.3.1
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -48,7 +48,7 @@ void sendNestedJsonObj(uint8_t recNr, const char *recID, uint8_t slot, float EDT
   httpServer.sendContent(jsonBuff);
   sprintf(objSprtr, ",\r\n");
 
-} // sendNestedJsonObject(int, *char, int, float, float, float, float, float)
+} // sendNestedJsonObj(int, *char, int, float, float, float, float, float)
 
 
 //=======================================================================
@@ -70,7 +70,7 @@ void sendNestedJsonObj(const char *cName, const char *cValue, const char *cUnit)
   httpServer.sendContent(jsonBuff);
   sprintf(objSprtr, ",\r\n");
 
-} // sendNestedJsonObject(*char, *char, *char)
+} // sendNestedJsonObj(*char, *char, *char)
 
 //---------------------------------------------------------------
 void sendNestedJsonObj(const char *cName, const char *cValue)
@@ -79,7 +79,7 @@ void sendNestedJsonObj(const char *cName, const char *cValue)
 
   sendNestedJsonObj(cName, cValue, noUnit);
   
-} // sendNestedJsonObject(*char, *char)
+} // sendNestedJsonObj(*char, *char)
 
 
 //=======================================================================
@@ -101,7 +101,7 @@ void sendNestedJsonObj(const char *cName, String sValue, const char *cUnit)
   httpServer.sendContent(jsonBuff);
   sprintf(objSprtr, ",\r\n");
 
-} // sendNestedJsonObject(*char, String, *char)
+} // sendNestedJsonObj(*char, String, *char)
 
 //---------------------------------------------------------------
 void sendNestedJsonObj(const char *cName, String sValue)
@@ -110,7 +110,7 @@ void sendNestedJsonObj(const char *cName, String sValue)
 
   sendNestedJsonObj(cName, sValue, noUnit);
   
-} // sendNestedJsonObject(*char, String)
+} // sendNestedJsonObj(*char, String)
 
 
 //=======================================================================
@@ -132,7 +132,7 @@ void sendNestedJsonObj(const char *cName, int32_t iValue, const char *cUnit)
   httpServer.sendContent(jsonBuff);
   sprintf(objSprtr, ",\r\n");
 
-} // sendNestedJsonObject(*char, int, *char)
+} // sendNestedJsonObj(*char, int, *char)
 
 //---------------------------------------------------------------
 void sendNestedJsonObj(const char *cName, int32_t iValue)
@@ -163,7 +163,7 @@ void sendNestedJsonObj(const char *cName, uint32_t uValue, const char *cUnit)
   httpServer.sendContent(jsonBuff);
   sprintf(objSprtr, ",\r\n");
 
-} // sendNestedJsonObject(*char, uint, *char)
+} // sendNestedJsonObj(*char, uint, *char)
 
 //---------------------------------------------------------------
 void sendNestedJsonObj(const char *cName, uint32_t uValue)
@@ -194,7 +194,7 @@ void sendNestedJsonObj(const char *cName, float fValue, const char *cUnit)
   httpServer.sendContent(jsonBuff);
   sprintf(objSprtr, ",\r\n");
 
-} // sendNestedJsonObject(*char, float, *char)
+} // sendNestedJsonObj(*char, float, *char)
 
 //---------------------------------------------------------------
 void sendNestedJsonObj(const char *cName, float fValue)
@@ -272,7 +272,7 @@ void sendJsonSettingObj(const char *cName, const char *cValue, const char *sType
 {
   char jsonBuff[200] = "";
 
-  sprintf(jsonBuff, "%s{\"name\": \"%s\", \"value\":\" %s\", \"type\": \"%s\", \"maxlen\": %d}"
+  sprintf(jsonBuff, "%s{\"name\": \"%s\", \"value\":\"%s\", \"type\": \"%s\", \"maxlen\": %d}"
                                       , objSprtr, cName, cValue, sType, maxLen);
 
   httpServer.sendContent(jsonBuff);

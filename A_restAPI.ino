@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : restAPI, part of DSMRloggerAPI
-**  Version  : v0.2.7
+**  Version  : v0.3.0
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -325,6 +325,21 @@ void sendDeviceInfo()
   sendNestedJsonObj("uptime", upTime());
   sendNestedJsonObj("telegramcount", (int)telegramCount);
   sendNestedJsonObj("telegramerrors", (int)telegramErrors);
+
+#ifdef USE_MQTT
+  sprintf(cMsg, "%s:%04d", settingMQTTbroker, settingMQTTbrokerPort);
+  sendNestedJsonObj("mqttbroker", cMsg);
+  sendNestedJsonObj("mqttinterval", settingMQTTinterval);
+  if (mqttIsConnected)
+        sendNestedJsonObj("mqttbroker_connected", "yes");
+  else  sendNestedJsonObj("mqttbroker_connected", "no");
+#endif
+#ifdef USE_MINDERGAS
+  sprintf(cMsg, "%s:%d", timeLastResponse, intStatuscodeMindergas);
+  sendNestedJsonObj("mindergas_response",     txtResponseMindergas);
+  sendNestedJsonObj("mindergas_status",       cMsg);
+#endif
+
   sendNestedJsonObj("reboots", (int)nrReboots);
   sendNestedJsonObj("lastreset", lastReset);
   httpServer.sendContent("\r\n]}\r\n");
@@ -361,7 +376,7 @@ void sendDeviceSettings()
   sendJsonSettingObj("tlgrm_interval",    settingInterval,        "i", 1, 60);
   sendJsonSettingObj("index_page",        settingIndexPage,       "s", sizeof(settingIndexPage) -1);
   sendJsonSettingObj("mqtt_broker",       settingMQTTbroker,      "s", sizeof(settingMQTTbroker));
-  sendJsonSettingObj("mqtt_broker_port",  settingMQTTbrokerPort,  "i", 0, 9999);
+  sendJsonSettingObj("mqtt_broker_port",  settingMQTTbrokerPort,  "i", 1, 9999);
   sendJsonSettingObj("mqtt_user",         settingMQTTuser,        "s", sizeof(settingMQTTuser));
   sendJsonSettingObj("mqtt_passwd",       settingMQTTpasswd,      "s", sizeof(settingMQTTpasswd));
   sendJsonSettingObj("mqtt_toptopic",     settingMQTTtopTopic,    "s", sizeof(settingMQTTtopTopic));
