@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : restAPI, part of DSMRloggerAPI
-**  Version  : v0.1.7
+**  Version  : v0.3.0
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -18,13 +18,15 @@ char fieldsArray[50][35] = {{0}}; // to lookup fields
 int  fieldsElements      = 0;
 
 int  actualElements = 20;
-char actualArray[][35] = { "timestamp","energy_delivered_tariff1","energy_delivered_tariff2"
+char actualArray[][35] = { "timestamp"
+                          ,"energy_delivered_tariff1","energy_delivered_tariff2"
                           ,"energy_returned_tariff1","energy_returned_tariff2"
                           ,"power_delivered","power_returned"
                           ,"voltage_l1","voltage_l2","voltage_l3"
                           ,"current_l1","current_l2","current_l3"
                           ,"power_delivered_l1","power_delivered_l2","power_delivered_l3"
                           ,"power_returned_l1","power_returned_l2","power_returned_l3"
+                          ,"gas_delivered"
                           ,"\0"};
 int  infoElements = 7;
 char infoArray[][35]   = { "identification","p1_version","equipment_id","electricity_tariff"
@@ -136,8 +138,8 @@ void handleDevApi(const char *URI, const char *word4, const char *word5, const c
 //====================================================
 void handleHistApi(const char *word4, const char *word5, const char *word6)
 {
-  int8_t    fileType = 0;
-  char      fileName[20] = "";
+  int8_t  fileType     = 0;
+  char    fileName[20] = "";
   
   //DebugTf("word4[%s], word5[%s], word6[%s]\r\n", word4, word5, word6);
   if (   strcmp(word4, "hours") == 0 )
@@ -153,7 +155,33 @@ void handleHistApi(const char *word4, const char *word5, const char *word6)
   else if (strcmp(word4, "months") == 0)
   {
     fileType = MONTHS;
-    strCopy(fileName, sizeof(fileName), MONTHS_FILE);
+    if (httpServer.method() == HTTP_PUT || httpServer.method() == HTTP_POST)
+    {
+      //------------------------------------------------------------ 
+      // json string: {"recid":"29013023"
+      //               ,"edt1":2601.146,"edt2":"9535.555"
+      //               ,"ert1":378.074,"ert2":208.746
+      //               ,"gdt":3314.404}
+      //------------------------------------------------------------ 
+      char      record[DATA_RECLEN + 1] = "";
+      uint16_t  recSlot;
+
+      String jsonIn  = httpServer.arg(0).c_str();
+      DebugTln(jsonIn);
+      
+      recSlot = buildDataRecordFromJson(record, jsonIn);
+      
+      //--- update MONTHS
+      writeDataToFile(MONTHS_FILE, record, recSlot, MONTHS);
+      //--- send OK response --
+      httpServer.send(200, "application/json", httpServer.arg(0));
+      
+      return;
+    }
+    else 
+    {
+      strCopy(fileName, sizeof(fileName), MONTHS_FILE);
+    }
   }
   else 
   {
@@ -297,6 +325,21 @@ void sendDeviceInfo()
   sendNestedJsonObj("uptime", upTime());
   sendNestedJsonObj("telegramcount", (int)telegramCount);
   sendNestedJsonObj("telegramerrors", (int)telegramErrors);
+
+#ifdef USE_MQTT
+  sprintf(cMsg, "%s:%04d", settingMQTTbroker, settingMQTTbrokerPort);
+  sendNestedJsonObj("mqttbroker", cMsg);
+  sendNestedJsonObj("mqttinterval", settingMQTTinterval);
+  if (mqttIsConnected)
+        sendNestedJsonObj("mqttbroker_connected", "yes");
+  else  sendNestedJsonObj("mqttbroker_connected", "no");
+#endif
+#ifdef USE_MINDERGAS
+  sprintf(cMsg, "%s:%d", timeLastResponse, intStatuscodeMindergas);
+  sendNestedJsonObj("mindergas_response",     txtResponseMindergas);
+  sendNestedJsonObj("mindergas_status",       cMsg);
+#endif
+
   sendNestedJsonObj("reboots", (int)nrReboots);
   sendNestedJsonObj("lastreset", lastReset);
 
@@ -324,19 +367,20 @@ void sendDeviceSettings()
 
   sendStartJsonObj("settings");
   
-  sendJsonSettingObj("ed_tariff1",        settingEDT1,            "f", 0, 10);
-  sendJsonSettingObj("ed_tariff2",        settingEDT2,            "f", 0, 10);
-  sendJsonSettingObj("er_tariff1",        settingERT1,            "f", 0, 10);
-  sendJsonSettingObj("er_tariff2",        settingERT2,            "f", 0, 10);
-  sendJsonSettingObj("gd_tariff",         settingGDT,             "f", 0, 10);
-  sendJsonSettingObj("electr_netw_costs", settingENBK,            "f", 0, 100);
-  sendJsonSettingObj("gas_netw_costs",    settingGNBK,            "f", 0, 100);
+  sendJsonSettingObj("ed_tariff1",        settingEDT1,            "f", 0, 10,  5);
+  sendJsonSettingObj("ed_tariff2",        settingEDT2,            "f", 0, 10,  5);
+  sendJsonSettingObj("er_tariff1",        settingERT1,            "f", 0, 10,  5);
+  sendJsonSettingObj("er_tariff2",        settingERT2,            "f", 0, 10,  5);
+  sendJsonSettingObj("gd_tariff",         settingGDT,             "f", 0, 10,  5);
+  sendJsonSettingObj("electr_netw_costs", settingENBK,            "f", 0, 100, 2);
+  sendJsonSettingObj("gas_netw_costs",    settingGNBK,            "f", 0, 100, 2);
   sendJsonSettingObj("tlgrm_interval",    settingInterval,        "i", 1, 60);
+  sendJsonSettingObj("index_page",        settingIndexPage,       "s", sizeof(settingIndexPage) -1);
   sendJsonSettingObj("mqtt_broker",       settingMQTTbroker,      "s", sizeof(settingMQTTbroker));
-  sendJsonSettingObj("mqtt_broker_port",  settingMQTTbrokerPort,  "i", 0, 9999);
+  sendJsonSettingObj("mqtt_broker_port",  settingMQTTbrokerPort,  "i", 1, 9999);
   sendJsonSettingObj("mqtt_user",         settingMQTTuser,        "s", sizeof(settingMQTTuser));
   sendJsonSettingObj("mqtt_passwd",       settingMQTTpasswd,      "s", sizeof(settingMQTTpasswd));
-  sendJsonSettingObj("mqtt_topTopic",     settingMQTTtopTopic,    "s", sizeof(settingMQTTtopTopic));
+  sendJsonSettingObj("mqtt_toptopic",     settingMQTTtopTopic,    "s", sizeof(settingMQTTtopTopic));
   sendJsonSettingObj("mqtt_interval",     settingMQTTinterval,    "i", 0, 600);
 #if defined (USE_MINDERGAS )
   sendJsonSettingObj("mindergastoken",  settingMindergasToken,    "s", sizeof(settingMindergasToken));

@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : ntpStuff, part of DSMRloggerAPI
-**  Version  : v0.1.2
+**  Version  : v0.2.1
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -44,7 +44,7 @@ bool startNTP()
   DebugTln(String(Udp.localPort()));
   DebugTln(F("waiting for NTP sync"));
   setSyncProvider(getNtpTime);
-  setSyncInterval(60);
+  setSyncInterval(60);  // seconds!
   if (timeStatus() == timeSet)      // time is set,
   {
     return true;                    // exit with time set

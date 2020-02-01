@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : settingsStuff, part of DSMRloggerAPI
-**  Version  : v0.1.2
+**  Version  : v0.2.7
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -22,6 +22,11 @@ void writeSettings()
     return;
   }
   yield();
+
+  if (strlen(settingIndexPage) < 7) strCopy(settingIndexPage, (sizeof(settingIndexPage) -1), "DSMRindex.html");
+  if (settingInterval < 3)          settingInterval       = 10;
+  if (settingMQTTbrokerPort < 1)    settingMQTTbrokerPort = 1883;
+    
   DebugT(F("Start writing setting data "));
 
   file.print("EnergyDeliveredT1 = "); file.println(String(settingEDT1, 5));     Debug(F("."));
@@ -33,8 +38,7 @@ void writeSettings()
   file.print("GasVasteKosten = ");    file.println(String(settingGNBK, 2));     Debug(F("."));
   file.print("SleepTime = ");         file.println(settingSleepTime);           Debug(F("."));
   file.print("TelegramInterval = ");  file.println(settingInterval);            Debug(F("."));
-  file.print("BackGroundColor = ");   file.println(settingBgColor);             Debug(F("."));
-  file.print("FontColor = ");         file.println(settingFontColor);           Debug(F("."));
+  file.print("IndexPage = ");         file.println(settingIndexPage);           Debug(F("."));
 
 #ifdef USE_MQTT
   //sprintf(settingMQTTbroker, "%s:%d", MQTTbroker, MQTTbrokerPort);
@@ -62,8 +66,7 @@ void writeSettings()
     DebugT(F("GasVasteKosten = "));    Debugln(String(settingGNBK, 2));    
     DebugT(F("SleepTime = "));         Debugln(settingSleepTime);           
     DebugT(F("TelegramInterval = "));  Debugln(settingInterval);            
-    DebugT(F("BackGroundColor = "));   Debugln(settingBgColor);             
-    DebugT(F("FontColor = "));         Debugln(settingFontColor);   
+    DebugT(F("IndexPage = "));         Debugln(settingIndexPage);             
 
 #ifdef USE_MQTT
     DebugT(F("MQTTbroker = "));        Debugln(settingMQTTbroker);          
@@ -104,8 +107,7 @@ void readSettings(bool show)
   settingGNBK       = 11.11;
   settingInterval   = 10; // seconds
   settingSleepTime  =  0; // infinite
-  strCopy(settingBgColor, sizeof(settingBgColor), "deepskyblue");
-  strCopy(settingFontColor, sizeof(settingFontColor), "white");
+  strCopy(settingIndexPage, sizeof(settingIndexPage), "DSMRindex.html");
   settingMQTTbroker[0]     = '\0';
   settingMQTTbrokerPort    = 1883;
   settingMQTTuser[0]       = '\0';
@@ -141,19 +143,18 @@ void readSettings(bool show)
     words[0].toLowerCase();
     nColor    = words[1].substring(0,15);
 
-    if (words[0].equalsIgnoreCase("EnergyDeliveredT1"))   settingEDT1         = words[1].toFloat();  
-    if (words[0].equalsIgnoreCase("EnergyDeliveredT2"))   settingEDT2         = words[1].toFloat();  
-    if (words[0].equalsIgnoreCase("EnergyReturnedT1"))    settingERT1         = words[1].toFloat();  
-    if (words[0].equalsIgnoreCase("EnergyReturnedT2"))    settingERT2         = words[1].toFloat();  
-    if (words[0].equalsIgnoreCase("GasDeliveredT"))       settingGDT          = words[1].toFloat();  
-    if (words[0].equalsIgnoreCase("EnergyVasteKosten"))   settingENBK         = words[1].toFloat();
-    if (words[0].equalsIgnoreCase("GasVasteKosten"))      settingGNBK         = words[1].toFloat();
+    if (words[0].equalsIgnoreCase("EnergyDeliveredT1"))   settingEDT1         = strToFloat(words[1].c_str(), 5);  
+    if (words[0].equalsIgnoreCase("EnergyDeliveredT2"))   settingEDT2         = strToFloat(words[1].c_str(), 5);
+    if (words[0].equalsIgnoreCase("EnergyReturnedT1"))    settingERT1         = strToFloat(words[1].c_str(), 5);
+    if (words[0].equalsIgnoreCase("EnergyReturnedT2"))    settingERT2         = strToFloat(words[1].c_str(), 5);
+    if (words[0].equalsIgnoreCase("GasDeliveredT"))       settingGDT          = strToFloat(words[1].c_str(), 5); 
+    if (words[0].equalsIgnoreCase("EnergyVasteKosten"))   settingENBK         = strToFloat(words[1].c_str(), 2);
+    if (words[0].equalsIgnoreCase("GasVasteKosten"))      settingGNBK         = strToFloat(words[1].c_str(), 2);
 
     if (words[0].equalsIgnoreCase("SleepTime"))           settingSleepTime    = words[1].toInt();  
     if (words[0].equalsIgnoreCase("TelegramInterval"))    settingInterval     = words[1].toInt();  
 
-    if (words[0].equalsIgnoreCase("BackgroundColor"))     strCopy(settingBgColor, (MAXCOLORNAME -1), words[1].c_str());  
-    if (words[0].equalsIgnoreCase("FontColor"))           strCopy(settingFontColor, (MAXCOLORNAME -1), words[1].c_str()); 
+    if (words[0].equalsIgnoreCase("IndexPage"))           strCopy(settingIndexPage, (sizeof(settingIndexPage) -1), words[1].c_str());  
 
     if (words[0].equalsIgnoreCase("MindergasAuthtoken"))  strCopy(settingMindergasToken, 20, words[1].c_str());  
    
@@ -165,7 +166,8 @@ void readSettings(bool show)
     if (words[0].equalsIgnoreCase("MQTTbrokerPort"))      settingMQTTbrokerPort    = words[1].toInt();  
     if (words[0].equalsIgnoreCase("MQTTuser"))            strCopy(settingMQTTuser    ,35 ,words[1].c_str());  
     if (words[0].equalsIgnoreCase("MQTTpasswd"))          strCopy(settingMQTTpasswd  ,25, words[1].c_str());  
-    if (words[0].equalsIgnoreCase("MQTTinterval"))        settingMQTTinterval        = words[1].toInt();  
+    if (words[0].equalsIgnoreCase("MQTTinterval"))        settingMQTTinterval        = words[1].toInt(); 
+    if (settingMQTTinterval < settingInterval)            settingMQTTinterval = (settingInterval + 1); 
     if (words[0].equalsIgnoreCase("MQTTtopTopic"))        strCopy(settingMQTTtopTopic, 20, words[1].c_str());  
 #endif
     
@@ -173,6 +175,11 @@ void readSettings(bool show)
 
   file.close();  
   DebugTln(F(" .. done\r"));
+
+
+  if (strlen(settingIndexPage) < 7) strCopy(settingIndexPage, (sizeof(settingIndexPage) -1), "DSMRindex.html");
+  if (settingInterval < 3)          settingInterval       = 10;
+  if (settingMQTTbrokerPort < 1)    settingMQTTbrokerPort = 1883;
 
   if (!show) return;
   
@@ -186,8 +193,8 @@ void readSettings(bool show)
   Debugf("        Gas Netbeheer Kosten : %9.2f\r\n",  settingGNBK);
   Debugf("   Telegram Process Interval : %d\r\n", settingInterval);
   Debugf("OLED Sleep Min. (0=oneindig) : %d\r\n", settingSleepTime);
-  Debugf("            BackGround Color : %s\r\n", settingBgColor);
-  Debugf("                  Font Color : %s\r\n", settingFontColor);
+  Debugf("                  Index Page : %s\r\n", settingIndexPage);
+
 #ifdef USE_MQTT
   Debugln(F("\r\n==== MQTT settings ==============================================\r"));
   Debugf("          MQTT broker URL/IP : %s:%d", settingMQTTbroker, settingMQTTbrokerPort);
@@ -228,6 +235,8 @@ void updateSetting(const char *field, const char *newValue)
 
   if (!stricmp(field, "tlgrm_interval"))    settingInterval     = String(newValue).toInt();  
 
+  if (!stricmp(field, "index_page"))        strCopy(settingIndexPage, (sizeof(settingIndexPage) -1), newValue);  
+  
   if (!stricmp(field, "MindergasToken"))    strCopy(settingMindergasToken, 20, newValue);  
    
 #ifdef USE_MQTT
@@ -241,7 +250,7 @@ void updateSetting(const char *field, const char *newValue)
   if (!stricmp(field, "mqtt_user"))         strCopy(settingMQTTuser    ,35, newValue);  
   if (!stricmp(field, "mqtt_passwd"))       strCopy(settingMQTTpasswd  ,25, newValue);  
   if (!stricmp(field, "mqtt_interval"))     settingMQTTinterval   = String(newValue).toInt();  
-  if (!stricmp(field, "mqtt_topTopic"))     strCopy(settingMQTTtopTopic, 20, newValue);  
+  if (!stricmp(field, "mqtt_toptopic"))     strCopy(settingMQTTtopTopic, 20, newValue);  
 #endif
 
   writeSettings();

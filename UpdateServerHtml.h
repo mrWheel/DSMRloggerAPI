@@ -16,6 +16,13 @@ static const char UpdateServerIndex[] PROGMEM =
         <input type='file' accept='spiffs.bin' name='filesystem'>
         <input type='submit' value='Flash Spiffs'>
       </form>
+      <hr>
+      <br/><font color='red'>Let op!!!</font>
+      <br/>Bij het flashen van SPIFFS raakt u de RING-bestanden kwijt. 
+      <br/>Maak daarom eerst een kopie van deze bestanden (met de FSexplorer) 
+      en zet de data-bestanden na het flashen van SPIFFS weer terug.
+      <hr>
+      <br/>
       <br/>Wacht nog <span style='font-size: 1.3em;' id="waitSeconds">120</span> seconden ..
       <br>Als het lijkt of er niets gebeurd, wacht dan tot de teller
            op 'nul' staat en klik daarna <span style='font-size:1.3em;'><b><a href="/">hier</a></b></span>!
@@ -46,7 +53,7 @@ static const char UpdateServerSuccess[] PROGMEM =
      <br/>Wait for the DSMR-logger to reboot and start the HTTP server
      <br/>
      <br>
-     <br/>Wacht nog <span style='font-size: 1.3em;' id="waitSeconds">35</span> seconden ..
+     <br/>Wacht nog <span style='font-size: 1.3em;' id="waitSeconds">60</span> seconden ..
      <br/>Als het lijkt of er niets gebeurd, wacht dan tot de teller
           op 'nul' staat en klik daarna <span style='font-size:1.3em;'><b><a href="/">hier</a></b></span>!
      </body>

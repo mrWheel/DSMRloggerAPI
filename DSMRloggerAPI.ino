@@ -2,7 +2,7 @@
 ***************************************************************************  
 **  Program  : DSMRloggerAPI (restAPI)
 */
-#define _FW_VERSION "v0.1.7 (07-01-2020)"
+#define _FW_VERSION "v0.3.0 (01-02-2020)"
 /*
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -33,7 +33,7 @@
 #define USE_UPDATE_SERVER         // define if there is enough memory and updateServer to be used
 //  #define HAS_OLED_SSD1306          // define if a 0.96" OLED display is present
 #define HAS_OLED_SH1106           // define if a 1.3" OLED display is present
-//#define HAS_NO_SLIMMEMETER        // define for testing only!
+//  #define HAS_NO_SLIMMEMETER        // define for testing only!
 //  #define USE_PRE40_PROTOCOL        // define if Slimme Meter is pre DSMR 4.0 (2.2 .. 3.0)
 //  #define USE_NTP_TIME              // define to generate Timestamp from NTP (Only Winter Time for now)
 //  #define SM_HAS_NO_FASE_INFO       // if your SM does not give fase info use total delevered/returned
@@ -165,24 +165,28 @@ void setup()
   DebugTf("===> actTimestamp[%s]-> nrReboots[%u] - Errors[%u]\r\n\n", actTimestamp
                                                                     , nrReboots++
                                                                     , slotErrors);
+                                                                    
+  readSettings(true);
 
 //=============now test if SPIFFS is correct populated!============
-  if (DSMRfileExist("/ADJindex.html", false) )
+  if (DSMRfileExist(settingIndexPage, false) )
   {
-    hasADJindex        = true;
+    if (strcmp(settingIndexPage, "DSMRindex.html") != 0)
+          hasAlternativeIndex        = true;
+    else  hasAlternativeIndex        = false;
   }
-  if (!hasADJindex && !DSMRfileExist("/DSMRindex.html", false) )
+  if (!hasAlternativeIndex && !DSMRfileExist("/DSMRindex.html", false) )
   {
     spiffsNotPopulated = true;
   }
-  if (!hasADJindex)
+  if (!hasAlternativeIndex)
   {
     DSMRfileExist("/DSMRindex.js", false);
     DSMRfileExist("/DSMRindex.css", false);
-    //DSMRfileExist("/DSMRgraphics.js");
+    DSMRfileExist("/DSMRgraphics.js", false);
+    DSMRfileExist("/DSMReditor.html", false);
+    DSMRfileExist("/DSMReditor.js", false);
   }
-  //DSMRfileExist("/DSMReditor.html");
-  //DSMRfileExist("/DSMReditor.js");
   if (!DSMRfileExist("/FSexplorer.html", true))
   {
     spiffsNotPopulated = true;
@@ -191,6 +195,7 @@ void setup()
   {
     spiffsNotPopulated = true;
   }
+
 //=============end SPIFFS =========================================
 
 #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
@@ -260,6 +265,12 @@ void setup()
   Serial.print("\nGebruik 'telnet ");
   Serial.print (WiFi.localIP());
   Serial.println("' voor verdere debugging\r\n");
+  
+//=============now test if "convertPRD" file exists================
+  if (DSMRfileExist("!PRDconvert", false) )
+  {
+    convertPRD2RING();
+  }
 
 //===========================================================================================
 
@@ -276,9 +287,6 @@ void setup()
   oled_Print_Msg(0, "<DSMRloggerAPI>", 0);
   oled_Print_Msg(3, cMsg, 1500);
 #endif  // has_oled_ssd1306
-
-  readSettings(false);
-  //readColors(false);
 
 #ifdef USE_MQTT                                               //USE_MQTT
   startMQTT();
@@ -299,7 +307,7 @@ void setup()
     oled_Print_Msg(2, "Verder met normale", 0);
     oled_Print_Msg(3, "Verwerking ;-)", 2500);
 #endif  // has_oled_ssd1306
-    if (hasADJindex)
+    if (hasAlternativeIndex)
     {
       httpServer.serveStatic("/",               SPIFFS, "/ADJindex.html");
       httpServer.serveStatic("/ADJindex.html",  SPIFFS, "/ADJindex.html");

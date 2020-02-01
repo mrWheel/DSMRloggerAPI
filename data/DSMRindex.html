@@ -1,7 +1,7 @@
 <!--
 ***************************************************************************  
 **  Program  : DSMRindex.html, part of DSMRloggerAPI
-**  Version  : v0.1.3
+**  Version  : v0.2.8
 **
 **  Copyright (c) 2019 Willem Aandewiel
 **
@@ -86,27 +86,25 @@
         <span style="font-size: 30px;">Hours &nbsp; &nbsp; </span>
         <span style="font-size: 20px;">/api/v1/hist/hours/asc</span>
     </div>
-    <div id='lastHours' style="margin-left: 50px; margin-right: 250px; background: lightblue;">
-    <table id="lastHoursTable">
-    <thead>
-        <tr>
-            <th style="text-align: left;   border-bottom: 2px solid #ddd;">RecNr</th>
-            <th style="text-align: center; border-bottom: 2px solid #ddd;">Slot</th>
+    <div id='lastHours' style="margin-left: 50px; margin-right: 650px; background: lightblue;">
+      <table id="lastHoursTable">
+        <thead>
+          <tr>
             <th style="text-align: center; border-bottom: 2px solid #ddd;">Date/Time</th>
             <th style="text-align: right;  border-bottom: 2px solid #ddd;">Energie<br>Verbruik<br>(Watt)</th>
             <th style="text-align: right;  border-bottom: 2px solid #ddd;">Energie<br>Teruglevering<br>(Watt)</th>
             <th style="text-align: right;  border-bottom: 2px solid #ddd;">Gas-<br>verbruik<br>(m3)</th>
-            <th style="text-align: right;  border-bottom: 2px solid #ddd;">Kosten</th>
-        </tr>
-    </thead>
-    <tbody>
-    </tbody>
-    <tfoot>
-        <tr>
+        <!--<th style="text-align: right;  border-bottom: 2px solid #ddd;">Kosten</th>-->
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+        <tfoot>
+         <tr>
             <td>---eof---</td>
-        </tr>
-    <tfoot>
-    </table>
+          </tr>
+        <tfoot>
+      </table>
     </div>
     
   </div> <!-- END LastHoursTab -->
@@ -117,12 +115,10 @@
         <span style="font-size: 30px;">Days &nbsp; &nbsp; </span>
         <span style="font-size: 20px;">/api/v1/hist/days/asc</span>
     </div>
-    <div id='lastDays' style="margin-left: 50px; margin-right: 250px; background: lightblue;">
+    <div id='lastDays' style="margin-left: 50px; margin-right: 450px; background: lightblue;">
       <table id="lastDaysTable">
       <thead>
         <tr>
-            <th style="text-align: left;   border-bottom: 2px solid #ddd;">RecNr</th>
-            <th style="text-align: center; border-bottom: 2px solid #ddd;">Slot</th>
             <th style="text-align: center; border-bottom: 2px solid #ddd;">Date/Time</th>
             <th style="text-align: right;  border-bottom: 2px solid #ddd;">Energie<br>Verbruik<br>(Watt)</th>
             <th style="text-align: right;  border-bottom: 2px solid #ddd;">Energie<br>Teruglevering<br>(Watt)</th>
@@ -253,6 +249,10 @@
   </div>  <!-- END fields Tab -->
 
   <!-- REST -->
+
+  <div style="margin: 30px;">
+    <canvas id="dataChart" style="display: block;" width="900" height="300"></canvas>
+  </div>
   
   <div class="footer">
     <span id="devIPaddress"></span>
@@ -260,7 +260,7 @@
   </div>
 
   <script src="/DSMRindex.js"></script>
-<!--  <script src="/DSMRgraphics.js"></script> -->
+  <script src="/DSMRgraphics.js"></script> 
 
   </body>
 
