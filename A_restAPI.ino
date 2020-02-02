@@ -446,7 +446,7 @@ void sendJsonHist(int8_t fileType, const char *fileName, const char *timeStamp, 
 {
   uint8_t startSlot, nrSlots, recNr  = 0;
   char    typeApi[10];
-  DECLARE_TIME_SEC(antiWearTimer, 61);
+  DECLARE_TIMER_SEC(antiWearTimer, 61);
 
   if (DUE(antiWearTimer))
   {
