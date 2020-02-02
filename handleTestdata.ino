@@ -2,7 +2,7 @@
 
 #if defined(HAS_NO_SLIMMEMETER)
 
-#define   TELEGRAM_INTERVAL 5000
+#define   TELEGRAM_INTERVAL   5 //seconds
 #define   MAXLINELENGTH     128   // longest normal line is 47 char (+3 for \r\n\0)
 
 enum runStates { SInit, SMonth, SDay, SHour, SNormal };
@@ -13,7 +13,7 @@ char        telegram[1000] = "";
 uint16_t    currentCRC; 
 int16_t     calcCRC;
 uint32_t    actInterval = 5, nextMinute = 0, nextESPcheck = 0, nextGuiUpdate;
-uint32_t    telegramTimer = millis() + TELEGRAM_INTERVAL;
+//uint32_t    telegramTimer = millis() + TELEGRAM_INTERVAL;
 int8_t      State;
 int16_t     actSec, actMinute, actHour, actDay, actMonth, actYear, actSpeed;
 char        actDSMR[3] = "40", savDSMR[3] = "40";
@@ -30,9 +30,10 @@ void handleTestdata()
 {
   time_t nt;
   int16_t slot;
-  
-  if (!forceBuildRingFiles && (millis() - telegramTimer) < TELEGRAM_INTERVAL)  return;   // not yet time for new Telegram
-  telegramTimer = millis();
+
+  DECLARE_TIMER_s(telegramTimer, TELEGRAM_INTERVAL);
+ 
+  if (!forceBuildRingFiles && (DUE( telegramTimer))  return;   // not yet time for new Telegram
 
 //  DebugTf("Time for a new Telegram ..");
   if (forceBuildRingFiles)

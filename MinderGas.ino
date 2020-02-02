@@ -16,13 +16,11 @@
 *   - RvdB - added initial support for mindergas
 *
 */
-#define MINDERGAS_INTERVAL  3  // 2 minuten -> mag ook 5 zijn .. toch?
+#define MINDERGAS_INTERVAL  1  // 2 minuten -> mag ook 5 zijn .. toch?
 #define MG_FILENAME         "/Mindergas.post"
 
 DECLARE_TIMER_MIN(minderGasTimer, MINDERGAS_INTERVAL);
 DECLARE_TIMER_MIN(MGcountDownTimer, 1);
-
-uint32_t  mindergasTime     = millis();
 
 //=======================================================================
 void handleMindergas()
@@ -46,7 +44,6 @@ enum states_of_MG { MG_INIT, MG_WAIT_FOR_FIRST_TELEGRAM, MG_WAIT_FOR_NEXT_DAY
 enum states_of_MG stateMindergas = MG_INIT;
 
 int8_t    MG_Day                    = -1;
-uint32_t  lastTime                  = millis();
 bool      validToken                = false;
 bool      handleMindergasSemaphore  = false;
 

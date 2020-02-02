@@ -24,37 +24,34 @@ void oled_Print_Msg(uint8_t, String, uint16_t);
 
 static bool buttonState = LOW;
 static uint8_t msgMode = 0;
-
-uint32_t    oledSleepTimer = 120000;
+static bool boolDisplay = true; 
 
 uint8_t     lineHeight, charHeight;
-
+DECLARE_TIMER_MIN(oledSleepTimer, 10);
 
 //===========================================================================================
 void checkFlashButton() 
 {
-  if (settingSleepTime == 0) return; // don't switch OLED off
-  
-  if (oledSleepTimer > 0 && millis() > oledSleepTimer) 
+  if (DUE(oledSleepTimer)) 
   {
     //Serial.println("Switching display off..");
     oled.clear();
-    oledSleepTimer = 0;
+    boolDisplay = false;
+    if (digitalRead(FLASH_BUTTON) == LOW && buttonState == LOW) 
+    {
+        buttonState = HIGH;
+    } 
+    else if (digitalRead(FLASH_BUTTON) == HIGH && buttonState == HIGH) 
+    {
+        buttonState = LOW;
+        //Serial.println("Switching display on..");
+        boolDisplay = true;
+        oled.clear();
+        oled_Print_Msg(0, "<DSMRloggerAPI>", 0);
+        oled_Print_Msg(2, "Wacht ...", 5);
+        msgMode = 1;
+    }   
   }
-  if (digitalRead(FLASH_BUTTON) == LOW && buttonState == LOW) 
-  {
-      buttonState = HIGH;
-  } 
-  else if (digitalRead(FLASH_BUTTON) == HIGH && buttonState == HIGH) 
-  {
-      buttonState = LOW;
-      oledSleepTimer = millis() + (settingSleepTime * 60000);
-      //Serial.println("Switching display on..");
-      oled.clear();
-      oled_Print_Msg(0, "<DSMRloggerAPI>", 0);
-      oled_Print_Msg(2, "Wacht ...", 5);
-      msgMode = 1;
-  }   
 } // checkFlashButton()
 
 
@@ -79,33 +76,28 @@ void oled_Init()
 //===========================================================================================
 void oled_Clear() 
 {
-    oled.clear();
-    
+    oled.clear(); 
 }   // oled_Clear
 
 
 //===========================================================================================
 void oled_Print_Msg(uint8_t line, String message, uint16_t wait) 
 {
-  uint32_t sleeper;
-
-    if (settingSleepTime > 0 && oledSleepTimer == 0) return; 
-    
+  DECLARE_TIMER_MS(timerWait, wait);
+  
+  if ((boolDisplay) && (settingSleepTime>0))
+  { 
     message += "                    ";
     
     oled.setCursor(0, ((line * lineHeight)/8));
-    oled.print(message.c_str());
+    oled.print(message.c_str()); 
 
-    if (wait > 0) 
+    while (!DUE(timerWait))
     {
-      sleeper = millis() + wait;
-      while (millis() < sleeper) 
-      {
-        checkFlashButton();
-        yield();
-      }
-    } 
-    
+      checkFlashButton();
+      yield();
+    }
+  }  
 }   // oled_Print_Msg()
 
 

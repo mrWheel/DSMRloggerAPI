@@ -182,10 +182,18 @@ int strcicmp(const char *a, const char *b);
   char        newTimestamp[20] = "";
   uint32_t    slotErrors = 0;
   uint32_t    nrReboots  = 0;
+  uint32_t    loopCount = 0;
+  uint32_t    telegramCount = 0, telegramErrors = 0;
 
 //----------------- old var's -----(remove as soon as possible)-----------------
-uint32_t  telegramInterval, noMeterWait, telegramCount, telegramErrors, lastOledStatus;
-uint32_t  loopCount=0;
+//  telegramInterval = millis() + 5000;
+//  noMeterWait      = millis() + 5000;
+//  upTimeSeconds    = (millis() / 1000) + 50;
+//  nextSecond       = millis() + 1000;
+//  uint32_t  telegramInterval, noMeterWait,  lastOledStatus;
+
+
+//-----
 char      cMsg[150], fChar[10];
 String    lastReset           = "";
 bool      spiffsNotPopulated  = false;
@@ -194,7 +202,8 @@ bool      mqttIsConnected     = false;
 bool      doLog = false, Verbose1 = false, Verbose2 = false, showRaw = false;
 int8_t    thisHour = -1, prevNtpHour = 0, thisDay = -1, thisMonth = -1, lastMonth, thisYear = 15;
 int8_t    showRawCount        = 0;
-uint32_t  nextSecond, unixTimestamp;
+//uint32_t  nextSecond;
+uint32_t  unixTimestamp;
 uint64_t  upTimeSeconds;
 IPAddress ipDNS, ipGateWay, ipSubnet;
 float     settingEDT1, settingEDT2, settingERT1, settingERT2, settingGDT;

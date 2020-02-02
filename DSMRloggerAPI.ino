@@ -110,7 +110,7 @@ void setup()
   Serial.printf("\n\nBooting....[%s]\r\n\r\n", String(_FW_VERSION).c_str());
 
 #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
-  oledSleepTimer = millis() + (10 * 60000); // initially 10 minutes on
+  DECLARE_TIMER_MIN(oledSleepTimer, 10);
   oled_Init();
   oled_Clear();  // clear the screen so we can paint the menu.
   oled_Print_Msg(0, "<DSMRloggerAPI>", 0);
@@ -373,11 +373,6 @@ void setup()
   sprintf(cMsg, "Last reset reason: [%s]\r", ESP.getResetReason().c_str());
   DebugTln(cMsg);
 
-  telegramInterval = millis() + 5000;
-  noMeterWait      = millis() + 5000;
-  upTimeSeconds    = (millis() / 1000) + 50;
-  nextSecond       = millis() + 1000;
-
 #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
     oled_Print_Msg(0, "<DSMRloggerAPI>", 0);
     oled_Print_Msg(1, "Startup complete", 0);
@@ -401,8 +396,10 @@ void loop ()
   DECLARE_TIMER_MIN(timer60min, 60);
   DECLARE_TIMER_SEC(timerTelegram, settingInterval)
 
+  // do the loop...
   loopCount++;
 
+  // check the timers?
   if DUE(timer100ms)
     doTaskEvery100ms();
 
@@ -418,6 +415,7 @@ void loop ()
   if DUE(timerTelegram) 
     doTaskTelegram();
 
+  // do the background tasks
   doBackgroundTasks();
   
 } // loop()
@@ -444,9 +442,6 @@ void doTaskTelegram(){
 //===[ Do task every 100ms ]===
 void doTaskEvery100ms(){
   //== do tasks ==
-  #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
-  checkFlashButton();
-  #endif
 }
 
 //===[ Do task every 1s ]===
@@ -484,6 +479,9 @@ void doBackgroundTasks()
   handleKeyInput();
   handleMQTT();                 // MQTT transmissions
   handleMindergas();            // Mindergas update 
+#if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
+  checkFlashButton();
+#endif
   blinkLEDms(1000);               // 'blink' the status led every x ms
   yield();
 
@@ -491,12 +489,10 @@ void doBackgroundTasks()
 
 //===[ blink status led in ms ]===
 void blinkLEDms(uint32_t iDelay){
-  //blink the statusled, when time passed
-  static uint32_t timerBlink = millis();
-  if (millis() - timerBlink > iDelay) {
-    timerBlink = millis();
+  //blink the statusled, when time passed... #non-blocking blink
+  DECLARE_TIMER_MS(timerBlink, iDelay);
+  if (DUE(timerBlink))
     blinkLEDnow();
-  }
 }
 
 //===[ blink status now ]===
