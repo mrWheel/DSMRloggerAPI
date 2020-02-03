@@ -14,6 +14,7 @@
 
   let needReload          = true;
   let activeTab           = "none";
+  let presentationType    = "TAB";
   let TimerTab;
   
   var ed_tariff1          = 0;
@@ -90,12 +91,12 @@
     
     document.getElementById('bActual').addEventListener('click',function()
                                                 {openTab('Actual');});
-    document.getElementById('bLastHours').addEventListener('click',function() 
-                                                {openTab('LastHours');});
-    document.getElementById('bLastDays').addEventListener('click',function() 
-                                                {openTab('LastDays');});
-    document.getElementById('bLastMonths').addEventListener('click',function() 
-                                                {openTab('LastMonths');});
+    document.getElementById('bHours').addEventListener('click',function() 
+                                                {openTab('Hours');});
+    document.getElementById('bDays').addEventListener('click',function() 
+                                                {openTab('Days');});
+    document.getElementById('bMonths').addEventListener('click',function() 
+                                                {openTab('Months');});
     document.getElementById('bFields').addEventListener('click',function() 
                                                 {openTab('Fields');});
     document.getElementById('bTelegram').addEventListener('click',function() 
@@ -153,18 +154,18 @@
       refreshSmActual();
       TimerTab = setInterval(refreshSmActual, 60 * 1000); // repeat every 60s
 
-    } else if (tabName == "LastHours") {
-      console.log("newTab: LastHours");
+    } else if (tabName == "Hours") {
+      console.log("newTab: Hours");
       refreshHours();
       TimerTab = setInterval(refreshHours, 60 * 1000); // repeat every 60s
 
-    } else if (tabName == "LastDays") {
-      console.log("newTab: LastDays");
+    } else if (tabName == "Days") {
+      console.log("newTab: Days");
       refreshDays();
       TimerTab = setInterval(refreshDays, 60 * 1000); // repeat every 60s
 
-    } else if (tabName == "LastMonths") {
-      console.log("newTab: LastMonths");
+    } else if (tabName == "Months") {
+      console.log("newTab: Months");
       refreshMonths();
       TimerTab = setInterval(refreshMonths, 60 * 1000); // repeat every 60s
     
@@ -368,7 +369,9 @@
         //console.log(json);
         data = json.hours;
         expandData(data);
-        showHist(data, "Hours");
+        if (presentationType == "TAB")
+              showHistTable(data, "Hours");
+        else  showHistGraph(data, "Hours");
       })
       .catch(function(error) {
         var p = document.createElement('p');
@@ -388,7 +391,9 @@
       .then(json => {
         data = json.days;
         expandData(data);
-        showHist(data, "Days");
+        if (presentationType == "TAB")
+              showHistTable(data, "Days");
+        else  showHistGraph(data, "Days");
       })
       .catch(function(error) {
         var p = document.createElement('p');
@@ -409,7 +414,9 @@
         //console.log(response);
         data = json.months;
         expandData(data);
-        showMonthsHist(data);
+        if (presentationType == "TAB")
+              showMonthsHist(data);
+        else  showMonthsGraph(data);
       })
       .catch(function(error) {
         var p = document.createElement('p');
@@ -592,17 +599,23 @@
       else  tableCells[12].innerHTML = "-";     
 
     };
+    
+    //--- hide canvas
+    document.getElementById("dataChart").style.display = "none";
+    //--- show table
+    document.getElementById("lastMonths").style.display = "block";
+
   } // showMonthsHist()
 
     
   //============================================================================  
-  function showHist(data, type)
+  function showHistTable(data, type)
   { 
-    console.log("showHist("+type+")");
+    console.log("showHistTable("+type+")");
     // the last element has the metervalue, so skip it
     for (let i=0; i<(data.length -1); i++)
     {
-      //console.log("showHist("+type+"): data["+i+"] => data["+i+"]name["+data[i].recid+"]");
+      //console.log("showHistTable("+type+"): data["+i+"] => data["+i+"]name["+data[i].recid+"]");
       var tableRef = document.getElementById('last'+type+'Table').getElementsByTagName('tbody')[0];
       //if( ( document.getElementById(type +"Table_"+data[i].recid)) == null )
       if( ( document.getElementById(type +"Table_"+type+"_R"+i)) == null )
@@ -649,11 +662,13 @@
       }
     };
 
-    copyDataToChart(data, type);
-    renderEnergyChart(chartData);
-    myEnergyChart.update();
+    //--- hide canvas
+    document.getElementById("dataChart").style.display = "none";
+    //--- show table
+    document.getElementById("lastHours").style.display = "block";
+    document.getElementById("lastDays").style.display  = "block";
 
-  } // showHist()
+  } // showHistTable()
 
   
   //============================================================================  
@@ -701,6 +716,38 @@
         );
       });     
   } // getDevSettings()
+    
+  //============================================================================  
+  function setPresentationType(pType) {
+    let ID = "";
+    if (pType == "GRAPH") {
+      console.log("Set GRAPHICS mode!");
+      presentationType = pType;
+      document.getElementById('hGRAPH').checked = true;
+      document.getElementById('hTAB').checked   = false;
+      document.getElementById('dGRAPH').checked = true;
+      document.getElementById('dTAB').checked   = false;
+      document.getElementById('mGRAPH').checked = true;
+      document.getElementById('mTAB').checked   = false;
+    } else if (pType == "TAB") {
+      console.log("Set Tabular mode!");
+      presentationType = pType;
+      document.getElementById('hTAB').checked   = true;
+      document.getElementById('hGRAPH').checked = false;
+      document.getElementById('dTAB').checked   = true;
+      document.getElementById('dGRAPH').checked = false;
+      document.getElementById('mTAB').checked   = true;
+      document.getElementById('mGRAPH').checked = false;
+    } else {
+      console.log("setPresentationType to ["+pType+"] is quit shitty!");
+      presentationType = "";
+    }
+
+    if (activeTab == "Hours")   refreshHours();
+    if (activeTab == "Days")    refreshDays();
+    if (activeTab == "Months")  refreshMonths();
+
+  } // setPresenationType()
 
   
   //============================================================================  

@@ -37,9 +37,9 @@
   <div class="nav-container">
     <div class='nav-left'>
       <a id='bActual'     class='nav-item tabButton'>Actueel</a>
-      <a id='bLastHours'  class='nav-item tabButton'>per Uur</a>
-      <a id='bLastDays'   class='nav-item tabButton'>per Dag</a>
-      <a id='bLastMonths' class='nav-item tabButton'>per Maand</a>
+      <a id='bHours'      class='nav-item tabButton'>per Uur</a>
+      <a id='bDays'       class='nav-item tabButton'>per Dag</a>
+      <a id='bMonths'     class='nav-item tabButton'>per Maand</a>
       <a id='bTelegram'   class='nav-item tabButton'>Telegram</a>
       <a id='bFields'     class='nav-item tabButton'>all Fields</a>
       <a id='bSysInfo'    class='nav-item tabButton'>Systeem Info</a>
@@ -80,11 +80,18 @@
   
   </div>  <!-- END Actual Tab -->
 
-  <!-- START LastHoursTab -->
-  <div id="LastHours" class="tabName" style="display:none">
+  <!-- START HoursTab -->
+  <div id="Hours" class="tabName" style="display:none">
     <div>
-        <span style="font-size: 30px;">Hours &nbsp; &nbsp; </span>
-        <span style="font-size: 20px;">/api/v1/hist/hours/asc</span>
+        <span style="font-size: 30px;">Afgelopen Uren &nbsp; </span>
+        <span style="font-size: 15px;">(/api/v1/hist/hours/asc) &nbsp; &nbsp; &nbsp; </span>
+      <label for="pType"><b>Presentatie: </b></label>
+      Tabel
+      <input type="radio" id="hTAB" onchange="setPresentationType('TAB')" checked/>
+      &nbsp;&nbsp;
+      Grafisch
+      <input type="radio" id="hGRAPH" onchange="setPresentationType('GRAPH')"/>
+      &nbsp;&nbsp;
     </div>
     <div id='lastHours' style="margin-left: 50px; margin-right: 650px; background: lightblue;">
       <table id="lastHoursTable">
@@ -99,21 +106,23 @@
         </thead>
         <tbody>
         </tbody>
-        <tfoot>
-         <tr>
-            <td>---eof---</td>
-          </tr>
-        <tfoot>
       </table>
     </div>
     
-  </div> <!-- END LastHoursTab -->
+  </div> <!-- END HoursTab -->
 
-  <!-- START LastDaysTab -->
-  <div id="LastDays" class="tabName" style="display:none">
+  <!-- START DaysTab -->
+  <div id="Days" class="tabName" style="display:none">
     <div>
-        <span style="font-size: 30px;">Days &nbsp; &nbsp; </span>
-        <span style="font-size: 20px;">/api/v1/hist/days/asc</span>
+        <span style="font-size: 30px;">Afgelopen Dagen &nbsp; </span>
+        <span style="font-size: 15px;">(/api/v1/hist/days/asc) &nbsp; &nbsp; &nbsp; </span>
+      <label for="pType"><b>Presentatie: </b></label>
+      Tabel
+      <input type="radio" id="dTAB" onchange="setPresentationType('TAB')" checked/>
+      &nbsp;&nbsp;
+      Grafisch
+      <input type="radio" id="dGRAPH" onchange="setPresentationType('GRAPH')"/>
+      &nbsp;&nbsp;
     </div>
     <div id='lastDays' style="margin-left: 50px; margin-right: 450px; background: lightblue;">
       <table id="lastDaysTable">
@@ -128,20 +137,23 @@
       </thead>
       <tbody>
       </tbody>
-      <tfoot>
-        <tr>
-            <td---eof---</td>
-        </tr>
-      <tfoot>
       </table>
     </div>
-  </div> <!-- END LastDaysTab -->
+  </div> <!-- END DaysTab -->
 
-  <!-- START LastMonthsTab -->
-  <div id="LastMonths" class="tabName" style="display:none">
+  <!-- START MonthsTab -->
+  <div id="Months" class="tabName" style="display:none">
     <div>
-        <span style="font-size: 30px;">Months &nbsp; &nbsp; </span>
-        <span style="font-size: 20px;">/api/v1/hist/months/asc</span>
+        <span style="font-size: 30px;">Afgelopen Maanden &nbsp; </span>
+        <span style="font-size: 15px;">(/api/v1/hist/months/asc) &nbsp; &nbsp; &nbsp; </span>
+      <label for="pType"><b>Presentatie: </b></label></span>
+      <label for="pType"><b>Presentatie: </b></label>
+      Tabel
+      <input type="radio" id="mTAB" onchange="setPresentationType('TAB')" checked/>
+      &nbsp;&nbsp;
+      Grafisch
+      <input type="radio" id="mGRAPH" onchange="setPresentationType('GRAPH')"/>
+      &nbsp;&nbsp;
     </div>
     <div id='lastMonths' style="margin-left: 50px; margin-right: 250px; background: lightblue;">
       <table id="lastMonthsTable">
@@ -172,14 +184,9 @@
       </thead>
       <tbody>
       </tbody>
-      <tfoot>
-        <tr>
-            <td>---eof---</td>
-        </tr>
-      <tfoot>
       </table>
     </div>
-  </div> <!-- END LastMonthsTab -->
+  </div> <!-- END MonthsTab -->
 
   <!-- START SysInfo Tab -->
   <div id="SysInfo" class="tabName" style="display:none">

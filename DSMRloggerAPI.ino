@@ -172,7 +172,15 @@ void setup()
   if (DSMRfileExist(settingIndexPage, false) )
   {
     if (strcmp(settingIndexPage, "DSMRindex.html") != 0)
-          hasAlternativeIndex        = true;
+    {
+      if (settingIndexPage[0] != '/')
+      {
+        char tempPage[50] = "/";
+        strConcat(tempPage, 49, settingIndexPage);
+        strCopy(settingIndexPage, sizeof(settingIndexPage), tempPage);
+      }
+      hasAlternativeIndex        = true;
+    }
     else  hasAlternativeIndex        = false;
   }
   if (!hasAlternativeIndex && !DSMRfileExist("/DSMRindex.html", false) )
@@ -181,11 +189,11 @@ void setup()
   }
   if (!hasAlternativeIndex)
   {
-    DSMRfileExist("/DSMRindex.js", false);
-    DSMRfileExist("/DSMRindex.css", false);
+    DSMRfileExist("/DSMRindex.js",    false);
+    DSMRfileExist("/DSMRindex.css",   false);
     DSMRfileExist("/DSMRgraphics.js", false);
     DSMRfileExist("/DSMReditor.html", false);
-    DSMRfileExist("/DSMReditor.js", false);
+    DSMRfileExist("/DSMReditor.js",   false);
   }
   if (!DSMRfileExist("/FSexplorer.html", true))
   {
@@ -309,17 +317,21 @@ void setup()
 #endif  // has_oled_ssd1306
     if (hasAlternativeIndex)
     {
-      httpServer.serveStatic("/",               SPIFFS, "/ADJindex.html");
-      httpServer.serveStatic("/ADJindex.html",  SPIFFS, "/ADJindex.html");
-      httpServer.serveStatic("/index",          SPIFFS, "/ADJindex.html");
-      httpServer.serveStatic("/index.html",     SPIFFS, "/ADJindex.html");
+      httpServer.serveStatic("/",                 SPIFFS, settingIndexPage);
+      httpServer.serveStatic("/index",            SPIFFS, settingIndexPage);
+      httpServer.serveStatic("/index.html",       SPIFFS, settingIndexPage);
     }
     else
     {
-      httpServer.serveStatic("/",               SPIFFS, "/DSMRindex.html");
-      httpServer.serveStatic("/DSMRindex.html", SPIFFS, "/DSMRindex.html");
-      httpServer.serveStatic("/index",          SPIFFS, "/DSMRindex.html");
-      httpServer.serveStatic("/index.html",     SPIFFS, "/DSMRindex.html");
+      httpServer.serveStatic("/",                 SPIFFS, "/DSMRindex.html");
+      httpServer.serveStatic("/DSMRindex.html",   SPIFFS, "/DSMRindex.html");
+      httpServer.serveStatic("/index",            SPIFFS, "/DSMRindex.html");
+      httpServer.serveStatic("/index.html",       SPIFFS, "/DSMRindex.html");
+      httpServer.serveStatic("/DSMRindex.css",    SPIFFS, "/DSMRindex.css");
+      httpServer.serveStatic("/DSMRindex.js",     SPIFFS, "/DSMRindex.js");
+      httpServer.serveStatic("/DSMReditor.html",  SPIFFS, "/DSMReditor.html");
+      httpServer.serveStatic("/DSMReditor.js",    SPIFFS, "/DSMReditor.js");
+      httpServer.serveStatic("/DSMRgraphics.js",  SPIFFS, "/DSMRgraphics.js");
     }
   } else {
     DebugTln(F("Oeps! not all files found on SPIFFS -> present FSexplorer!\r"));
@@ -333,11 +345,6 @@ void setup()
   }
 
   setupFSexplorer();
-  httpServer.serveStatic("/DSMRindex.css",   SPIFFS, "/DSMRindex.css");
-  httpServer.serveStatic("/DSMRindex.js",     SPIFFS, "/DSMRindex.js");
-  //httpServer.serveStatic("/DSMReditor.html",  SPIFFS, "/DSMReditor.html");
-  //httpServer.serveStatic("/DSMReditor.js",    SPIFFS, "/DSMReditor.js");
-  //httpServer.serveStatic("/DSMRgraphics.js",  SPIFFS, "/DSMRgraphics.js");
   httpServer.serveStatic("/FSexplorer.png",   SPIFFS, "/FSexplorer.png");
 
   httpServer.on("/api", HTTP_GET, processAPI);
