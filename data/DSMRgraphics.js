@@ -1,39 +1,91 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRgraphics.js, part of DSMRloggerAPI
-**  Version  : v0.3.0
+**  Version  : v0.3.1
 **
-**  Copyright (c) 2019 Willem Aandewiel
+**  Copyright (c) 2020 Willem Aandewiel
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
 */
-var Label       = [];
-var Delivered   = [];
-var Returned    = []; 
-var Gas         = []; 
-var Delivered2  = [];
-var Returned2   = []; 
-var Gas2        = []; 
-var DeliveredL1 = [];
-var DeliveredL2 = [];
-var DeliveredL3 = [];
-let TimerActual;
 
-var colors          = [   'Red', 'Blue', 'Green', 'Yellow', 'FireBrick', 'CornflowerBlue', 'Orange'
-                        , 'DeepSkyBlue', 'Gray', 'Purple', 'Brown', 'MediumVioletRed', 'LightSalmon'
-                        , 'BurlyWood', 'Gold'
-                       ];
+let TimerActual;
 
 var chartData     = {};     //declare an object
 chartData.labels   = [];     // add 'labels' element to object (X axis)
 chartData.datasets = [];     // add 'datasets' array element to object
 
+
+var actualOptions = {
+        responsive: true,
+        maintainAspectRatio: true,
+        scales: {
+          yAxes: [{
+            ticks : {
+              beginAtZero : true
+            },
+            scaleLabel: {
+              display: true,
+              labelString: 'Watt/Uur',
+            },
+          }]
+        } // scales
+      }; // options
+
+var hourOptions = {
+        responsive: true,
+        maintainAspectRatio: true,
+        scales: {
+          yAxes: [{
+            ticks : {
+              beginAtZero : true
+            },
+            scaleLabel: {
+              display: true,
+              labelString: 'Watt/Uur',
+            },
+          }]
+        } // scales
+      }; // options
+
+var dayOptions = {
+        responsive: true,
+        maintainAspectRatio: true,
+        scales: {
+          yAxes: [{
+            ticks : {
+              beginAtZero : true
+            },
+            scaleLabel: {
+              display: true,
+              labelString: 'kWh',
+            },
+          }]
+        } // scales
+      }; // options
+
+var monthOptions = {
+        responsive: true,
+        maintainAspectRatio: true,
+        scales: {
+          yAxes: [{
+            ticks : {
+              beginAtZero : true
+            },
+            scaleLabel: {
+              display: true,
+              labelString: 'kWh',
+            },
+          }]
+        } // scales
+      }; // options
+
+
 //----------------Energy Chart--------------------------------------------------
 var myEnergyChart;
 
   //============================================================================  
-  function renderHistElectrChart(dataSet) {
+  function renderHistElectrChart(dataSet, options) {
     console.log("Now in renderHistElectrChart() ..");
     
     if (myEnergyChart) {
@@ -44,45 +96,13 @@ var myEnergyChart;
     myEnergyChart = new Chart(ctxEnergy, {
       type: 'bar',
       data: dataSet,
-      options : {
-        responsive: true,
-        maintainAspectRatio: true,
-        /*
-        tooltips: {
-          mode: 'index',
-          mode: 'label',
-          displayColors: true,
-          callbacks: {
-            label: function(tooltipItem, data) { 
-               let temp = parseFloat(tooltipItem.yLabel);
-               return data.datasets[tooltipItem.datasetIndex].label+": "+parseFloat(temp).toFixed(1)+"*C";
-             }
-          }
-        },  
-        */      
-        scales: {
-          yAxes: [{
-            ticks : {
-              beginAtZero : true
-            },
-            scaleLabel: {
-              display: true,
-              labelString: 'Watt/Uur',
-            },
-            //ticks: {
-              //max: 35,
-              //min: 15,
-            //  stepSize: 5,
-            //},
-          }]
-        } // scales
-      } // options
+      options: options,
     });
     
   } // renderHistElectrChart()
 
   //============================================================================  
-  function renderMonthsElectrChart(dataSet) {
+  function renderMonthsElectrChart(dataSet, options) {
     console.log("Now in renderMonthsElectrChart() ..");
     
     if (myEnergyChart) {
@@ -93,39 +113,7 @@ var myEnergyChart;
     myEnergyChart = new Chart(ctxEnergy, {
       type: 'bar',
       data: dataSet,
-      options : {
-        responsive: true,
-        maintainAspectRatio: true,
-        /*
-        tooltips: {
-          mode: 'index',
-          mode: 'label',
-          displayColors: true,
-          callbacks: {
-            label: function(tooltipItem, data) { 
-               let temp = parseFloat(tooltipItem.yLabel);
-               return data.datasets[tooltipItem.datasetIndex].label+": "+parseFloat(temp).toFixed(1)+"*C";
-             }
-          }
-        },  
-        */      
-        scales: {
-          yAxes: [{
-            ticks : {
-              beginAtZero : true
-            },
-            scaleLabel: {
-              display: true,
-              labelString: 'kWh',
-            },
-            //ticks: {
-              //max: 35,
-              //min: 15,
-            //  stepSize: 5,
-            //},
-          }]
-        } // scales
-      } // options
+      options: options,
     });
     
   } // renderMonthsElectrChart()
@@ -136,7 +124,9 @@ var myEnergyChart;
   {
     console.log("Now in showHistGraph()..");
     copyDataToChart(data, type);
-    renderHistElectrChart(chartData);
+    if (type == "Hours")
+          renderHistElectrChart(chartData, hourOptions);
+    else  renderHistElectrChart(chartData, dayOptions);
     myEnergyChart.update();
   
     //--- hide table
@@ -154,7 +144,7 @@ var myEnergyChart;
   {
     console.log("Now in showMonthsGraph()..");
     copyMonthsToChart(data);
-    renderMonthsElectrChart(chartData);
+    renderMonthsElectrChart(chartData, monthOptions);
     myEnergyChart.update();
   
     //--- hide table
@@ -173,6 +163,7 @@ var myEnergyChart;
     console.log("Now in copyDataToChart()..");
     chartData     = {};     // empty chartData
     chartData.labels   = [];     // empty .labels
+    chartData.stack    = [];     // empty .stack
     chartData.datasets = [];     // empty .datasets
     
     // idx 0 => ED
@@ -181,22 +172,32 @@ var myEnergyChart;
     chartData.datasets[0].borderColor     = "red";
     chartData.datasets[0].backgroundColor = "red";
     chartData.datasets[0].data            = []; //contains the 'Y; axis data
-    chartData.datasets[0].label           = "ED"; //"S"+s; //contains the 'Y; axis label
+    chartData.datasets[0].label           = "Verbruikt"; //"S"+s; //contains the 'Y; axis label
+    chartData.datasets[0].stack           = "STACK"
     // idx 0 => ER
     chartData.datasets.push({}); //create a new dataset
     chartData.datasets[1].fill            = 'false';
     chartData.datasets[1].borderColor     = "green";
     chartData.datasets[1].backgroundColor = "green";
     chartData.datasets[1].data            = []; //contains the 'Y; axis data
-    chartData.datasets[1].label           = "ER"; //"S"+s; //contains the 'Y; axis label
+    chartData.datasets[1].label           = "Teruggeleverd"; //"S"+s; //contains the 'Y; axis label
+    chartData.datasets[1].stack           = "STACK"
     
     for(let i=(data.length -2); i>=0; i--)
     {
       let y = (data.length -2) - i;
       console.log("["+i+"] label["+data[i].recid+"] => y["+y+"]");
       chartData.labels.push(formatDateShort(type, data[i].recid)); // adds x axis labels (timestamp)
-      if (data[i].p_edw >= 0) chartData.datasets[0].data[y]  = data[i].p_edw;
-      if (data[i].p_erw >= 0) chartData.datasets[1].data[y]  = data[i].p_erw;
+      if (type == "Hours")
+      {
+        if (data[i].p_edw >= 0) chartData.datasets[0].data[y]  = data[i].p_edw;
+        if (data[i].p_erw >= 0) chartData.datasets[1].data[y]  = (data[i].p_erw * -1.0);
+      }
+      else
+      {
+        if (data[i].p_ed >= 0) chartData.datasets[0].data[y]  = (data[i].p_ed).toFixed(3);
+        if (data[i].p_er >= 0) chartData.datasets[1].data[y]  = (data[i].p_er * -1.0).toFixed(3);
+      }
 
     }
     //--- show canvas
@@ -211,6 +212,7 @@ var myEnergyChart;
     console.log("Now in copyMonthsToChart()..");
     chartData     = {};     // empty chartData
     chartData.labels   = [];     // empty .labels
+    chartData.stack    = [];     // empty .stack
     chartData.datasets = [];     // empty .datasets
     
     // idx 0 => ED
@@ -220,6 +222,7 @@ var myEnergyChart;
     chartData.datasets[0].backgroundColor = "red";
     chartData.datasets[0].data            = []; //contains the 'Y; axis data
     chartData.datasets[0].label           = "Verbruik deze periode"; //"S"+s; //contains the 'Y; axis label
+    chartData.datasets[0].stack           = "DP"
     // idx 0 => ER
     chartData.datasets.push({}); //create a new dataset
     chartData.datasets[1].fill            = 'false';
@@ -227,6 +230,7 @@ var myEnergyChart;
     chartData.datasets[1].backgroundColor = "green";
     chartData.datasets[1].data            = []; //contains the 'Y; axis data
     chartData.datasets[1].label           = "Terug deze Periode"; //"S"+s; //contains the 'Y; axis label
+    chartData.datasets[1].stack           = "DP"
     // idx 0 => ED
     chartData.datasets.push({}); //create a new dataset
     chartData.datasets[2].fill            = 'false';
@@ -234,6 +238,7 @@ var myEnergyChart;
     chartData.datasets[2].backgroundColor = "orange";
     chartData.datasets[2].data            = []; //contains the 'Y; axis data
     chartData.datasets[2].label           = "Verbruik vorige periode"; //"S"+s; //contains the 'Y; axis label
+    chartData.datasets[2].stack           = "VP"
     // idx 0 => ER
     chartData.datasets.push({}); //create a new dataset
     chartData.datasets[3].fill            = 'false';
@@ -241,6 +246,7 @@ var myEnergyChart;
     chartData.datasets[3].backgroundColor = "lightgreen";
     chartData.datasets[3].data            = []; //contains the 'Y; axis data
     chartData.datasets[3].label           = "Terug vorige Periode"; //"S"+s; //contains the 'Y; axis label
+    chartData.datasets[3].stack           = "VP"
     
     console.log("there are ["+data.length+"] rows");
     let p = 0;
@@ -255,9 +261,9 @@ var myEnergyChart;
       chartData.labels.push(formatDateShort("Months", data[i].recid)); // adds x axis labels (timestamp)
       //chartData.labels.push(p); // adds x axis labels (timestamp)
       if (data[i].p_ed >= 0) chartData.datasets[0].data[p]  = (data[i].p_ed).toFixed(3);
-      if (data[i].p_er >= 0) chartData.datasets[1].data[p]  = (data[i].p_er).toFixed(3);
+      if (data[i].p_er >= 0) chartData.datasets[1].data[p]  = (data[i].p_er * -1.0).toFixed(3);
       if (data[y].p_ed >= 0) chartData.datasets[2].data[p]  = (data[y].p_ed).toFixed(3);
-      if (data[y].p_er >= 0) chartData.datasets[3].data[p]  = (data[y].p_er).toFixed(3);
+      if (data[y].p_er >= 0) chartData.datasets[3].data[p]  = (data[y].p_er * -1.0).toFixed(3);
       p++;
 
     }
@@ -281,7 +287,7 @@ var myEnergyChart;
     else if (type == "Months")
     {
       let MM = parseInt(dateIn.substring(2,4))
-      dateOut = MM;
+      dateOut = monthNames[MM];
     }
     else
       dateOut = "20"+dateIn.substring(0,2)+"-"+dateIn.substring(2,4)+"-"+dateIn.substring(4,6)+":"+dateIn.substring(6,8);

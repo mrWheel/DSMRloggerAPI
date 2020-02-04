@@ -1,8 +1,8 @@
 /*
  * timers.h is developed by Erik
  * 
- * I made some small changes due to the "how can I handle the millis() rollover"
- * by Edgar Bonet
+ * Willem Aandewiel made some small changes due to the "how can I handle the millis() rollover"
+ * by Edgar Bonet and added CHANGE_INTERVAL() macro's
  * 
  * DECLARE_TIMER(timername, interval)
  *  Declares two unsigned longs: 

@@ -1,9 +1,9 @@
 <!--
 ***************************************************************************  
 **  Program  : DSMRindex.html, part of DSMRloggerAPI
-**  Version  : v0.2.8
+**  Version  : v0.3.1
 **
-**  Copyright (c) 2019 Willem Aandewiel
+**  Copyright (c) 2020 Willem Aandewiel
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
@@ -36,7 +36,7 @@
   <!-- START Tabbladen -->
   <div class="nav-container">
     <div class='nav-left'>
-      <a id='bActual'     class='nav-item tabButton'>Actueel</a>
+      <a id='bActualTab'  class='nav-item tabButton'>Actueel</a>
       <a id='bHours'      class='nav-item tabButton'>per Uur</a>
       <a id='bDays'       class='nav-item tabButton'>per Dag</a>
       <a id='bMonths'     class='nav-item tabButton'>per Maand</a>
@@ -52,12 +52,19 @@
   
   <br>
   
-  <!-- START Actual Tab -->
-  <div id="Actual" class="tabName" style="display:block">
+  <!-- START ActualTab Tab -->
+  <div id="ActualTab" class="tabName" style="display:block">
     <!-- START actueelTab Dummy -->
     <div>
-        <span style="font-size: 30px;">Actueel &nbsp; &nbsp; </span>
-        <span style="font-size: 20px;">/api/v1/sm/actual</span>
+        <span style="font-size: 30px;">Actueel &nbsp; </span>
+        <span style="font-size: 15px;">(/api/v1/sm/actual) &nbsp; &nbsp; &nbsp; </span>
+        <label for="pType"><b>Presentatie: </b></label>
+        Tabel
+        <input type="radio" id="aTAB" onchange="setPresentationType('TAB')" checked/>
+        &nbsp;&nbsp;
+        Grafisch
+        <input type="radio" id="aGRAPH" onchange="setPresentationType('GRAPH')"/>
+        &nbsp;&nbsp;
     </div>
     <div id='actual' style="margin-left: 50px; margin-right: 500px; background: lightblue;">
       <table id="actualTable">
@@ -72,13 +79,13 @@
       </tbody>
       <tfoot>
         <tr>
-            <td>---eof---</td>
+            <td colspan=3>Data uit de Slimme Meter</td>
         </tr>
       <tfoot>
       </table>
     </div>
   
-  </div>  <!-- END Actual Tab -->
+  </div>  <!-- END ActualTab Tab -->
 
   <!-- START HoursTab -->
   <div id="Hours" class="tabName" style="display:none">
@@ -207,7 +214,7 @@
       </tbody>
       <tfoot>
         <tr>
-            <td>---eof---</td>
+            <td colspan=3>Data uit de DSMR-logger</td>
         </tr>
       <tfoot>
       </table>
@@ -223,22 +230,22 @@
     </div>
     <div id="rawTelegram" style="margin-left: 150px; margin-right: 500px; background: lightblue;">
     </div>
-    ---eof---
+    
   </div> <!-- END TelegramTab -->
 
-  <!-- START Actual Tab -->
+  <!-- START Fields Tab -->
   <div id="Fields" class="tabName" style="display:none">
     <!-- START filedsTab Dummy -->
     <div>
-        <span style="font-size: 30px;">all Fields &nbsp; &nbsp; </span>
-        <span style="font-size: 20px;">/api/v1/sm/fields</span>
+        <span style="font-size: 30px;">all Fields &nbsp; </span>
+        <span style="font-size: 15px;">(/api/v1/sm/fields) &nbsp; &nbsp; &nbsp; </span>
     </div>
     <div id='fields' style="margin-left: 150px; margin-right: 500px; background: lightblue;">
       <table id="fieldsTable">
       <thead>
         <tr>
             <th style="text-align: left;   border-bottom: 2px solid #ddd;">DSMR Name</th>
-            <th style="text-align: left;   border-bottom: 2px solid #ddd;">short Name</th>
+            <th style="text-align: left;   border-bottom: 2px solid #ddd;">Human Name</th>
             <th style="text-align: left;   border-bottom: 2px solid #ddd;">Value</th>
             <th style="text-align: center; border-bottom: 2px solid #ddd;">Unit</th>
         </tr>
@@ -247,7 +254,7 @@
       </tbody>
       <tfoot>
         <tr>
-            <td>EOF</td>
+            <td colspan=4>Data uit de Slimme Meter</td>
         </tr>
       <tfoot>
       </table>
@@ -263,7 +270,7 @@
   
   <div class="footer">
     <span id="devIPaddress"></span>
-    <span>2019 &copy; Willem Aandewiel &nbsp; &nbsp;</span>
+    <span>2020 &copy; Willem Aandewiel &nbsp; &nbsp;</span>
   </div>
 
   <script src="/DSMRindex.js"></script>

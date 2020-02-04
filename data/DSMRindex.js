@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRindex.js, part of DSMRfirmwareAPI
-**  Version  : v0.3.0
+**  Version  : v0.3.1
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -89,8 +89,8 @@
     console.log("bootsTrap()");
     needReload = true;
     
-    document.getElementById('bActual').addEventListener('click',function()
-                                                {openTab('Actual');});
+    document.getElementById('bActualTab').addEventListener('click',function()
+                                                {openTab('ActualTab');});
     document.getElementById('bHours').addEventListener('click',function() 
                                                 {openTab('Hours');});
     document.getElementById('bDays').addEventListener('click',function() 
@@ -117,7 +117,7 @@
     refreshDevInfo();
     TimerTime = setInterval(refreshDevTime, 10 * 1000); // repeat every 10s
 
-    openTab("Actual");
+    openTab("ActualTab");
   
   } // bootsTrap()
   
@@ -149,8 +149,8 @@
     console.log("now set ["+bID+"] to block ..");
     //document.getElementById(bID).style.background='lightgray';
     document.getElementById(tabName).style.display = "block";  
-    if (tabName == "Actual") {
-      console.log("newTab: Actual");
+    if (tabName == "ActualTab") {
+      console.log("newTab: ActualTab");
       refreshSmActual();
       TimerTab = setInterval(refreshSmActual, 60 * 1000); // repeat every 60s
 
@@ -716,6 +716,7 @@
         );
       });     
   } // getDevSettings()
+  
     
   //============================================================================  
   function setPresentationType(pType) {
@@ -723,6 +724,8 @@
     if (pType == "GRAPH") {
       console.log("Set GRAPHICS mode!");
       presentationType = pType;
+      document.getElementById('aGRAPH').checked = true;
+      document.getElementById('aTAB').checked   = false;
       document.getElementById('hGRAPH').checked = true;
       document.getElementById('hTAB').checked   = false;
       document.getElementById('dGRAPH').checked = true;
@@ -732,6 +735,8 @@
     } else if (pType == "TAB") {
       console.log("Set Tabular mode!");
       presentationType = pType;
+      document.getElementById('aTAB').checked   = true;
+      document.getElementById('aGRAPH').checked = false;
       document.getElementById('hTAB').checked   = true;
       document.getElementById('hGRAPH').checked = false;
       document.getElementById('dTAB').checked   = true;
@@ -743,6 +748,7 @@
       presentationType = "";
     }
 
+    if (activeTab == "ActualTab")  refreshSmActual();
     if (activeTab == "Hours")   refreshHours();
     if (activeTab == "Days")    refreshDays();
     if (activeTab == "Months")  refreshMonths();
