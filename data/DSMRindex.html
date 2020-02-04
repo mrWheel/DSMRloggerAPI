@@ -1,9 +1,9 @@
 <!--
 ***************************************************************************  
 **  Program  : DSMRindex.html, part of DSMRloggerAPI
-**  Version  : v0.2.8
+**  Version  : v0.3.1
 **
-**  Copyright (c) 2019 Willem Aandewiel
+**  Copyright (c) 2020 Willem Aandewiel
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
@@ -36,10 +36,10 @@
   <!-- START Tabbladen -->
   <div class="nav-container">
     <div class='nav-left'>
-      <a id='bActual'     class='nav-item tabButton'>Actueel</a>
-      <a id='bLastHours'  class='nav-item tabButton'>per Uur</a>
-      <a id='bLastDays'   class='nav-item tabButton'>per Dag</a>
-      <a id='bLastMonths' class='nav-item tabButton'>per Maand</a>
+      <a id='bActualTab'  class='nav-item tabButton'>Actueel</a>
+      <a id='bHours'      class='nav-item tabButton'>per Uur</a>
+      <a id='bDays'       class='nav-item tabButton'>per Dag</a>
+      <a id='bMonths'     class='nav-item tabButton'>per Maand</a>
       <a id='bTelegram'   class='nav-item tabButton'>Telegram</a>
       <a id='bFields'     class='nav-item tabButton'>all Fields</a>
       <a id='bSysInfo'    class='nav-item tabButton'>Systeem Info</a>
@@ -52,12 +52,19 @@
   
   <br>
   
-  <!-- START Actual Tab -->
-  <div id="Actual" class="tabName" style="display:block">
+  <!-- START ActualTab Tab -->
+  <div id="ActualTab" class="tabName" style="display:block">
     <!-- START actueelTab Dummy -->
     <div>
-        <span style="font-size: 30px;">Actueel &nbsp; &nbsp; </span>
-        <span style="font-size: 20px;">/api/v1/sm/actual</span>
+        <span style="font-size: 30px;">Actueel &nbsp; </span>
+        <span style="font-size: 15px;">(/api/v1/sm/actual) &nbsp; &nbsp; &nbsp; </span>
+        <label for="pType"><b>Presentatie: </b></label>
+        Tabel
+        <input type="radio" id="aTAB" onchange="setPresentationType('TAB')" checked/>
+        &nbsp;&nbsp;
+        Grafisch
+        <input type="radio" id="aGRAPH" onchange="setPresentationType('GRAPH')"/>
+        &nbsp;&nbsp;
     </div>
     <div id='actual' style="margin-left: 50px; margin-right: 500px; background: lightblue;">
       <table id="actualTable">
@@ -72,19 +79,26 @@
       </tbody>
       <tfoot>
         <tr>
-            <td>---eof---</td>
+            <td colspan=3>Data uit de Slimme Meter</td>
         </tr>
       <tfoot>
       </table>
     </div>
   
-  </div>  <!-- END Actual Tab -->
+  </div>  <!-- END ActualTab Tab -->
 
-  <!-- START LastHoursTab -->
-  <div id="LastHours" class="tabName" style="display:none">
+  <!-- START HoursTab -->
+  <div id="Hours" class="tabName" style="display:none">
     <div>
-        <span style="font-size: 30px;">Hours &nbsp; &nbsp; </span>
-        <span style="font-size: 20px;">/api/v1/hist/hours/asc</span>
+        <span style="font-size: 30px;">Afgelopen Uren &nbsp; </span>
+        <span style="font-size: 15px;">(/api/v1/hist/hours/asc) &nbsp; &nbsp; &nbsp; </span>
+      <label for="pType"><b>Presentatie: </b></label>
+      Tabel
+      <input type="radio" id="hTAB" onchange="setPresentationType('TAB')" checked/>
+      &nbsp;&nbsp;
+      Grafisch
+      <input type="radio" id="hGRAPH" onchange="setPresentationType('GRAPH')"/>
+      &nbsp;&nbsp;
     </div>
     <div id='lastHours' style="margin-left: 50px; margin-right: 650px; background: lightblue;">
       <table id="lastHoursTable">
@@ -99,21 +113,23 @@
         </thead>
         <tbody>
         </tbody>
-        <tfoot>
-         <tr>
-            <td>---eof---</td>
-          </tr>
-        <tfoot>
       </table>
     </div>
     
-  </div> <!-- END LastHoursTab -->
+  </div> <!-- END HoursTab -->
 
-  <!-- START LastDaysTab -->
-  <div id="LastDays" class="tabName" style="display:none">
+  <!-- START DaysTab -->
+  <div id="Days" class="tabName" style="display:none">
     <div>
-        <span style="font-size: 30px;">Days &nbsp; &nbsp; </span>
-        <span style="font-size: 20px;">/api/v1/hist/days/asc</span>
+        <span style="font-size: 30px;">Afgelopen Dagen &nbsp; </span>
+        <span style="font-size: 15px;">(/api/v1/hist/days/asc) &nbsp; &nbsp; &nbsp; </span>
+      <label for="pType"><b>Presentatie: </b></label>
+      Tabel
+      <input type="radio" id="dTAB" onchange="setPresentationType('TAB')" checked/>
+      &nbsp;&nbsp;
+      Grafisch
+      <input type="radio" id="dGRAPH" onchange="setPresentationType('GRAPH')"/>
+      &nbsp;&nbsp;
     </div>
     <div id='lastDays' style="margin-left: 50px; margin-right: 450px; background: lightblue;">
       <table id="lastDaysTable">
@@ -128,20 +144,23 @@
       </thead>
       <tbody>
       </tbody>
-      <tfoot>
-        <tr>
-            <td---eof---</td>
-        </tr>
-      <tfoot>
       </table>
     </div>
-  </div> <!-- END LastDaysTab -->
+  </div> <!-- END DaysTab -->
 
-  <!-- START LastMonthsTab -->
-  <div id="LastMonths" class="tabName" style="display:none">
+  <!-- START MonthsTab -->
+  <div id="Months" class="tabName" style="display:none">
     <div>
-        <span style="font-size: 30px;">Months &nbsp; &nbsp; </span>
-        <span style="font-size: 20px;">/api/v1/hist/months/asc</span>
+        <span style="font-size: 30px;">Afgelopen Maanden &nbsp; </span>
+        <span style="font-size: 15px;">(/api/v1/hist/months/asc) &nbsp; &nbsp; &nbsp; </span>
+      <label for="pType"><b>Presentatie: </b></label></span>
+      <label for="pType"><b>Presentatie: </b></label>
+      Tabel
+      <input type="radio" id="mTAB" onchange="setPresentationType('TAB')" checked/>
+      &nbsp;&nbsp;
+      Grafisch
+      <input type="radio" id="mGRAPH" onchange="setPresentationType('GRAPH')"/>
+      &nbsp;&nbsp;
     </div>
     <div id='lastMonths' style="margin-left: 50px; margin-right: 250px; background: lightblue;">
       <table id="lastMonthsTable">
@@ -172,14 +191,9 @@
       </thead>
       <tbody>
       </tbody>
-      <tfoot>
-        <tr>
-            <td>---eof---</td>
-        </tr>
-      <tfoot>
       </table>
     </div>
-  </div> <!-- END LastMonthsTab -->
+  </div> <!-- END MonthsTab -->
 
   <!-- START SysInfo Tab -->
   <div id="SysInfo" class="tabName" style="display:none">
@@ -200,7 +214,7 @@
       </tbody>
       <tfoot>
         <tr>
-            <td>---eof---</td>
+            <td colspan=3>Data uit de DSMR-logger</td>
         </tr>
       <tfoot>
       </table>
@@ -216,22 +230,22 @@
     </div>
     <div id="rawTelegram" style="margin-left: 150px; margin-right: 500px; background: lightblue;">
     </div>
-    ---eof---
+    
   </div> <!-- END TelegramTab -->
 
-  <!-- START Actual Tab -->
+  <!-- START Fields Tab -->
   <div id="Fields" class="tabName" style="display:none">
     <!-- START filedsTab Dummy -->
     <div>
-        <span style="font-size: 30px;">all Fields &nbsp; &nbsp; </span>
-        <span style="font-size: 20px;">/api/v1/sm/fields</span>
+        <span style="font-size: 30px;">all Fields &nbsp; </span>
+        <span style="font-size: 15px;">(/api/v1/sm/fields) &nbsp; &nbsp; &nbsp; </span>
     </div>
     <div id='fields' style="margin-left: 150px; margin-right: 500px; background: lightblue;">
       <table id="fieldsTable">
       <thead>
         <tr>
             <th style="text-align: left;   border-bottom: 2px solid #ddd;">DSMR Name</th>
-            <th style="text-align: left;   border-bottom: 2px solid #ddd;">short Name</th>
+            <th style="text-align: left;   border-bottom: 2px solid #ddd;">Human Name</th>
             <th style="text-align: left;   border-bottom: 2px solid #ddd;">Value</th>
             <th style="text-align: center; border-bottom: 2px solid #ddd;">Unit</th>
         </tr>
@@ -240,7 +254,7 @@
       </tbody>
       <tfoot>
         <tr>
-            <td>EOF</td>
+            <td colspan=4>Data uit de Slimme Meter</td>
         </tr>
       <tfoot>
       </table>
@@ -256,7 +270,7 @@
   
   <div class="footer">
     <span id="devIPaddress"></span>
-    <span>2019 &copy; Willem Aandewiel &nbsp; &nbsp;</span>
+    <span>2020 &copy; Willem Aandewiel &nbsp; &nbsp;</span>
   </div>
 
   <script src="/DSMRindex.js"></script>
