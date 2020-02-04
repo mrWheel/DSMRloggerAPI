@@ -33,8 +33,8 @@ chartData.datasets = [];     // add 'datasets' array element to object
 var myEnergyChart;
 
   //============================================================================  
-  function renderEnergyChart(dataSet) {
-    console.log("Now in renderEnergyChart() ..");
+  function renderHistElectrChart(dataSet) {
+    console.log("Now in renderHistElectrChart() ..");
     
     if (myEnergyChart) {
       myEnergyChart.destroy();
@@ -49,9 +49,9 @@ var myEnergyChart;
         maintainAspectRatio: true,
         /*
         tooltips: {
-//        mode: 'index',
+          mode: 'index',
           mode: 'label',
-//        displayColors: true,
+          displayColors: true,
           callbacks: {
             label: function(tooltipItem, data) { 
                let temp = parseFloat(tooltipItem.yLabel);
@@ -79,7 +79,92 @@ var myEnergyChart;
       } // options
     });
     
-  } // renderEnergyChart()
+  } // renderHistElectrChart()
+
+  //============================================================================  
+  function renderMonthsElectrChart(dataSet) {
+    console.log("Now in renderMonthsElectrChart() ..");
+    
+    if (myEnergyChart) {
+      myEnergyChart.destroy();
+    }
+
+    var ctxEnergy = document.getElementById("dataChart").getContext("2d");
+    myEnergyChart = new Chart(ctxEnergy, {
+      type: 'bar',
+      data: dataSet,
+      options : {
+        responsive: true,
+        maintainAspectRatio: true,
+        /*
+        tooltips: {
+          mode: 'index',
+          mode: 'label',
+          displayColors: true,
+          callbacks: {
+            label: function(tooltipItem, data) { 
+               let temp = parseFloat(tooltipItem.yLabel);
+               return data.datasets[tooltipItem.datasetIndex].label+": "+parseFloat(temp).toFixed(1)+"*C";
+             }
+          }
+        },  
+        */      
+        scales: {
+          yAxes: [{
+            ticks : {
+              beginAtZero : true
+            },
+            scaleLabel: {
+              display: true,
+              labelString: 'kWh',
+            },
+            //ticks: {
+              //max: 35,
+              //min: 15,
+            //  stepSize: 5,
+            //},
+          }]
+        } // scales
+      } // options
+    });
+    
+  } // renderMonthsElectrChart()
+  
+  
+  //============================================================================  
+  function showHistGraph(data, type)
+  {
+    console.log("Now in showHistGraph()..");
+    copyDataToChart(data, type);
+    renderHistElectrChart(chartData);
+    myEnergyChart.update();
+  
+    //--- hide table
+    document.getElementById("lastHours").style.display  = "none";
+    document.getElementById("lastDays").style.display   = "none";
+    document.getElementById("lastMonths").style.display = "none";
+    //--- show canvas
+    document.getElementById("dataChart").style.display  = "block";
+
+  } // showHistGraph()
+  
+  
+  //============================================================================  
+  function showMonthsGraph(data, type)
+  {
+    console.log("Now in showMonthsGraph()..");
+    copyMonthsToChart(data);
+    renderMonthsElectrChart(chartData);
+    myEnergyChart.update();
+  
+    //--- hide table
+    document.getElementById("lastHours").style.display  = "none";
+    document.getElementById("lastDays").style.display   = "none";
+    document.getElementById("lastMonths").style.display = "none";
+    //--- show canvas
+    document.getElementById("dataChart").style.display  = "block";
+
+  } // showMonthsGraph()
   
   
   //============================================================================  
@@ -110,14 +195,76 @@ var myEnergyChart;
       let y = (data.length -2) - i;
       console.log("["+i+"] label["+data[i].recid+"] => y["+y+"]");
       chartData.labels.push(formatDateShort(type, data[i].recid)); // adds x axis labels (timestamp)
-      if (data[i].p_edw > 0) chartData.datasets[0].data[y]  = data[i].p_edw;
-      if (data[i].p_erw > 0) chartData.datasets[1].data[y]  = data[i].p_erw * -1.0;
+      if (data[i].p_edw >= 0) chartData.datasets[0].data[y]  = data[i].p_edw;
+      if (data[i].p_erw >= 0) chartData.datasets[1].data[y]  = data[i].p_erw;
+
+    }
+    //--- show canvas
+    //document.getElementById("dataChart").style.display = "block";
+
+  } // copyDataToChart()
+  
+  
+  //============================================================================  
+  function copyMonthsToChart(data)
+  {
+    console.log("Now in copyMonthsToChart()..");
+    chartData     = {};     // empty chartData
+    chartData.labels   = [];     // empty .labels
+    chartData.datasets = [];     // empty .datasets
+    
+    // idx 0 => ED
+    chartData.datasets.push({}); //create a new dataset
+    chartData.datasets[0].fill            = 'false';
+    chartData.datasets[0].borderColor     = "red";
+    chartData.datasets[0].backgroundColor = "red";
+    chartData.datasets[0].data            = []; //contains the 'Y; axis data
+    chartData.datasets[0].label           = "Verbruik deze periode"; //"S"+s; //contains the 'Y; axis label
+    // idx 0 => ER
+    chartData.datasets.push({}); //create a new dataset
+    chartData.datasets[1].fill            = 'false';
+    chartData.datasets[1].borderColor     = "green";
+    chartData.datasets[1].backgroundColor = "green";
+    chartData.datasets[1].data            = []; //contains the 'Y; axis data
+    chartData.datasets[1].label           = "Terug deze Periode"; //"S"+s; //contains the 'Y; axis label
+    // idx 0 => ED
+    chartData.datasets.push({}); //create a new dataset
+    chartData.datasets[2].fill            = 'false';
+    chartData.datasets[2].borderColor     = "orange";
+    chartData.datasets[2].backgroundColor = "orange";
+    chartData.datasets[2].data            = []; //contains the 'Y; axis data
+    chartData.datasets[2].label           = "Verbruik vorige periode"; //"S"+s; //contains the 'Y; axis label
+    // idx 0 => ER
+    chartData.datasets.push({}); //create a new dataset
+    chartData.datasets[3].fill            = 'false';
+    chartData.datasets[3].borderColor     = "lightgreen";
+    chartData.datasets[3].backgroundColor = "lightgreen";
+    chartData.datasets[3].data            = []; //contains the 'Y; axis data
+    chartData.datasets[3].label           = "Terug vorige Periode"; //"S"+s; //contains the 'Y; axis label
+    
+    console.log("there are ["+data.length+"] rows");
+    let p = 0;
+    var showRows = 0;
+    if (data.length > 24) showRows = 11;
+    else                  showRows = data.length / 2;
+    console.log("showRows is ["+showRows+"]");
+    for (let i=showRows; i>=0; i--)
+    {
+      let y = i +12;
+      console.log("i["+i+"] label["+data[i].recid+"] => y["+y+"] label["+data[y].recid+"]");
+      chartData.labels.push(formatDateShort("Months", data[i].recid)); // adds x axis labels (timestamp)
+      //chartData.labels.push(p); // adds x axis labels (timestamp)
+      if (data[i].p_ed >= 0) chartData.datasets[0].data[p]  = (data[i].p_ed).toFixed(3);
+      if (data[i].p_er >= 0) chartData.datasets[1].data[p]  = (data[i].p_er).toFixed(3);
+      if (data[y].p_ed >= 0) chartData.datasets[2].data[p]  = (data[y].p_ed).toFixed(3);
+      if (data[y].p_er >= 0) chartData.datasets[3].data[p]  = (data[y].p_er).toFixed(3);
+      p++;
 
     }
     //--- show canvas
     document.getElementById("dataChart").style.display = "block";
 
-  } // copyDataToChart()
+  } // copyMonthsToChart()
   
 
   
@@ -132,7 +279,10 @@ var myEnergyChart;
     else if (type == "Days")
       dateOut = dateIn.substring(4,6)+"-"+dateIn.substring(2,4);
     else if (type == "Months")
-      dateOut = "20"+dateIn.substring(0,2)+"-["+dateIn.substring(2,4)+"]-"+dateIn.substring(4,6)+":"+dateIn.substring(6,8);
+    {
+      let MM = parseInt(dateIn.substring(2,4))
+      dateOut = MM;
+    }
     else
       dateOut = "20"+dateIn.substring(0,2)+"-"+dateIn.substring(2,4)+"-"+dateIn.substring(4,6)+":"+dateIn.substring(6,8);
     
