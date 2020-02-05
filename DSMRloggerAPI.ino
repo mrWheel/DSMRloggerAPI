@@ -2,7 +2,7 @@
 ***************************************************************************  
 **  Program  : DSMRloggerAPI (restAPI)
 */
-#define _FW_VERSION "v0.3.1 (04-02-2020)"
+#define _FW_VERSION "v0.3.2 (05-02-2020)"
 /*
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -274,10 +274,10 @@ void setup()
   Serial.print (WiFi.localIP());
   Serial.println("' voor verdere debugging\r\n");
   
-//=============now test if "convertPRD" file exists================
+//=============now test if "!PRDconvert" file exists================
   if (DSMRfileExist("!PRDconvert", false) )
   {
-    convertPRD2RING();
+    convertPRD2RING();  // convert PRD to RING file(s)
   }
 
 //===========================================================================================

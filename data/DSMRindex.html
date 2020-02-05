@@ -1,7 +1,7 @@
 <!--
 ***************************************************************************  
 **  Program  : DSMRindex.html, part of DSMRloggerAPI
-**  Version  : v0.3.1
+**  Version  : v0.3.2
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -36,15 +36,15 @@
   <!-- START Tabbladen -->
   <div class="nav-container">
     <div class='nav-left'>
-      <a id='bActualTab'  class='nav-item tabButton'>Actueel</a>
-      <a id='bHours'      class='nav-item tabButton'>per Uur</a>
-      <a id='bDays'       class='nav-item tabButton'>per Dag</a>
-      <a id='bMonths'     class='nav-item tabButton'>per Maand</a>
-      <a id='bTelegram'   class='nav-item tabButton'>Telegram</a>
-      <a id='bFields'     class='nav-item tabButton'>all Fields</a>
-      <a id='bSysInfo'    class='nav-item tabButton'>Systeem Info</a>
-      <a id='restAPI'     class='nav-item tabButton'>restAPI</a>
-      <a id='FSexplorer'  class='nav-img'>
+      <a id='bActualTab'    class='nav-item tabButton'>Actueel</a>
+      <a id='bHoursTab'     class='nav-item tabButton'>per Uur</a>
+      <a id='bDaysTab'      class='nav-item tabButton'>per Dag</a>
+      <a id='bMonthsTab'    class='nav-item tabButton'>per Maand</a>
+      <a id='bTelegramTab'  class='nav-item tabButton'>Telegram</a>
+      <a id='bFieldsTab'    class='nav-item tabButton'>all Fields</a>
+      <a id='bSysInfoTab'   class='nav-item tabButton'>Systeem Info</a>
+      <a id='restAPITab'    class='nav-item tabButton'>restAPI</a>
+      <a id='FSexplorer'    class='nav-img'>
                       <img src='/FSexplorer.png' alt='FSexplorer'></a>
     </div>
   </div>
@@ -88,7 +88,7 @@
   </div>  <!-- END ActualTab Tab -->
 
   <!-- START HoursTab -->
-  <div id="Hours" class="tabName" style="display:none">
+  <div id="HoursTab" class="tabName" style="display:none">
     <div>
         <span style="font-size: 30px;">Afgelopen Uren &nbsp; </span>
         <span style="font-size: 15px;">(/api/v1/hist/hours/asc) &nbsp; &nbsp; &nbsp; </span>
@@ -119,7 +119,7 @@
   </div> <!-- END HoursTab -->
 
   <!-- START DaysTab -->
-  <div id="Days" class="tabName" style="display:none">
+  <div id="DaysTab" class="tabName" style="display:none">
     <div>
         <span style="font-size: 30px;">Afgelopen Dagen &nbsp; </span>
         <span style="font-size: 15px;">(/api/v1/hist/days/asc) &nbsp; &nbsp; &nbsp; </span>
@@ -149,11 +149,10 @@
   </div> <!-- END DaysTab -->
 
   <!-- START MonthsTab -->
-  <div id="Months" class="tabName" style="display:none">
+  <div id="MonthsTab" class="tabName" style="display:none">
     <div>
         <span style="font-size: 30px;">Afgelopen Maanden &nbsp; </span>
         <span style="font-size: 15px;">(/api/v1/hist/months/asc) &nbsp; &nbsp; &nbsp; </span>
-      <label for="pType"><b>Presentatie: </b></label></span>
       <label for="pType"><b>Presentatie: </b></label>
       Tabel
       <input type="radio" id="mTAB" onchange="setPresentationType('TAB')" checked/>
@@ -196,7 +195,7 @@
   </div> <!-- END MonthsTab -->
 
   <!-- START SysInfo Tab -->
-  <div id="SysInfo" class="tabName" style="display:none">
+  <div id="SysInfoTab" class="tabName" style="display:none">
     <div>
         <span style="font-size: 30px;">Device Info &nbsp; &nbsp; </span>
         <span style="font-size: 20px;">/api/v1/dev/info</span>
@@ -223,7 +222,7 @@
   </div>  <!-- END SysInfo Tab -->
 
   <!-- START TelegramTab -->
-  <div id="Telegram" class="tabName" style="display:none">
+  <div id="TelegramTab" class="tabName" style="display:none">
     <div>
         <span style="font-size: 30px;">raw Telegram &nbsp; &nbsp; </span>
         <span style="font-size: 20px;">/api/v1/sm/telegram</span>
@@ -234,7 +233,7 @@
   </div> <!-- END TelegramTab -->
 
   <!-- START Fields Tab -->
-  <div id="Fields" class="tabName" style="display:none">
+  <div id="FieldsTab" class="tabName" style="display:none">
     <!-- START filedsTab Dummy -->
     <div>
         <span style="font-size: 30px;">all Fields &nbsp; </span>
@@ -265,7 +264,8 @@
   <!-- REST -->
 
   <div style="margin: 30px;">
-    <canvas id="dataChart" style="display: block;" width="900" height="300"></canvas>
+    <canvas id="dataChart" style="display: none;" width="900" height="300"></canvas>
+    <canvas id="gasChart"  style="display: none;" width="900" height="125"></canvas>
   </div>
   
   <div class="footer">

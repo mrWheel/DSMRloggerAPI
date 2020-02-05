@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRindex.js, part of DSMRfirmwareAPI
-**  Version  : v0.3.1
+**  Version  : v0.3.2
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -10,13 +10,16 @@
 */
   const APIGW='http://'+window.location.host+'/api/';
 
-"use strict";
+  "use strict";
 
   let needReload          = true;
   let activeTab           = "none";
   let presentationType    = "TAB";
-  let TimerTab;
+  let tabTimer            = 0;
+  let actualTimer         = 0;
+  let timeTimer           = 0;
   
+  var tlgrmInterval       = 10;
   var ed_tariff1          = 0;
   var ed_tariff2          = 0;
   var er_tariff1          = 0;
@@ -25,7 +28,8 @@
   var electr_netw_costs   = 0;
   var electr_netw_costs   = 0;
   
-  var data = [];
+  var data       = [];
+  
   var longFields = [ "identification","p1_version","timestamp","equipment_id"
                     ,"energy_delivered_tariff1","energy_delivered_tariff2"
                     ,"energy_returned_tariff1","energy_returned_tariff2","electricity_tariff"
@@ -91,19 +95,19 @@
     
     document.getElementById('bActualTab').addEventListener('click',function()
                                                 {openTab('ActualTab');});
-    document.getElementById('bHours').addEventListener('click',function() 
-                                                {openTab('Hours');});
-    document.getElementById('bDays').addEventListener('click',function() 
-                                                {openTab('Days');});
-    document.getElementById('bMonths').addEventListener('click',function() 
-                                                {openTab('Months');});
-    document.getElementById('bFields').addEventListener('click',function() 
-                                                {openTab('Fields');});
-    document.getElementById('bTelegram').addEventListener('click',function() 
-                                                {openTab('Telegram');});
-    document.getElementById('bSysInfo').addEventListener('click',function() 
-                                                {openTab('SysInfo');});
-    document.getElementById('restAPI').addEventListener('click',function() 
+    document.getElementById('bHoursTab').addEventListener('click',function() 
+                                                {openTab('HoursTab');});
+    document.getElementById('bDaysTab').addEventListener('click',function() 
+                                                {openTab('DaysTab');});
+    document.getElementById('bMonthsTab').addEventListener('click',function() 
+                                                {openTab('MonthsTab');});
+    document.getElementById('bFieldsTab').addEventListener('click',function() 
+                                                {openTab('FieldsTab');});
+    document.getElementById('bTelegramTab').addEventListener('click',function() 
+                                                {openTab('TelegramTab');});
+    document.getElementById('bSysInfoTab').addEventListener('click',function() 
+                                                {openTab('SysInfoTab');});
+    document.getElementById('restAPITab').addEventListener('click',function() 
                                                 { console.log("newPage: goAPI");
                                                   location.href = "/api";
                                                 });
@@ -115,9 +119,11 @@
     refreshDevTime();
     getDevSettings();
     refreshDevInfo();
-    TimerTime = setInterval(refreshDevTime, 10 * 1000); // repeat every 10s
+    TimeTimer = setInterval(refreshDevTime, 10 * 1000); // repeat every 10s
 
     openTab("ActualTab");
+    initActualGraph();
+    setPresentationType('TAB');
   
   } // bootsTrap()
   
@@ -125,7 +131,7 @@
   function openTab(tabName) {
     
     activeTab = tabName;
-    clearInterval(TimerTab);  
+    clearInterval(tabTimer);  
     
     let bID = "b" + tabName;
     let i;
@@ -140,6 +146,7 @@
     }
     //--- hide canvas -------
     document.getElementById("dataChart").style.display = "none";
+    document.getElementById("gasChart").style.display  = "none";
     //--- hide all tab's -------
     x = document.getElementsByClassName("tabName");
     for (i = 0; i < x.length; i++) {
@@ -149,40 +156,46 @@
     console.log("now set ["+bID+"] to block ..");
     //document.getElementById(bID).style.background='lightgray';
     document.getElementById(tabName).style.display = "block";  
+    if (tabName != "ActualTab") {
+      actualTimer = setInterval(refreshSmActual, 60 * 1000); // repeat every 60s
+    }
     if (tabName == "ActualTab") {
       console.log("newTab: ActualTab");
+      //if (presentationType == "GRAPH")  initActualGraph();
       refreshSmActual();
-      TimerTab = setInterval(refreshSmActual, 60 * 1000); // repeat every 60s
+      if (tlgrmInterval < 10)
+            actualTimer = setInterval(refreshSmActual, 10 * 1000); // repeat every 10s
+      else  actualTimer = setInterval(refreshSmActual, tlgrmInterval * 1000); // repeat every tlgrmInterval seconds
 
-    } else if (tabName == "Hours") {
-      console.log("newTab: Hours");
+    } else if (tabName == "HoursTab") {
+      console.log("newTab: HoursTab");
       refreshHours();
-      TimerTab = setInterval(refreshHours, 60 * 1000); // repeat every 60s
+      tabTimer = setInterval(refreshHours, 60 * 1000); // repeat every 60s
 
-    } else if (tabName == "Days") {
-      console.log("newTab: Days");
+    } else if (tabName == "DaysTab") {
+      console.log("newTab: DaysTab");
       refreshDays();
-      TimerTab = setInterval(refreshDays, 60 * 1000); // repeat every 60s
+      tabTimer = setInterval(refreshDays, 60 * 1000); // repeat every 60s
 
-    } else if (tabName == "Months") {
-      console.log("newTab: Months");
+    } else if (tabName == "MonthsTab") {
+      console.log("newTab: MonthsTab");
       refreshMonths();
-      TimerTab = setInterval(refreshMonths, 60 * 1000); // repeat every 60s
+      tabTimer = setInterval(refreshMonths, 60 * 1000); // repeat every 60s
     
-    } else if (tabName == "SysInfo") {
-      console.log("newTab: SysInfo");
+    } else if (tabName == "SysInfoTab") {
+      console.log("newTab: SysInfoTab");
       refreshDevInfo();
-      TimerTab = setInterval(refreshDevInfo, 60 * 1000); // repeat every 30s
+      tabTimer = setInterval(refreshDevInfo, 60 * 1000); // repeat every 30s
 
-    } else if (tabName == "Fields") {
-      console.log("newTab: Fields");
+    } else if (tabName == "FieldsTab") {
+      console.log("newTab: FieldsTab");
       refreshSmFields();
-      TimerTab = setInterval(refreshSmFields, 60 * 1000); // repeat every 30s
+      tabTimer = setInterval(refreshSmFields, 60 * 1000); // repeat every 30s
 
-    } else if (tabName == "Telegram") {
-      console.log("newTab: Telegram");
+    } else if (tabName == "TelegramTab") {
+      console.log("newTab: TelegramTab");
       refreshSmTelegram();
-      //TimerTab = setInterval(refreshSmTelegram, 60 * 1000); // do not repeat!
+      //tabTimer = setInterval(refreshSmTelegram, 60 * 1000); // do not repeat!
     }
   } // openTab()
 
@@ -228,6 +241,9 @@
             } else if (data[i].name == 'hostname')
             {
               document.getElementById('devName').innerHTML = data[i].value;
+            } else if (data[i].name == 'tlgrm_interval')
+            {
+              tlgrmInterval = data[i].value;
             }
           }
       })
@@ -272,33 +288,10 @@
       .then(json => {
           //console.log("parsed .., fields is ["+ JSON.stringify(json)+"]");
           data = json.actual;
-          for (var i in data) 
-          {
-            data[i].shortName = smToHuman(data[i].name);
-            var tableRef = document.getElementById('actualTable').getElementsByTagName('tbody')[0];
-            if( ( document.getElementById("actualTable_"+data[i].name)) == null )
-            {
-              var newRow   = tableRef.insertRow();
-              newRow.setAttribute("id", "actualTable_"+data[i].name, 0);
-              // Insert a cell in the row at index 0
-              var newCell  = newRow.insertCell(0);            // (short)name
-              var newText  = document.createTextNode('');
-              newCell.appendChild(newText);
-              newCell  = newRow.insertCell(1);                // value
-              newCell.appendChild(newText);
-              newCell  = newRow.insertCell(2);                // unit
-              newCell.appendChild(newText);
-            }
-            tableCells = document.getElementById("actualTable_"+data[i].name).cells;
-            tableCells[0].innerHTML = data[i].shortName;
-            tableCells[1].innerHTML = data[i].value;
-            if (data[i].hasOwnProperty('unit'))
-            {
-              tableCells[1].style.textAlign = "right";        // value
-              tableCells[2].style.textAlign = "center";       // unit
-              tableCells[2].innerHTML = data[i].unit;
-            }
-          }
+          copyActualToChart(data);
+          if (presentationType == "TAB")
+                showActualTable(data);
+          else  showActualGraph(data);
           //console.log("-->done..");
       })
       .catch(function(error) {
@@ -460,7 +453,7 @@
   //============================================================================  
   function expandData(data)
   {
-     console.log("now in expandData() ..");
+     //console.log("now in expandData() ..");
      for (let i=0; i<data.length; i++)
      {
       data[i].p_ed  = {};
@@ -504,109 +497,48 @@
 
     
   //============================================================================  
-  function showMonthsHist(data)
+  function showActualTable(data)
   { 
-    console.log("now in showMonthsHist() ..");
-    var showRows = 0;
-    if (data.length > 24) showRows = 12;
-    else                  showRows = data.length / 2;
-    //console.log("showRows is ["+showRows+"]");
-    for (let i=0; i<showRows; i++)
-    {
-      //console.log("showMonthsHist(): data["+i+"] => data["+i+"]name["+data[i].recid+"]");
-      var tableRef = document.getElementById('lastMonthsTable').getElementsByTagName('tbody')[0];
-      //if( ( document.getElementById(type +"Table_"+data[i].recid)) == null )
-      if( ( document.getElementById("lastMonthsTable_R"+i)) == null )
-      {
-        var newRow   = tableRef.insertRow();
-        //newRow.setAttribute("id", type+"Table_"+data[i].recid, 0);
-        newRow.setAttribute("id", "lastMonthsTable_R"+i, 0);
-        // Insert a cell in the row at index 0
-        var newCell  = newRow.insertCell(0);          // maand
-        var newText  = document.createTextNode('-');
-        newCell.appendChild(newText);
-        newCell  = newRow.insertCell(1);              // jaar
-        newCell.appendChild(newText);
-        newCell  = newRow.insertCell(2);              // verbruik
-        newCell.appendChild(newText);
-        newCell  = newRow.insertCell(3);              // jaar
-        newCell.appendChild(newText);
-        newCell  = newRow.insertCell(4);              // verbruik
-        newCell.appendChild(newText);
+    if (activeTab != "ActualTab") return;
 
-        newCell  = newRow.insertCell(5);              // jaar
-        newCell.appendChild(newText);
-        newCell  = newRow.insertCell(6);              // opgewekt
-        newCell.appendChild(newText);
-        newCell  = newRow.insertCell(7);              // jaar
-        newCell.appendChild(newText);
-        newCell  = newRow.insertCell(8);             // opgewekt
-        newCell.appendChild(newText);
-        
-        newCell  = newRow.insertCell(9);             // jaar
-        newCell.appendChild(newText);
-        newCell  = newRow.insertCell(10);             // gas
-        newCell.appendChild(newText);
-        newCell  = newRow.insertCell(11);             // jaar
-        newCell.appendChild(newText);
-        newCell  = newRow.insertCell(12);             // gas
-        newCell.appendChild(newText);
-      }
-      var mmNr = parseInt(data[i].recid.substring(2,4), 10);
-      //console.log("mmNr["+mmNr+"] => ["+monthNames[mmNr]+"]");
+    console.log("showActual()");
 
-      tableCells = document.getElementById("lastMonthsTable_R"+i).cells;
-      tableCells[0].style.textAlign = "right";
-      tableCells[0].innerHTML = monthNames[mmNr];                           // maand
-      
-      tableCells[1].style.textAlign = "center";
-      tableCells[1].innerHTML = "20"+data[i].recid.substring(0,2);          // jaar
-      tableCells[2].style.textAlign = "right";
-      if (data[i].p_ed >= 0)
-            tableCells[2].innerHTML = (data[i].p_ed).toFixed(3);            // verbruik
-      else  tableCells[2].innerHTML = "-";     
-      tableCells[3].style.textAlign = "center";
-      tableCells[3].innerHTML = "20"+data[i+12].recid.substring(0,2);       // jaar
-      tableCells[4].style.textAlign = "right";
-      if (data[i+12].p_ed >= 0)
-            tableCells[4].innerHTML = (data[i+12].p_ed).toFixed(3);         // verbruik
-      else  tableCells[4].innerHTML = "-";     
+          for (var i in data) 
+          {
+            data[i].shortName = smToHuman(data[i].name);
+            var tableRef = document.getElementById('actualTable').getElementsByTagName('tbody')[0];
+            if( ( document.getElementById("actualTable_"+data[i].name)) == null )
+            {
+              var newRow   = tableRef.insertRow();
+              newRow.setAttribute("id", "actualTable_"+data[i].name, 0);
+              // Insert a cell in the row at index 0
+              var newCell  = newRow.insertCell(0);            // (short)name
+              var newText  = document.createTextNode('');
+              newCell.appendChild(newText);
+              newCell  = newRow.insertCell(1);                // value
+              newCell.appendChild(newText);
+              newCell  = newRow.insertCell(2);                // unit
+              newCell.appendChild(newText);
+            }
+            tableCells = document.getElementById("actualTable_"+data[i].name).cells;
+            tableCells[0].innerHTML = data[i].shortName;
+            tableCells[1].innerHTML = data[i].value;
+            if (data[i].hasOwnProperty('unit'))
+            {
+              tableCells[1].style.textAlign = "right";        // value
+              tableCells[2].style.textAlign = "center";       // unit
+              tableCells[2].innerHTML = data[i].unit;
+            }
+          }
 
-      tableCells[5].style.textAlign = "center";
-      tableCells[5].innerHTML = "20"+data[i].recid.substring(0,2);          // jaar
-      tableCells[6].style.textAlign = "right";
-      if (data[i].p_er >= 0)
-            tableCells[6].innerHTML = (data[i].p_er).toFixed(3);            // opgewekt
-      else  tableCells[6].innerHTML = "-";     
-      tableCells[7].style.textAlign = "center";
-      tableCells[7].innerHTML = "20"+data[i+12].recid.substring(0,2);       // jaar
-      tableCells[8].style.textAlign = "right";
-      if (data[i+12].p_er >= 0)
-            tableCells[8].innerHTML = (data[i+12].p_er).toFixed(3);         // opgewekt
-      else  tableCells[8].innerHTML = "-";     
-
-      tableCells[9].style.textAlign = "center";
-      tableCells[9].innerHTML = "20"+data[i].recid.substring(0,2);          // jaar
-      tableCells[10].style.textAlign = "right";
-      if (data[i].p_gd >= 0)
-            tableCells[10].innerHTML = (data[i].p_gd * 1).toFixed(3);       // gas
-      else  tableCells[10].innerHTML = "-";     
-      tableCells[11].style.textAlign = "center";
-      tableCells[11].innerHTML = "20"+data[i+12].recid.substring(0,2);      // jaar
-      tableCells[12].style.textAlign = "right";
-      if (data[i+12].p_gd >= 0)
-            tableCells[12].innerHTML = (data[i+12].p_gd * 1).toFixed(3);    // gas
-      else  tableCells[12].innerHTML = "-";     
-
-    };
-    
     //--- hide canvas
     document.getElementById("dataChart").style.display = "none";
+    document.getElementById("gasChart").style.display  = "none";
     //--- show table
-    document.getElementById("lastMonths").style.display = "block";
+    document.getElementById("actual").style.display    = "block";
 
-  } // showMonthsHist()
-
+  } // showActualTable()
+  
     
   //============================================================================  
   function showHistTable(data, type)
@@ -664,11 +596,115 @@
 
     //--- hide canvas
     document.getElementById("dataChart").style.display = "none";
+    document.getElementById("gasChart").style.display  = "none";
     //--- show table
     document.getElementById("lastHours").style.display = "block";
     document.getElementById("lastDays").style.display  = "block";
 
   } // showHistTable()
+
+    
+  //============================================================================  
+  function showMonthsHist(data)
+  { 
+    //console.log("now in showMonthsHist() ..");
+    var showRows = 0;
+    if (data.length > 24) showRows = 12;
+    else                  showRows = data.length / 2;
+    //console.log("showRows is ["+showRows+"]");
+    for (let i=0; i<showRows; i++)
+    {
+      //console.log("showMonthsHist(): data["+i+"] => data["+i+"]name["+data[i].recid+"]");
+      var tableRef = document.getElementById('lastMonthsTable').getElementsByTagName('tbody')[0];
+      if( ( document.getElementById("lastMonthsTable_R"+i)) == null )
+      {
+        var newRow   = tableRef.insertRow();
+        newRow.setAttribute("id", "lastMonthsTable_R"+i, 0);
+        // Insert a cell in the row at index 0
+        var newCell  = newRow.insertCell(0);          // maand
+        var newText  = document.createTextNode('-');
+        newCell.appendChild(newText);
+        newCell  = newRow.insertCell(1);              // jaar
+        newCell.appendChild(newText);
+        newCell  = newRow.insertCell(2);              // verbruik
+        newCell.appendChild(newText);
+        newCell  = newRow.insertCell(3);              // jaar
+        newCell.appendChild(newText);
+        newCell  = newRow.insertCell(4);              // verbruik
+        newCell.appendChild(newText);
+
+        newCell  = newRow.insertCell(5);              // jaar
+        newCell.appendChild(newText);
+        newCell  = newRow.insertCell(6);              // opgewekt
+        newCell.appendChild(newText);
+        newCell  = newRow.insertCell(7);              // jaar
+        newCell.appendChild(newText);
+        newCell  = newRow.insertCell(8);             // opgewekt
+        newCell.appendChild(newText);
+        
+        newCell  = newRow.insertCell(9);             // jaar
+        newCell.appendChild(newText);
+        newCell  = newRow.insertCell(10);             // gas
+        newCell.appendChild(newText);
+        newCell  = newRow.insertCell(11);             // jaar
+        newCell.appendChild(newText);
+        newCell  = newRow.insertCell(12);             // gas
+        newCell.appendChild(newText);
+      }
+      var mmNr = parseInt(data[i].recid.substring(2,4), 10);
+
+      tableCells = document.getElementById("lastMonthsTable_R"+i).cells;
+      tableCells[0].style.textAlign = "right";
+      tableCells[0].innerHTML = monthNames[mmNr];                           // maand
+      
+      tableCells[1].style.textAlign = "center";
+      tableCells[1].innerHTML = "20"+data[i].recid.substring(0,2);          // jaar
+      tableCells[2].style.textAlign = "right";
+      if (data[i].p_ed >= 0)
+            tableCells[2].innerHTML = (data[i].p_ed).toFixed(3);            // verbruik
+      else  tableCells[2].innerHTML = "-";     
+      tableCells[3].style.textAlign = "center";
+      tableCells[3].innerHTML = "20"+data[i+12].recid.substring(0,2);       // jaar
+      tableCells[4].style.textAlign = "right";
+      if (data[i+12].p_ed >= 0)
+            tableCells[4].innerHTML = (data[i+12].p_ed).toFixed(3);         // verbruik
+      else  tableCells[4].innerHTML = "-";     
+
+      tableCells[5].style.textAlign = "center";
+      tableCells[5].innerHTML = "20"+data[i].recid.substring(0,2);          // jaar
+      tableCells[6].style.textAlign = "right";
+      if (data[i].p_er >= 0)
+            tableCells[6].innerHTML = (data[i].p_er).toFixed(3);            // opgewekt
+      else  tableCells[6].innerHTML = "-";     
+      tableCells[7].style.textAlign = "center";
+      tableCells[7].innerHTML = "20"+data[i+12].recid.substring(0,2);       // jaar
+      tableCells[8].style.textAlign = "right";
+      if (data[i+12].p_er >= 0)
+            tableCells[8].innerHTML = (data[i+12].p_er).toFixed(3);         // opgewekt
+      else  tableCells[8].innerHTML = "-";     
+
+      tableCells[9].style.textAlign = "center";
+      tableCells[9].innerHTML = "20"+data[i].recid.substring(0,2);          // jaar
+      tableCells[10].style.textAlign = "right";
+      if (data[i].p_gd >= 0)
+            tableCells[10].innerHTML = (data[i].p_gd * 1).toFixed(3);       // gas
+      else  tableCells[10].innerHTML = "-";     
+      tableCells[11].style.textAlign = "center";
+      tableCells[11].innerHTML = "20"+data[i+12].recid.substring(0,2);      // jaar
+      tableCells[12].style.textAlign = "right";
+      if (data[i+12].p_gd >= 0)
+            tableCells[12].innerHTML = (data[i+12].p_gd * 1).toFixed(3);    // gas
+      else  tableCells[12].innerHTML = "-";     
+
+    };
+    
+    //--- hide canvas
+    document.getElementById("dataChart").style.display  = "none";
+    document.getElementById("gasChart").style.display   = "none";
+    //--- show table
+    document.getElementById("lastMonths").style.display = "block";
+
+  } // showMonthsHist()
 
   
   //============================================================================  
@@ -720,9 +756,8 @@
     
   //============================================================================  
   function setPresentationType(pType) {
-    let ID = "";
     if (pType == "GRAPH") {
-      console.log("Set GRAPHICS mode!");
+      console.log("Set presentationType to GRAPHICS mode!");
       presentationType = pType;
       document.getElementById('aGRAPH').checked = true;
       document.getElementById('aTAB').checked   = false;
@@ -733,7 +768,7 @@
       document.getElementById('mGRAPH').checked = true;
       document.getElementById('mTAB').checked   = false;
     } else if (pType == "TAB") {
-      console.log("Set Tabular mode!");
+      console.log("Set presentationType to Tabular mode!");
       presentationType = pType;
       document.getElementById('aTAB').checked   = true;
       document.getElementById('aGRAPH').checked = false;
@@ -749,9 +784,9 @@
     }
 
     if (activeTab == "ActualTab")  refreshSmActual();
-    if (activeTab == "Hours")   refreshHours();
-    if (activeTab == "Days")    refreshDays();
-    if (activeTab == "Months")  refreshMonths();
+    if (activeTab == "HoursTab")   refreshHours();
+    if (activeTab == "DaysTab")    refreshDays();
+    if (activeTab == "MonthsTab")  refreshMonths();
 
   } // setPresenationType()
 
