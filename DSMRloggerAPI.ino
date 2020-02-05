@@ -274,10 +274,10 @@ void setup()
   Serial.print (WiFi.localIP());
   Serial.println("' voor verdere debugging\r\n");
   
-//=============now test if "convertPRD" file exists================
+//=============now test if "!PRDconvert" file exists================
   if (DSMRfileExist("!PRDconvert", false) )
   {
-    convertPRD2RING();
+    convertPRD2RING();  // convert PRD to RING file(s)
   }
 
 //===========================================================================================
