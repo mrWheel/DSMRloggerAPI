@@ -499,7 +499,7 @@ void doBackgroundTasks()
 void blinkLEDms(uint32_t iDelay){
   //blink the statusled, when time passed... #non-blocking blink
   DECLARE_TIMER_MS(timerBlink, iDelay);
-  CHANGE_INTERVAL_MS(timer, delay_ms);
+  CHANGE_INTERVAL_MS(timerBlink, iDelay);
   if (DUE(timerBlink))
     blinkLEDnow();
 }
