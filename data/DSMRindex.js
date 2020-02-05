@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRindex.js, part of DSMRfirmwareAPI
-**  Version  : v0.3.1
+**  Version  : v0.3.2
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -10,12 +10,14 @@
 */
   const APIGW='http://'+window.location.host+'/api/';
 
-"use strict";
+  "use strict";
 
   let needReload          = true;
   let activeTab           = "none";
   let presentationType    = "TAB";
-  let TimerTab;
+  let tabTimer            = 0;
+  let actualTimer         = 0;
+  let timeTimer           = 0;
   
   var tlgrmInterval       = 10;
   var ed_tariff1          = 0;
@@ -117,9 +119,10 @@
     refreshDevTime();
     getDevSettings();
     refreshDevInfo();
-    TimerTime = setInterval(refreshDevTime, 10 * 1000); // repeat every 10s
+    TimeTimer = setInterval(refreshDevTime, 10 * 1000); // repeat every 10s
 
     openTab("ActualTab");
+    initActualGraph();
     setPresentationType('TAB');
   
   } // bootsTrap()
@@ -128,7 +131,7 @@
   function openTab(tabName) {
     
     activeTab = tabName;
-    clearInterval(TimerTab);  
+    clearInterval(tabTimer);  
     
     let bID = "b" + tabName;
     let i;
@@ -143,6 +146,7 @@
     }
     //--- hide canvas -------
     document.getElementById("dataChart").style.display = "none";
+    document.getElementById("gasChart").style.display  = "none";
     //--- hide all tab's -------
     x = document.getElementsByClassName("tabName");
     for (i = 0; i < x.length; i++) {
@@ -152,43 +156,46 @@
     console.log("now set ["+bID+"] to block ..");
     //document.getElementById(bID).style.background='lightgray';
     document.getElementById(tabName).style.display = "block";  
+    if (tabName != "ActualTab") {
+      actualTimer = setInterval(refreshSmActual, 60 * 1000); // repeat every 60s
+    }
     if (tabName == "ActualTab") {
       console.log("newTab: ActualTab");
-      if (presentationType == "GRAPH")  initActualGraph();
+      //if (presentationType == "GRAPH")  initActualGraph();
       refreshSmActual();
       if (tlgrmInterval < 10)
-            TimerTab = setInterval(refreshSmActual, 10 * 1000); // repeat every 10s
-      else  TimerTab = setInterval(refreshSmActual, tlgrmInterval * 1000); // repeat every tlgrmInterval seconds
+            actualTimer = setInterval(refreshSmActual, 10 * 1000); // repeat every 10s
+      else  actualTimer = setInterval(refreshSmActual, tlgrmInterval * 1000); // repeat every tlgrmInterval seconds
 
     } else if (tabName == "HoursTab") {
       console.log("newTab: HoursTab");
       refreshHours();
-      TimerTab = setInterval(refreshHours, 60 * 1000); // repeat every 60s
+      tabTimer = setInterval(refreshHours, 60 * 1000); // repeat every 60s
 
     } else if (tabName == "DaysTab") {
       console.log("newTab: DaysTab");
       refreshDays();
-      TimerTab = setInterval(refreshDays, 60 * 1000); // repeat every 60s
+      tabTimer = setInterval(refreshDays, 60 * 1000); // repeat every 60s
 
     } else if (tabName == "MonthsTab") {
       console.log("newTab: MonthsTab");
       refreshMonths();
-      TimerTab = setInterval(refreshMonths, 60 * 1000); // repeat every 60s
+      tabTimer = setInterval(refreshMonths, 60 * 1000); // repeat every 60s
     
     } else if (tabName == "SysInfoTab") {
       console.log("newTab: SysInfoTab");
       refreshDevInfo();
-      TimerTab = setInterval(refreshDevInfo, 60 * 1000); // repeat every 30s
+      tabTimer = setInterval(refreshDevInfo, 60 * 1000); // repeat every 30s
 
     } else if (tabName == "FieldsTab") {
       console.log("newTab: FieldsTab");
       refreshSmFields();
-      TimerTab = setInterval(refreshSmFields, 60 * 1000); // repeat every 30s
+      tabTimer = setInterval(refreshSmFields, 60 * 1000); // repeat every 30s
 
     } else if (tabName == "TelegramTab") {
       console.log("newTab: TelegramTab");
       refreshSmTelegram();
-      //TimerTab = setInterval(refreshSmTelegram, 60 * 1000); // do not repeat!
+      //tabTimer = setInterval(refreshSmTelegram, 60 * 1000); // do not repeat!
     }
   } // openTab()
 
@@ -281,6 +288,7 @@
       .then(json => {
           //console.log("parsed .., fields is ["+ JSON.stringify(json)+"]");
           data = json.actual;
+          copyActualToChart(data);
           if (presentationType == "TAB")
                 showActualTable(data);
           else  showActualGraph(data);
@@ -445,7 +453,7 @@
   //============================================================================  
   function expandData(data)
   {
-     console.log("now in expandData() ..");
+     //console.log("now in expandData() ..");
      for (let i=0; i<data.length; i++)
      {
       data[i].p_ed  = {};
@@ -491,6 +499,8 @@
   //============================================================================  
   function showActualTable(data)
   { 
+    if (activeTab != "ActualTab") return;
+
     console.log("showActual()");
 
           for (var i in data) 
@@ -523,8 +533,9 @@
 
     //--- hide canvas
     document.getElementById("dataChart").style.display = "none";
+    document.getElementById("gasChart").style.display  = "none";
     //--- show table
-    document.getElementById("actual").style.display = "block";
+    document.getElementById("actual").style.display    = "block";
 
   } // showActualTable()
   
@@ -585,6 +596,7 @@
 
     //--- hide canvas
     document.getElementById("dataChart").style.display = "none";
+    document.getElementById("gasChart").style.display  = "none";
     //--- show table
     document.getElementById("lastHours").style.display = "block";
     document.getElementById("lastDays").style.display  = "block";
@@ -595,7 +607,7 @@
   //============================================================================  
   function showMonthsHist(data)
   { 
-    console.log("now in showMonthsHist() ..");
+    //console.log("now in showMonthsHist() ..");
     var showRows = 0;
     if (data.length > 24) showRows = 12;
     else                  showRows = data.length / 2;
@@ -687,7 +699,8 @@
     };
     
     //--- hide canvas
-    document.getElementById("dataChart").style.display = "none";
+    document.getElementById("dataChart").style.display  = "none";
+    document.getElementById("gasChart").style.display   = "none";
     //--- show table
     document.getElementById("lastMonths").style.display = "block";
 

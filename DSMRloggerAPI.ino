@@ -2,7 +2,7 @@
 ***************************************************************************  
 **  Program  : DSMRloggerAPI (restAPI)
 */
-#define _FW_VERSION "v0.3.1 (04-02-2020)"
+#define _FW_VERSION "v0.3.2 (05-02-2020)"
 /*
 **  Copyright (c) 2020 Willem Aandewiel
 **
