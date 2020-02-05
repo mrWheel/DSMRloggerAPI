@@ -11,7 +11,20 @@
 
 #if !defined(HAS_NO_SLIMMEMETER)
 //==================================================================================
-void handleSlimmemeterRaw(){
+void handleSlimmemeter(){
+  DebugTf("showRaw (%s)", showRaw ?"true":"false");
+  if (!showRaw) {
+    //-- process telegrams in raw mode
+    processSlimmemeterRaw();
+  } 
+  else
+  {
+    //-- process telegrams in normal mode
+    processSlimmemeter();
+  } 
+}
+void processSlimmemeterRaw(){
+  DebugTf("handleSlimmerMeter RawCount=[%4d]\r\n", showRawCount);
   #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
     if (showRawCount == 0) 
     {
@@ -45,8 +58,8 @@ void handleSlimmemeterRaw(){
   return;
 }
 //==================================================================================
-void handleSlimmeMeter()
-{
+void processSlimmemeter(){
+  DebugTf("handleSlimmerMeter telegramCount=[%4d] telegramErrors=[%4d]\r\n", telegramCount, telegramErrors);
   slimmeMeter.loop();
   if (slimmeMeter.available()) 
   {
@@ -67,7 +80,6 @@ void handleSlimmeMeter()
       }
       digitalWrite(LED_BUILTIN, LED_OFF);
       processTelegram();
-      sendMQTTData();
 
       if (Verbose2) 
       {

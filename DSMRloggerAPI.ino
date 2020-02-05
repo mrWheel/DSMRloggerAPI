@@ -2,7 +2,7 @@
 ***************************************************************************  
 **  Program  : DSMRloggerAPI (restAPI)
 */
-#define _FW_VERSION "v0.3.0 (04-02-2020)"
+#define _FW_VERSION "v0.3.0 (05-02-2020)"
 /*
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -31,8 +31,8 @@
 /******************** compiler options  ********************************************/
 #define IS_ESP12                  // define if it's a 'bare' ESP-12 (no reset/flash functionality on board)
 #define USE_UPDATE_SERVER         // define if there is enough memory and updateServer to be used
-//  #define HAS_OLED_SSD1306          // define if a 0.96" OLED display is present
-#define HAS_OLED_SH1106           // define if a 1.3" OLED display is present
+#define HAS_OLED_SSD1306          // define if a 0.96" OLED display is present
+//  #define HAS_OLED_SH1106           // define if a 1.3" OLED display is present
 //  #define HAS_NO_SLIMMEMETER        // define for testing only!
 //  #define USE_PRE40_PROTOCOL        // define if Slimme Meter is pre DSMR 4.0 (2.2 .. 3.0)
 //  #define USE_NTP_TIME              // define to generate Timestamp from NTP (Only Winter Time for now)
@@ -390,6 +390,92 @@ void setup()
 
 } // setup()
 
+//===========================================================================================
+//===[ blink status led in ms ]===
+void blinkLEDms(uint32_t iDelay){
+  //blink the statusled, when time passed... #non-blocking blink
+  DECLARE_TIMER_MS(timerBlink, iDelay);
+  CHANGE_INTERVAL_MS(timerBlink, iDelay);
+  if (DUE(timerBlink))
+    blinkLEDnow();
+}
+
+//===[ blink status now ]===
+void blinkLEDnow(){
+    pinMode(LED_BUILTIN, OUTPUT);
+    digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
+}
+
+//===[ no-blocking delay with running background tasks in ms ]===
+void delayms(unsigned long delay_ms)
+{
+  DECLARE_TIMER_MS(timer, delay_ms);
+  CHANGE_INTERVAL_MS(timer, delay_ms);
+  while (!DUE(timer))
+    doBackgroundTasks();
+}
+//===========================================================================================
+
+//===[ Do task every 100ms ]===
+void doTaskEvery100ms(){
+  //== do tasks ==
+}
+
+//===[ Do task every 1s ]===
+void doTaskEvery1s(){
+  //== do tasks ==
+  upTimeSeconds++;
+}
+
+//===[ Do task every 5s ]===
+void doTaskEvery5s(){
+  //== do tasks ==
+  #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
+    displayStatus();
+  #endif
+}
+
+//===[ Do task every 30s ]===
+void doTaskEvery30s(){
+  //== do tasks ==
+  #if defined(USE_NTP_TIME)                                                         //USE_NTP
+  if (timeStatus() == timeNeedsSync || prevNtpHour != hour())                     //USE_NTP
+  {                                                                               //USE_NTP
+    prevNtpHour = hour();                                                         //USE_NTP
+    setSyncProvider(getNtpTime);                                                  //USE_NTP
+    setSyncInterval(600);                                                         //USE_NTP
+  }                                                                               //USE_NTP
+  #endif                                                                            //USE_NTP
+}
+
+
+//==[ Do Telegram Processing ]==
+void doTaskTelegram(){
+  #if defined(HAS_NO_SLIMMEMETER)
+    handleTestdata();
+  #else
+     //---- this part is processed in 'normal' operation mode!
+    slimmeMeter.enable(true); // enable a telegram processing from slimme meter
+    handleSlimmemeter();
+  #endif
+  blinkLEDnow();
+}
+
+//===[ Do the background tasks ]===
+void doBackgroundTasks()
+{
+  httpServer.handleClient();
+  MDNS.update();
+  handleKeyInput();
+  handleMQTT();                 // MQTT transmissions
+  handleMindergas();            // Mindergas update 
+#if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
+  checkFlashButton();
+#endif
+  blinkLEDms(1000);               // 'blink' the status led every x ms
+  yield();
+
+}
 
 //===========================================================================================
 void loop () 
@@ -428,96 +514,7 @@ void loop ()
   
 } // loop()
 
-//==[ Do Telegram Processing ]==
-void doTaskTelegram(){
-  if (showRaw) {
-    //-- process telegrams in raw mode
-    handleSlimmemeterRaw();
-  } 
-  else 
-  {
-    //---- this part is processed in 'normal' operation mode!
-    slimmeMeter.enable(true); // enable a telegram processing from slimme meter
-    blinkLEDnow();
-    #if defined(HAS_NO_SLIMMEMETER)
-      handleTestdata();
-    #else
-      handleSlimmeMeter();
-    #endif
-  }
-}
 
-//===[ Do task every 100ms ]===
-void doTaskEvery100ms(){
-  //== do tasks ==
-}
-
-//===[ Do task every 1s ]===
-void doTaskEvery1s(){
-  //== do tasks ==
-  upTimeSeconds++;
-}
-
-//===[ Do task every 5s ]===
-void doTaskEvery5s(){
-  //== do tasks ==
-  #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
-    displayStatus();
-  #endif
-}
-
-//===[ Do task every 30s ]===
-void doTaskEvery30s(){
-  //== do tasks ==
-  #if defined(USE_NTP_TIME)                                                         //USE_NTP
-  if (timeStatus() == timeNeedsSync || prevNtpHour != hour())                     //USE_NTP
-  {                                                                               //USE_NTP
-    prevNtpHour = hour();                                                         //USE_NTP
-    setSyncProvider(getNtpTime);                                                  //USE_NTP
-    setSyncInterval(600);                                                         //USE_NTP
-  }                                                                               //USE_NTP
-  #endif                                                                            //USE_NTP
-}
-
-//===[ Do the background tasks ]===
-void doBackgroundTasks()
-{
-  httpServer.handleClient();
-  MDNS.update();
-  handleKeyInput();
-  handleMQTT();                 // MQTT transmissions
-  handleMindergas();            // Mindergas update 
-#if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
-  checkFlashButton();
-#endif
-  blinkLEDms(1000);               // 'blink' the status led every x ms
-  yield();
-
-}
-
-//===[ blink status led in ms ]===
-void blinkLEDms(uint32_t iDelay){
-  //blink the statusled, when time passed... #non-blocking blink
-  DECLARE_TIMER_MS(timerBlink, iDelay);
-  CHANGE_INTERVAL_MS(timerBlink, iDelay);
-  if (DUE(timerBlink))
-    blinkLEDnow();
-}
-
-//===[ blink status now ]===
-void blinkLEDnow(){
-    pinMode(LED_BUILTIN, OUTPUT);
-    digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
-}
-
-//===[ no-blocking delay with running background tasks in ms ]===
-void delayms(unsigned long delay_ms)
-{
-  DECLARE_TIMER_MS(timer, delay_ms);
-  CHANGE_INTERVAL_MS(timer, delay_ms);
-  while (!DUE(timer))
-    doBackgroundTasks();
-}
 /***************************************************************************
 *
 * Permission is hereby granted, free of charge, to any person obtaining a

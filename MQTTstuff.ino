@@ -17,11 +17,11 @@
   
 #ifdef USE_MQTT
   #include <PubSubClient.h>           // MQTT client publish and subscribe functionality
-  #define MQTT_WAITFORCONNECT 600000  // 10 minutes
-  #define MQTT_WAITFORRETRY     3     // 3 seconden backoff
+//  #define MQTT_WAITFORCONNECT 600000  // 10 minutes
+//  #define MQTT_WAITFORRETRY     3     // 3 seconden backoff
 
-  DECLARE_TIMER_MS(mqttTimer, 500);   
-  DECLARE_TIMER_SEC(mqttRetryTimer, MQTT_WAITFORRETRY);   //backoff timer 
+  DECLARE_TIMER_MS(mqttTimer, 500);                       //every 500 ms do handle state
+  DECLARE_TIMER_SEC(mqttRetryTimer, 3);                   //backoff timer 
   DECLARE_TIMER_MIN(timeMQTTReconnect, 10)                //try reconnecting cyclus timer
   DECLARE_TIMER_SEC(timeMQTTPublish,  ((settingMQTTinterval == settingInterval) ? (settingMQTTinterval-1):settingMQTTinterval)); //special case, if telegram interval = mqtt interval, then mqtt interval needs to be shorter
 
@@ -47,6 +47,8 @@ void startMQTT()
 {
 #ifdef USE_MQTT
   stateMQTT = MQTT_STATE_INIT;
+  DebugTf("settingInterval     [%d]\r\n", settingInterval);
+  DebugTf("settingMQTTinterval [%d]\r\n", settingMQTTinterval);
   handleMQTT();
 #endif
 }
