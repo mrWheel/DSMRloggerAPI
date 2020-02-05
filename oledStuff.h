@@ -32,26 +32,30 @@ DECLARE_TIMER_MIN(oledSleepTimer, 10);
 //===========================================================================================
 void checkFlashButton() 
 {
+  //check if the displaytimer is due... 
   if (DUE(oledSleepTimer)) 
   {
     //Serial.println("Switching display off..");
     oled.clear();
     boolDisplay = false;
-    if (digitalRead(FLASH_BUTTON) == LOW && buttonState == LOW) 
-    {
-        buttonState = HIGH;
-    } 
-    else if (digitalRead(FLASH_BUTTON) == HIGH && buttonState == HIGH) 
-    {
-        buttonState = LOW;
-        //Serial.println("Switching display on..");
-        boolDisplay = true;
-        oled.clear();
-        oled_Print_Msg(0, "<DSMRloggerAPI>", 0);
-        oled_Print_Msg(2, "Wacht ...", 5);
-        msgMode = 1;
-    }   
   }
+
+  //check the button and turn it on.
+  if (digitalRead(FLASH_BUTTON) == LOW && buttonState == LOW) 
+  {
+      buttonState = HIGH;
+  } 
+  else if (digitalRead(FLASH_BUTTON) == HIGH && buttonState == HIGH) 
+  {
+      buttonState = LOW;
+      //Serial.println("Switching display on..");
+      boolDisplay = true;
+      oled.clear();
+      oled_Print_Msg(0, "<DSMRloggerAPI>", 0);
+      oled_Print_Msg(2, "Wacht ...", 5);
+      msgMode = 0; //reset the display loop
+  }   
+  
 } // checkFlashButton()
 
 
@@ -84,7 +88,7 @@ void oled_Clear()
 void oled_Print_Msg(uint8_t line, String message, uint16_t wait) 
 {
   DECLARE_TIMER_MS(timerWait, wait);
-  CHANGE_TIMER_MS(timerWait, wait);
+  CHANGE_INTERVAL_MS(timerWait, wait);
   
   if ((boolDisplay) && (settingSleepTime>0))
   { 
@@ -93,7 +97,7 @@ void oled_Print_Msg(uint8_t line, String message, uint16_t wait)
     oled.setCursor(0, ((line * lineHeight)/8));
     oled.print(message.c_str()); 
 
-    while (!DUE(timerWait))
+    while (!DUE(timerWait) )
     {
       checkFlashButton();
       yield();

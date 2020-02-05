@@ -56,7 +56,7 @@
                                                     timerName##_last = millis();}
 #define CHANGE_INTERVAL_MS(timerName, timerTime)  if (timerName##_interval != timerTime)            \
                                                     {timerName##_interval != timerTime;             \
-                                                    timerName##_last = millis();)
+                                                    timerName##_last = millis();}
 #define CHANGE_INTERVAL_SEC CHANGE_INTERVAL
 
 

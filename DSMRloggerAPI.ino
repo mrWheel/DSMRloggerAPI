@@ -67,7 +67,7 @@ struct showValues {
 void displayStatus() 
 {
 #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
-  switch(msgMode) {
+  switch(msgMode) { 
     case 1:   sprintf(cMsg, "Up:%15.15s", upTime().c_str());
               break;
     case 2:   sprintf(cMsg, "WiFi RSSI:%4d dBm", WiFi.RSSI());
@@ -77,10 +77,10 @@ void displayStatus()
     case 4:   sprintf(cMsg, "IP %s", WiFi.localIP().toString().c_str());
               break;
     default:  sprintf(cMsg, "Telgrms:%6d/%3d", telegramCount, telegramErrors);
-              msgMode = 0;
+              break;
   }
   oled_Print_Msg(3, cMsg, 0);
-  msgMode++;
+  msgMode= (msgMode+1) % 5; //modular 5 = number of message displayed (hence it cycles thru the messages
 #endif
   
 } // displayStatus()
