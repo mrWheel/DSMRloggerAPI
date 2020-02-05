@@ -1,9 +1,9 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRindex.css, part of DSMRfirmwareAPI
-**  Version  : v0.2.7
+**  Version  : v0.3.2
 **
-**  Copyright (c) 2019 Willem Aandewiel
+**  Copyright (c) 2020 Willem Aandewiel
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
@@ -44,6 +44,11 @@ td {
   border-right: 1px solid #ddd;
   border-left: 1px solid #ddd;
   vertical-align: bottom;
+}
+
+tfoot {
+  font-size: 12px;
+  color: darkblue;
 }
 
 input {
