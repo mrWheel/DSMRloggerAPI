@@ -35,7 +35,7 @@
  *  https://arduino.stackexchange.com/questions/12587/how-can-i-handle-the-millis-rollover
  */
 #define DECLARE_TIMER_MIN(timerName, timerTime) static uint32_t timerName##_interval = (timerTime * 60 * 1000), \
-                                                timerName##_last = millis()+random(timerName##_interval);
+                                                timerName##_last = millis()+random(timerName##_interval); 
 #define DECLARE_TIMER(timerName, timerTime)     static uint32_t timerName##_interval = (timerTime * 1000),      \
                                                 timerName##_last = millis()+random(timerName##_interval);
 #define DECLARE_TIMER_MS(timerName, timerTime)  static uint32_t timerName##_interval = timerTime,               \
@@ -43,12 +43,9 @@
 
 #define DECLARE_TIMER_SEC DECLARE_TIMER
 
-#define CHANGE_INTERVAL_MIN(timerName, timerTime) timerName##_interval = timerTime * 60 * 1000, \
-                                                  timerName##_last = millis();
-#define CHANGE_INTERVAL(timerName, timerTime)     timerName##_interval = timerTime * 1000,      \
-                                                  timerName##_last = millis();
-#define CHANGE_INTERVAL_MS(timerName, timerTime)  timerName##_interval = timerTime,             \
-                                                  timerName##_last = millis();
+#define CHANGE_INTERVAL_MIN(timerName, timerTime) if (timerName##_interval != timerTime * 60*1000) {timerName##_interval = timerTime * 60 * 1000; timerName##_last = millis();}     
+#define CHANGE_INTERVAL(timerName, timerTime)     if (timerName##_interval != timerTime * 1000) {timerName##_interval = timerTime * 1000; timerName##_last = millis();}
+#define CHANGE_INTERVAL_MS(timerName, timerTime)  if (timerName##_interval != timerTime) {timerName##_interval != timerTime; timerName##_last = millis();)
 #define CHANGE_INTERVAL_SEC CHANGE_INTERVAL
 
 
