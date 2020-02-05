@@ -2,6 +2,11 @@
  * timers.h is developed by Erik
  * 
  * I made some small changes due to the "how can I handle the millis() rollover"
+ * and added the CHANGE_TIMER macro's.
+ * by Willem aan der Wiel
+ * 
+ * And some more improvements by Robert van den Breemen
+ * 
  * by Edgar Bonet
  * 
  * DECLARE_TIMER(timername, interval)
@@ -43,9 +48,15 @@
 
 #define DECLARE_TIMER_SEC DECLARE_TIMER
 
-#define CHANGE_INTERVAL_MIN(timerName, timerTime) if (timerName##_interval != timerTime * 60*1000) {timerName##_interval = timerTime * 60 * 1000; timerName##_last = millis();}     
-#define CHANGE_INTERVAL(timerName, timerTime)     if (timerName##_interval != timerTime * 1000) {timerName##_interval = timerTime * 1000; timerName##_last = millis();}
-#define CHANGE_INTERVAL_MS(timerName, timerTime)  if (timerName##_interval != timerTime) {timerName##_interval != timerTime; timerName##_last = millis();)
+#define CHANGE_INTERVAL_MIN(timerName, timerTime) if (timerName##_interval != timerTime * 60*1000)  \
+                                                    {timerName##_interval = timerTime * 60 * 1000;  \
+                                                    timerName##_last = millis();}     
+#define CHANGE_INTERVAL(timerName, timerTime)     if (timerName##_interval != timerTime * 1000)     \
+                                                    {timerName##_interval = timerTime * 1000;       \
+                                                    timerName##_last = millis();}
+#define CHANGE_INTERVAL_MS(timerName, timerTime)  if (timerName##_interval != timerTime)            \
+                                                    {timerName##_interval != timerTime;             \
+                                                    timerName##_last = millis();)
 #define CHANGE_INTERVAL_SEC CHANGE_INTERVAL
 
 

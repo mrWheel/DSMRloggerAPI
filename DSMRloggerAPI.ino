@@ -2,7 +2,7 @@
 ***************************************************************************  
 **  Program  : DSMRloggerAPI (restAPI)
 */
-#define _FW_VERSION "v0.3.2 (05-02-2020)"
+#define _FW_VERSION "v0.3.0 (04-02-2020)"
 /*
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -274,10 +274,10 @@ void setup()
   Serial.print (WiFi.localIP());
   Serial.println("' voor verdere debugging\r\n");
   
-//=============now test if "!PRDconvert" file exists================
+//=============now test if "convertPRD" file exists================
   if (DSMRfileExist("!PRDconvert", false) )
   {
-    convertPRD2RING();  // convert PRD to RING file(s)
+    convertPRD2RING();
   }
 
 //===========================================================================================
@@ -395,14 +395,15 @@ void setup()
 void loop () 
 {
   // setup timers
-  DECLARE_TIMER_MS(timer100ms, 100);
-  DECLARE_TIMER_MS(timer1s, 1000);
-  DECLARE_TIMER_MS(timer5s, 5000);
-  DECLARE_TIMER_MS(timer30s, 30000);
-  DECLARE_TIMER_MIN(timer10min, 10);
-  DECLARE_TIMER_MIN(timer60min, 60);
+  DECLARE_TIMER_MS(timer100ms, 100)
+  DECLARE_TIMER_MS(timer1s, 1000)
+  DECLARE_TIMER_MS(timer5s, 5000)
+  DECLARE_TIMER_MS(timer30s, 30000)
+  DECLARE_TIMER_MIN(timer10min, 10)
+  DECLARE_TIMER_MIN(timer60min, 60)
   DECLARE_TIMER_SEC(timerTelegram, settingInterval)
-
+  CHANGE_INTERVAL_MS(timerTelegram, settingInterval)
+  
   // do the loop...
   loopCount++;
 
@@ -498,6 +499,7 @@ void doBackgroundTasks()
 void blinkLEDms(uint32_t iDelay){
   //blink the statusled, when time passed... #non-blocking blink
   DECLARE_TIMER_MS(timerBlink, iDelay);
+  CHANGE_INTERVAL_MS(timer, delay_ms);
   if (DUE(timerBlink))
     blinkLEDnow();
 }
@@ -512,6 +514,7 @@ void blinkLEDnow(){
 void delayms(unsigned long delay_ms)
 {
   DECLARE_TIMER_MS(timer, delay_ms);
+  CHANGE_INTERVAL_MS(timer, delay_ms);
   while (!DUE(timer))
     doBackgroundTasks();
 }

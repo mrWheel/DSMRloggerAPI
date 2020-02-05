@@ -84,6 +84,7 @@ void oled_Clear()
 void oled_Print_Msg(uint8_t line, String message, uint16_t wait) 
 {
   DECLARE_TIMER_MS(timerWait, wait);
+  CHANGE_TIMER_MS(timerWait, wait);
   
   if ((boolDisplay) && (settingSleepTime>0))
   { 
