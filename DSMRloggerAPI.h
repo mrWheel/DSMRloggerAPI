@@ -188,14 +188,7 @@ int strcicmp(const char *a, const char *b);
   int8_t      showRawCount = 0;
 
 //----------------- old var's -----(remove as soon as possible)-----------------
-//  telegramInterval = millis() + 5000;
-//  noMeterWait      = millis() + 5000;
-//  upTimeSeconds    = (millis() / 1000) + 50;
-//  nextSecond       = millis() + 1000;
-//  uint32_t  telegramInterval, noMeterWait,  lastOledStatus;
 
-
-//-----
 char      cMsg[150], fChar[10];
 String    lastReset           = "";
 bool      spiffsNotPopulated  = false;
@@ -203,7 +196,6 @@ bool      hasAlternativeIndex = false;
 bool      mqttIsConnected     = false;
 bool      doLog = false, Verbose1 = false, Verbose2 = false;
 int8_t    thisHour = -1, prevNtpHour = 0, thisDay = -1, thisMonth = -1, lastMonth, thisYear = 15;
-//uint32_t  nextSecond;
 uint32_t  unixTimestamp;
 uint64_t  upTimeSeconds;
 IPAddress ipDNS, ipGateWay, ipSubnet;

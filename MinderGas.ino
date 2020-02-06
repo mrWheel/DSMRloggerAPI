@@ -19,11 +19,11 @@
 *   - RvdB - added initial support for mindergas
 *
 */
-#define MINDERGAS_INTERVAL  1  // 2 minuten -> mag ook 5 zijn .. toch?
+#define MINDERGAS_INTERVAL  1  //For proper debug information and countdown behaviour, call the process mindergas at LEAST once per minute
 #define MG_FILENAME         "/Mindergas.post"
 
 DECLARE_TIMER_MIN(minderGasTimer, MINDERGAS_INTERVAL);
-DECLARE_TIMER_MIN(MGcountDownTimer, 1);
+DECLARE_TIMER_MIN(MGcountDownTimer, 1); //do not change 
 
 //=======================================================================
 void handleMindergas()
@@ -64,6 +64,7 @@ void forceMindergasUpdate()
     MG_Day = day();   // make it thisDay...
     strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "force Mindergas countdown");
     DebugTln(F("Force send data to mindergas.nl in ~1 minute"));
+    CHANGE_INTERVAL_MIN(minderGasTimer, 1);
     stateMindergas = MG_DO_COUNTDOWN;
     processMindergas();
   }
@@ -186,7 +187,6 @@ void processMindergas()
 
       // start countdown
       MGminuten = random(10,120);
-      //MGminuten = 4;  // test test test
       DebugTf("MinderGas update in [%d] minute(s)\r\n", MGminuten);
       // Lets'do the countdown
       stateMindergas = MG_DO_COUNTDOWN;
@@ -196,9 +196,9 @@ void processMindergas()
       DebugTf("Mindergas State: MG_DO_COUNTDOWN (%d minuten te gaan)\r\n", MGminuten);
       sprintf(timeLastResponse, "@%02d|%02d:%02d -> ", day(), hour(), minute());
       strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "countdown for sending");
-      if ( DUE(MGcountDownTimer) )
-      {
-        MGminuten--;
+      if ( DUE(MGcountDownTimer) ) //this timer need to run every minute to let this work
+      { 
+        MGminuten--; 
         DebugTf("MinderGas update in less than [%d] minutes\r\n", MGminuten);
         intStatuscodeMindergas = MGminuten;
       }

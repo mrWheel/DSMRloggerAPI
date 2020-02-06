@@ -13,7 +13,6 @@ char        telegram[1000] = "";
 uint16_t    currentCRC; 
 int16_t     calcCRC;
 uint32_t    actInterval = 5, nextMinute = 0, nextESPcheck = 0, nextGuiUpdate;
-//uint32_t    telegramTimer = millis() + TELEGRAM_INTERVAL;
 int8_t      State;
 int16_t     actSec, actMinute, actHour, actDay, actMonth, actYear, actSpeed;
 char        actDSMR[3] = "40", savDSMR[3] = "40";
