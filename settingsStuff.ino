@@ -50,8 +50,11 @@ void writeSettings()
   file.print("MQTTtopTopic = ");      file.println(settingMQTTtopTopic);        Debug(F("."));
 #endif
   
+#ifdef USE_MINDERGAS
   file.print("MindergasAuthtoken = ");file.println(settingMindergasToken);  Debug(F("."));
-  file.close();  
+#endif
+
+file.close();  
   
   Debugln(F(" done"));
   if (Verbose1) 
@@ -82,7 +85,11 @@ void writeSettings()
 #endif
   
 #ifdef USE_MINDERGAS
-    DebugT(F("MindergasAuthtoken = "));Debugln(settingMindergasToken);  
+  #ifdef SHOW_PASSWRDS   
+    DebugT(F("MindergasAuthtoken = "));Debugln(settingMindergasToken);
+  #else
+    DebugTln(F("MindergasAuthtoken = ********")); 
+  #endif
 #endif
   } // Verbose1
   
@@ -114,7 +121,10 @@ void readSettings(bool show)
   settingMQTTpasswd[0]     = '\0';
   settingMQTTinterval      = 60;
   sprintf(settingMQTTtopTopic, "%s", _HOSTNAME);
+
+#ifdef USE_MINDERGAS
   settingMindergasToken[0] = '\0';
+#endif
 
   if (!SPIFFS.exists(SETTINGS_FILE)) 
   {
@@ -156,8 +166,10 @@ void readSettings(bool show)
 
     if (words[0].equalsIgnoreCase("IndexPage"))           strCopy(settingIndexPage, (sizeof(settingIndexPage) -1), words[1].c_str());  
 
+#ifdef USE_MINDERGAS
     if (words[0].equalsIgnoreCase("MindergasAuthtoken"))  strCopy(settingMindergasToken, 20, words[1].c_str());  
-   
+#endif
+
 #ifdef USE_MQTT
     if (words[0].equalsIgnoreCase("MQTTbroker"))  {
       memset(settingMQTTbroker, '\0', sizeof(settingMQTTbroker));
@@ -236,9 +248,11 @@ void updateSetting(const char *field, const char *newValue)
   if (!stricmp(field, "tlgrm_interval"))    settingInterval     = String(newValue).toInt();  
 
   if (!stricmp(field, "index_page"))        strCopy(settingIndexPage, (sizeof(settingIndexPage) -1), newValue);  
-  
+
+#ifdef USE_MINDERGAS
   if (!stricmp(field, "MindergasToken"))    strCopy(settingMindergasToken, 20, newValue);  
-   
+#endif //USE_MINDERGAS
+
 #ifdef USE_MQTT
   if (!stricmp(field, "mqtt_broker"))  {
     DebugT("settingMQTTbroker! to : ");

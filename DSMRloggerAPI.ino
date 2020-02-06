@@ -43,7 +43,10 @@
 /******************** don't change anything below this comment **********************/
 
 #include "DSMRloggerAPI.h"
-#include "MinderGas.h"
+
+#ifdef USE_MINDERGAS
+  #include "MinderGas.h"
+#endif 
 
 struct showValues {
   template<typename Item>
