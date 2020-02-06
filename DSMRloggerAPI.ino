@@ -43,6 +43,7 @@
 /******************** don't change anything below this comment **********************/
 
 #include "DSMRloggerAPI.h"
+#include "MinderGas.h"
 
 struct showValues {
   template<typename Item>
@@ -418,17 +419,20 @@ void delayms(unsigned long delay_ms)
 
 //===[ Do task every 100ms ]===
 void doTaskEvery100ms(){
+  //if (Verbose1) DebugTln("doTaskEvery100ms");
   //== do tasks ==
 }
 
 //===[ Do task every 1s ]===
 void doTaskEvery1s(){
+  //if (Verbose1) DebugTln("doTaskEvery1s");
   //== do tasks ==
   upTimeSeconds++;
 }
 
 //===[ Do task every 5s ]===
 void doTaskEvery5s(){
+  //if (Verbose1) DebugTln("doTaskEvery5s");
   //== do tasks ==
   #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
     displayStatus();
@@ -437,6 +441,7 @@ void doTaskEvery5s(){
 
 //===[ Do task every 30s ]===
 void doTaskEvery30s(){
+  //if (Verbose1) DebugTln("doTaskEvery30s");
   //== do tasks ==
   #if defined(USE_NTP_TIME)                                                         //USE_NTP
   if (timeStatus() == timeNeedsSync || prevNtpHour != hour())                     //USE_NTP
@@ -451,11 +456,11 @@ void doTaskEvery30s(){
 
 //==[ Do Telegram Processing ]==
 void doTaskTelegram(){
+  //if (Verbose1) DebugTln("doTaskTelegram");
   #if defined(HAS_NO_SLIMMEMETER)
     handleTestdata();
   #else
      //---- this part is processed in 'normal' operation mode!
-    slimmeMeter.enable(true); // enable a telegram processing from slimme meter
     handleSlimmemeter();
   #endif
   blinkLEDnow();
@@ -464,6 +469,7 @@ void doTaskTelegram(){
 //===[ Do the background tasks ]===
 void doBackgroundTasks()
 {
+  //ßif (Verbose1) DebugTln("doBackgroundTasks");
   httpServer.handleClient();
   MDNS.update();
   handleKeyInput();

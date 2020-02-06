@@ -60,6 +60,7 @@ void processSlimmemeterRaw(){
 //==================================================================================
 void processSlimmemeter(){
   DebugTf("handleSlimmerMeter telegramCount=[%4d] telegramErrors=[%4d]\r\n", telegramCount, telegramErrors);
+  slimmeMeter.enable(true); // enable a telegram processing from slimme meter
   slimmeMeter.loop();
   if (slimmeMeter.available()) 
   {
