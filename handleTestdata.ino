@@ -141,7 +141,7 @@ void handleTestdata()
   processTelegram();
   if (!forceBuildRingFiles)
   {
-        sendMQTTData();
+      sendMQTTData();
   }
   
   Debugf("==>> act date/time [%s] is [%s]\r\n\n", actTimestamp, buildDateTimeString(actTimestamp, sizeof(actTimestamp)).c_str());

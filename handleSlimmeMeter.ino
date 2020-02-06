@@ -117,7 +117,8 @@ void processSlimmemeter(){
       }
       digitalWrite(LED_BUILTIN, LED_OFF);
       processTelegram();
-
+      sendMQTTData();      
+      
       if (Verbose2) 
       {
         DSMRdata.applyEach(showValues());

@@ -17,13 +17,13 @@
   
 #ifdef USE_MQTT
   #include <PubSubClient.h>           // MQTT client publish and subscribe functionality
-//  #define MQTT_WAITFORCONNECT 600000  // 10 minutes
-//  #define MQTT_WAITFORRETRY     3     // 3 seconden backoff
+//  #define MQTT_WAITFORCONNECT   600000  // 10 minutes
+//  #define MQTT_WAITFORRETRY     3       // 3 seconden backoff
 
-  DECLARE_TIMER_MS(mqttTimer, 500);                       //every 500 ms do handle state
-  DECLARE_TIMER_SEC(mqttRetryTimer, 3);                   //backoff timer 
-  DECLARE_TIMER_MIN(timeMQTTReconnect, 10)                //try reconnecting cyclus timer
-  DECLARE_TIMER_SEC(timeMQTTPublish,  ((settingMQTTinterval == settingInterval) ? (settingMQTTinterval-1):settingMQTTinterval)); //special case, if telegram interval = mqtt interval, then mqtt interval needs to be shorter
+  DECLARE_TIMER_MS(mqttTimer, 500);                         //every 500 ms do handle state
+  DECLARE_TIMER_SEC(mqttRetryTimer, 3);                     //backoff timer 
+  DECLARE_TIMER_MIN(timeMQTTReconnect, 10)                  //try reconnecting cyclus timer
+  DECLARE_TIMER_SEC(timeMQTTPublish,  settingMQTTinterval); //special case, if telegram interval = mqtt interval, then mqtt interval needs to be shorter
 
 
   static            PubSubClient MQTTclient(wifiClient);
@@ -90,13 +90,13 @@ void handleMQTT()
       {
         // Now that there is something to send to MQTT, start with connecting to MQTT.
         stateMQTT = MQTT_STATE_TRY_TO_CONNECT;
-        //DebugTln(F("Next State: MQTT_STATE_TRY_TO_CONNECT"));
+        DebugTln(F("Next State: MQTT_STATE_TRY_TO_CONNECT"));
       }
       break;
 
     case MQTT_STATE_TRY_TO_CONNECT:
       DebugTln(F("MQTT State: MQTT try to connect"));
-      //DebugTf("MQTT server is [%s], IP[%s]\r\n", settingMQTTbroker, MQTTbrokerIPchar);
+      DebugTf("MQTT server is [%s], IP[%s]\r\n", settingMQTTbroker, MQTTbrokerIPchar);
       
       DebugT(F("Attempting MQTT connection .. "));
       reconnectAttempts++;
@@ -157,7 +157,7 @@ void handleMQTT()
       //do non-blocking wait for 3 seconds
       //DebugTln(F("MQTT State: MQTT_WAIT_CONNECTION_ATTEMPT"));
       //===if ((millis() - timeMQTTLastRetry) > MQTT_WAITFORRETRY) 
-      if (DUE(mqttRetryTimer))
+      if ( DUE(mqttRetryTimer) )
       {
         //Try again... after waitforretry non-blocking delay
         stateMQTT = MQTT_STATE_TRY_TO_CONNECT;
@@ -258,16 +258,22 @@ void sendMQTTData()
   String dateTime, topicId, json;
 
   // only if the DSMR timestamp is different from last, never sent the same telegram twice.
-  if (Verbose1) DebugTf("Timestamp [last:now] compared [%s]:[%s]\r\n", lastMQTTtimestamp, actTimestamp);
+  DebugTf("Timestamp [last:now] compared [%s]:[%s]\r\n", lastMQTTtimestamp, actTimestamp);
   if (strcmp(lastMQTTtimestamp, actTimestamp) == 0) return;
 
   if (!MQTTclient.connected() || !isValidIP(MQTTbrokerIP)) return;
-  if (!DUE(timeMQTTPublish)) return;
 
-  DebugTf("Sending data to MQTT server [%s]:[%d]\r\n", settingMQTTbroker, settingMQTTbrokerPort);
+  if (settingMQTTinterval == settingInterval) 
+    CHANGE_INTERVAL_SEC(timeMQTTPublish,  settingMQTTinterval); //special case, if telegram interval = mqtt interval, then mqtt interval needs to be shorter
 
-  DSMRdata.applyEach(buildJsonMQTT());
-  strCopy(lastMQTTtimestamp, sizeof(lastMQTTtimestamp), actTimestamp);
+  if ( DUE(timeMQTTPublish) ) 
+  {
+    
+    DebugTf("Sending data to MQTT server [%s]:[%d]\r\n", settingMQTTbroker, settingMQTTbrokerPort);
+    
+    DSMRdata.applyEach(buildJsonMQTT());
+    strCopy(lastMQTTtimestamp, sizeof(lastMQTTtimestamp), actTimestamp);
+  }
 
 #endif
 
