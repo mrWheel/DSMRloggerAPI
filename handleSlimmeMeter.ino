@@ -12,8 +12,9 @@
 #if !defined(HAS_NO_SLIMMEMETER)
 //==================================================================================
 void handleSlimmemeter(){
-  DebugTf("showRaw (%s)", showRaw ?"true":"false");
-  if (!showRaw) {
+  
+  DebugTf("showRaw (%s)\r\n", showRaw ?"true":"false");
+  if (showRaw) {
     //-- process telegrams in raw mode
     processSlimmemeterRaw();
   } 
@@ -22,39 +23,76 @@ void handleSlimmemeter(){
     //-- process telegrams in normal mode
     processSlimmemeter();
   } 
+
 }
 void processSlimmemeterRaw(){
+  char    tlgrm[1200] = "";
+   
   DebugTf("handleSlimmerMeter RawCount=[%4d]\r\n", showRawCount);
+  showRawCount++;
+  showRaw = (showRawCount <= 20);
+  if (!showRaw)
+  {
+    showRawCount  = 0;
+    return;
+  }
+  
   #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
-    if (showRawCount == 0) 
-    {
-      oled_Print_Msg(0, "<DSMRloggerAPI>", 0);
-      oled_Print_Msg(1, "-------------------------",0);
-      oled_Print_Msg(2, "Raw Format",0);
-      sprintf(cMsg, "Raw Count %4d", showRawCount);
-      oled_Print_Msg(3, cMsg, 0);
-    }
+    oled_Print_Msg(0, "<DSMRloggerAPI>", 0);
+    oled_Print_Msg(1, "-------------------------",0);
+    oled_Print_Msg(2, "Raw Format",0);
+    sprintf(cMsg, "Raw Count %4d", showRawCount);
+    oled_Print_Msg(3, cMsg, 0);
   #endif
 
-  while(Serial.available() > 0) 
-  {   
-    char rIn = Serial.read();       
-    if (rIn == '!') 
+//  while(Serial.available() > 0) 
+//  {   
+//    char rIn = Serial.read();       
+//    if (rIn == '!') 
+//    {
+//      showRawCount++;
+//#if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
+//      sprintf(cMsg, "Raw Count %4d", showRawCount);
+//      oled_Print_Msg(3, cMsg, 0);
+//#endif
+//    }
+//    TelnetStream.write((char)rIn);
+//  }   // while Serial.available()
+
+    slimmeMeter.enable(true);
+    Serial.setTimeout(5000);  // 5 seconds must be enough ..
+    memset(tlgrm, 0, sizeof(tlgrm));
+    int l = 0;
+    // The terminator character is discarded from the serial buffer.
+    l = Serial.readBytesUntil('/', tlgrm, sizeof(tlgrm));
+    // now read from '/' to '!'
+    // The terminator character is discarded from the serial buffer.
+    l = Serial.readBytesUntil('!', tlgrm, sizeof(tlgrm));
+    Serial.setTimeout(1000);  // seems to be the default ..
+//    DebugTf("read [%d] bytes\r\n", l);
+    if (l == 0) 
     {
-      showRawCount++;
-#if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
-      sprintf(cMsg, "Raw Count %4d", showRawCount);
-      oled_Print_Msg(3, cMsg, 0);
-#endif
+      DebugTln("RawMode: Timerout - no telegram received within 5 seconds");
+      return;
     }
-    TelnetStream.write((char)rIn);
-  }   // while Serial.available()
-      
-  if (showRawCount > 20) 
-  {
-    showRaw       = false;
-    showRawCount  = 0;
-  }
+
+    tlgrm[l++] = '!';
+#if !defined( USE_PRE40_PROTOCOL )
+    // next 6 bytes are "<CRC>\r\n"
+    for (int i=0; ( i<6 && (i<(sizeof(tlgrm)-7)) ); i++)
+    {
+      tlgrm[l++] = (char)Serial.read();
+    }
+#else
+    tlgrm[l++]    = '\r';
+    tlgrm[l++]    = '\n';
+#endif
+    tlgrm[(l +1)] = '\0';
+    // shift telegram 1 char to the right (make room at pos [0] for '/')
+    for (int i=strlen(tlgrm); i>=0; i--) { tlgrm[i+1] = tlgrm[i]; yield(); }
+    tlgrm[0] = '/'; 
+    //Post result to Debug Terminal
+    Debugf("Telegram (%d chars):\r\n/%s\r\n", strlen(tlgrm), tlgrm); 
   return;
 }
 //==================================================================================

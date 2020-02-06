@@ -456,7 +456,7 @@ void doTaskEvery30s(){
 
 //==[ Do Telegram Processing ]==
 void doTaskTelegram(){
-  //if (Verbose1) DebugTln("doTaskTelegram");
+  DebugTln("doTaskTelegram");
   #if defined(HAS_NO_SLIMMEMETER)
     handleTestdata();
   #else
@@ -494,7 +494,7 @@ void loop ()
   DECLARE_TIMER_MIN(timer10min, 10)
   DECLARE_TIMER_MIN(timer60min, 60)
   DECLARE_TIMER_SEC(timerTelegram, settingInterval)
-  CHANGE_INTERVAL_MS(timerTelegram, settingInterval)
+  CHANGE_INTERVAL_SEC(timerTelegram, settingInterval)
   
   // do the loop...
   loopCount++;

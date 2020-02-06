@@ -48,14 +48,14 @@
 
 #define DECLARE_TIMER_SEC DECLARE_TIMER
 
-#define CHANGE_INTERVAL_MIN(timerName, timerTime) if (timerName##_interval != timerTime * 60*1000)  \
+#define CHANGE_INTERVAL_MIN(timerName, timerTime) if (timerName##_interval != (timerTime * 60*1000))  \
                                                     {timerName##_interval = timerTime * 60 * 1000;  \
                                                     timerName##_last = millis();}     
-#define CHANGE_INTERVAL(timerName, timerTime)     if (timerName##_interval != timerTime * 1000)     \
+#define CHANGE_INTERVAL(timerName, timerTime)     if (timerName##_interval != (timerTime * 1000))     \
                                                     {timerName##_interval = timerTime * 1000;       \
                                                     timerName##_last = millis();}
 #define CHANGE_INTERVAL_MS(timerName, timerTime)  if (timerName##_interval != timerTime)            \
-                                                    {timerName##_interval != timerTime;             \
+                                                    {timerName##_interval = timerTime;             \
                                                     timerName##_last = millis();}
 #define CHANGE_INTERVAL_SEC CHANGE_INTERVAL
 

@@ -185,7 +185,7 @@ int strcicmp(const char *a, const char *b);
   uint32_t    loopCount = 0;
   uint32_t    telegramCount = 0, telegramErrors = 0;
   bool        showRaw = false;
-  int8_t    showRawCount        = 0;
+  int8_t      showRawCount = 0;
 
 //----------------- old var's -----(remove as soon as possible)-----------------
 //  telegramInterval = millis() + 5000;
