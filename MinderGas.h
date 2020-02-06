@@ -1,20 +1,11 @@
-/*
+/**************************************************************************
+**  Program  : MinderGas.h
+**  Version  : v0.1.7
+**
 **  Copyright (c) 2020 Robert van den Breemen
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
-***************************************************************************      
-* Inspired by the code from Harold - SolarMeter code
-* Created by Robert van den Breemen (30 jan 2020)
-*   - RvdB - day change detection within scope of mindergas only
-*   - AaW  - cleanup code
-*   - RvdB - changing into a statemachine and survive reboot
-*   - RvdB - added AuthToken to settings
-*   - RvdB - many more formatting for gas changed to 3 digits in DSMRlogger data
-*   - RvdB - gas delivered should be [.3f] - lots of formatting of gasdelivered changed to 3 digits
-*   - RvdB - changed around the way debug is done in rollover on month, day and hour
-*   - RvdB - fixing the mindergas integration - mindergas.ino
-*   - RvdB - added initial support for mindergas
-*
+***************************************************************************  
 */
 
 #if defined( USE_MINDERGAS )

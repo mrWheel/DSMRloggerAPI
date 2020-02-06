@@ -460,8 +460,8 @@ void doTaskTelegram(){
   #if defined(HAS_NO_SLIMMEMETER)
     handleTestdata();
   #else
-     //---- this part is processed in 'normal' operation mode!
-    handleSlimmemeter();
+    //-- handle slimmemeter telegrams in normal mode
+    slimmeMeter.enable(true); // enable a telegram processing from slimme meter
   #endif
   blinkLEDnow();
 }
@@ -469,7 +469,8 @@ void doTaskTelegram(){
 //===[ Do the background tasks ]===
 void doBackgroundTasks()
 {
-  //ßif (Verbose1) DebugTln("doBackgroundTasks");
+  //if (Verbose1) DebugTln("doBackgroundTasks");
+  handleSlimmemeter();
   httpServer.handleClient();
   MDNS.update();
   handleKeyInput();

@@ -1,4 +1,7 @@
-/*
+/**************************************************************************
+**  Program  : MinderGas.ino
+**  Version  : v0.1.7
+**
 **  Copyright (c) 2020 Robert van den Breemen
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            

@@ -13,14 +13,13 @@
 //==================================================================================
 void handleSlimmemeter(){
   
-  DebugTf("showRaw (%s)\r\n", showRaw ?"true":"false");
+  //DebugTf("showRaw (%s)\r\n", showRaw ?"true":"false");
   if (showRaw) {
     //-- process telegrams in raw mode
     processSlimmemeterRaw();
   } 
   else
   {
-    //-- process telegrams in normal mode
     processSlimmemeter();
   } 
 
@@ -91,17 +90,16 @@ void processSlimmemeterRaw(){
     // shift telegram 1 char to the right (make room at pos [0] for '/')
     for (int i=strlen(tlgrm); i>=0; i--) { tlgrm[i+1] = tlgrm[i]; yield(); }
     tlgrm[0] = '/'; 
-    //Post result to Debug Terminal
+    //Post result to Debug 
     Debugf("Telegram (%d chars):\r\n/%s\r\n", strlen(tlgrm), tlgrm); 
   return;
 }
 //==================================================================================
 void processSlimmemeter(){
-  DebugTf("handleSlimmerMeter telegramCount=[%4d] telegramErrors=[%4d]\r\n", telegramCount, telegramErrors);
-  slimmeMeter.enable(true); // enable a telegram processing from slimme meter
   slimmeMeter.loop();
   if (slimmeMeter.available()) 
   {
+    DebugTf("processSlimmerMeter telegramCount=[%4d] telegramErrors=[%4d]\r\n", telegramCount, telegramErrors);
     DebugTln(F("\r\n[Time----][FreeHeap/mBlck][Function----(line):\r"));
     // Voorbeeld: [21:00:11][   9880/  8960] loop        ( 997): read telegram [28] => [140307210001S]
     telegramCount++;
