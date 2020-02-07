@@ -98,7 +98,14 @@ void oled_Print_Msg(uint8_t line, String message, uint16_t wait)
   oled.print(message.c_str()); 
 
   if (wait>0)
-    delayms(wait);
+  {
+    DECLARE_TIMER_MS(timer, wait);
+    CHANGE_INTERVAL_MS(timer, wait);
+    while (!DUE(timer))
+    {
+      yield();
+    }
+  }
 
 }   // oled_Print_Msg()
 

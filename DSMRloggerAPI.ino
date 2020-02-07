@@ -170,6 +170,79 @@ void setup()
                                                                     
   readSettings(true);
 
+
+//=============start Networkstuff==================================
+#if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
+  oled_Clear();  // clear the screen 
+  oled_Print_Msg(0, "<DSMRloggerAPI>", 0);
+  oled_Print_Msg(1, "Verbinden met WiFi", 500);
+#endif  // has_oled_ssd1306
+
+  digitalWrite(LED_BUILTIN, LED_ON);
+  startWiFi();
+
+#if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
+  oled_Print_Msg(0, "<DSMRloggerAPI>", 0);
+  oled_Print_Msg(1, WiFi.SSID(), 0);
+  sprintf(cMsg, "IP %s", WiFi.localIP().toString().c_str());
+  oled_Print_Msg(2, cMsg, 1500);
+#endif  // has_oled_ssd1306
+  digitalWrite(LED_BUILTIN, LED_OFF);
+  
+  Debugln();
+  Debug (F("Connected to " )); Debugln (WiFi.SSID());
+  Debug (F("IP address: " ));  Debugln (WiFi.localIP());
+  Debugln();
+
+  for (int L=0; L < 10; L++) {
+    digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
+    delay(200);
+  }
+  digitalWrite(LED_BUILTIN, LED_OFF);
+
+  startMDNS(_HOSTNAME);
+#if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
+  oled_Print_Msg(3, "mDNS gestart", 1500);
+#endif  // has_oled_ssd1306
+
+//=============end Networkstuff======================================
+
+#if defined(USE_NTP_TIME)                                   //USE_NTP
+//================ startNTP =========================================
+  #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )  //USE_NTP
+    oled_Print_Msg(3, "setup NTP server", 100);             //USE_NTP
+  #endif  // has_oled_ssd1306                               //USE_NTP
+                                                            //USE_NTP
+  if (!startNTP())                                          //USE_NTP
+  {                                                         //USE_NTP
+    DebugTln(F("ERROR!!! No NTP server reached!\r\n\r"));   //USE_NTP
+  #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )  //USE_NTP
+    oled_Print_Msg(0, "<DSMRloggerAPI>", 0);             //USE_NTP
+    oled_Print_Msg(2, "geen reactie van", 100);             //USE_NTP
+    oled_Print_Msg(2, "NTP server's", 100);                 //USE_NTP 
+    oled_Print_Msg(3, "Reboot DSMR-logger", 2000);          //USE_NTP
+  #endif  // has_oled_ssd1306                               //USE_NTP
+    delay(2000);                                            //USE_NTP
+    ESP.restart();                                          //USE_NTP
+    delay(3000);                                            //USE_NTP
+  }                                                         //USE_NTP
+  #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )  //USE_NTP
+    oled_Print_Msg(0, "<DSMRloggerAPI>", 0);             //USE_NTP
+    oled_Print_Msg(3, "NTP gestart", 1500);                 //USE_NTP
+    prevNtpHour = hour();                                   //USE_NTP
+  #endif                                                    //USE_NTP
+                                                            //USE_NTP
+#endif  //USE_NTP_TIME                                      //USE_NTP
+//================ end NTP =========================================
+
+  sprintf(cMsg, "Last reset reason: [%s]\r", ESP.getResetReason().c_str());
+  DebugTln(cMsg);
+
+  Serial.print("\nGebruik 'telnet ");
+  Serial.print (WiFi.localIP());
+  Serial.println("' voor verdere debugging\r\n");
+
+
 //=============now test if SPIFFS is correct populated!============
   if (DSMRfileExist(settingIndexPage, false) )
   {
@@ -208,73 +281,6 @@ void setup()
 
 //=============end SPIFFS =========================================
 
-#if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
-  oled_Clear();  // clear the screen 
-  oled_Print_Msg(0, "<DSMRloggerAPI>", 0);
-  oled_Print_Msg(1, "Verbinden met WiFi", 500);
-#endif  // has_oled_ssd1306
-
-  digitalWrite(LED_BUILTIN, LED_ON);
-  startWiFi();
-
-#if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
-  oled_Print_Msg(0, "<DSMRloggerAPI>", 0);
-  oled_Print_Msg(1, WiFi.SSID(), 0);
-  sprintf(cMsg, "IP %s", WiFi.localIP().toString().c_str());
-  oled_Print_Msg(2, cMsg, 1500);
-#endif  // has_oled_ssd1306
-  digitalWrite(LED_BUILTIN, LED_OFF);
-  
-  Debugln();
-  Debug (F("Connected to " )); Debugln (WiFi.SSID());
-  Debug (F("IP address: " ));  Debugln (WiFi.localIP());
-  Debugln();
-
-  for (int L=0; L < 10; L++) {
-    digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
-    delay(200);
-  }
-  digitalWrite(LED_BUILTIN, LED_OFF);
-  
-  startMDNS(_HOSTNAME);
-#if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
-  oled_Print_Msg(3, "mDNS gestart", 1500);
-#endif  // has_oled_ssd1306
-
-
-#if defined(USE_NTP_TIME)                                   //USE_NTP
-//================ startNTP =========================================
-  #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )  //USE_NTP
-    oled_Print_Msg(3, "setup NTP server", 100);             //USE_NTP
-  #endif  // has_oled_ssd1306                               //USE_NTP
-                                                            //USE_NTP
-  if (!startNTP())                                          //USE_NTP
-  {                                                         //USE_NTP
-    DebugTln(F("ERROR!!! No NTP server reached!\r\n\r"));   //USE_NTP
-  #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )  //USE_NTP
-    oled_Print_Msg(0, "<DSMRloggerAPI>", 0);             //USE_NTP
-    oled_Print_Msg(2, "geen reactie van", 100);             //USE_NTP
-    oled_Print_Msg(2, "NTP server's", 100);                 //USE_NTP 
-    oled_Print_Msg(3, "Reboot DSMR-logger", 2000);          //USE_NTP
-  #endif  // has_oled_ssd1306                               //USE_NTP
-    delay(2000);                                            //USE_NTP
-    ESP.restart();                                          //USE_NTP
-    delay(3000);                                            //USE_NTP
-  }                                                         //USE_NTP
-  #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )  //USE_NTP
-    oled_Print_Msg(0, "<DSMRloggerAPI>", 0);             //USE_NTP
-    oled_Print_Msg(3, "NTP gestart", 1500);                 //USE_NTP
-    prevNtpHour = hour();                                   //USE_NTP
-  #endif                                                    //USE_NTP
-                                                            //USE_NTP
-#endif  //USE_NTP_TIME                                      //USE_NTP
-
-  sprintf(cMsg, "Last reset reason: [%s]\r", ESP.getResetReason().c_str());
-  DebugTln(cMsg);
-
-  Serial.print("\nGebruik 'telnet ");
-  Serial.print (WiFi.localIP());
-  Serial.println("' voor verdere debugging\r\n");
   
 //=============now test if "convertPRD" file exists================
   if (DSMRfileExist("!PRDconvert", false) )
@@ -389,7 +395,6 @@ void setup()
     oled_Print_Msg(3, "telegram .....", 500);
 #endif  // has_oled_ssd1306
 
-
 } // setup()
 
 //===========================================================================================
@@ -477,7 +482,6 @@ void doTaskTelegram()
 //===[ Do the background tasks ]===
 void doBackgroundTasks()
 {
-  //if (Verbose1) DebugTln("doBackgroundTasks");
   #ifndef HAS_NO_SLIMMEMETER
     handleSlimmemeter();
   #endif

@@ -6,39 +6,29 @@
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
-* Inspired by the code from Harold - SolarMeter code
-* Created by Robert van den Breemen (30 jan 2020)
-*   - RvdB - day change detection within scope of mindergas only
-*   - AaW  - cleanup code
-*   - RvdB - changing into a statemachine and survive reboot
-*   - RvdB - added AuthToken to settings
-*   - RvdB - many more formatting for gas changed to 3 digits in DSMRlogger data
-*   - RvdB - gas delivered should be [.3f] - lots of formatting of gasdelivered changed to 3 digits
-*   - RvdB - changed around the way debug is done in rollover on month, day and hour
-*   - RvdB - fixing the mindergas integration - mindergas.ino
-*   - RvdB - added initial support for mindergas
+* Created by Robert van den Breemen (8 feb 2020)
 *
 */
-#define MINDERGAS_INTERVAL  1  //For proper debug information and countdown behaviour, call the process mindergas at LEAST once per minute
 #define MG_FILENAME         "/Mindergas.post"
-
-DECLARE_TIMER_MIN(minderGasTimer, MINDERGAS_INTERVAL);
-DECLARE_TIMER_MIN(MGcountDownTimer, 1); //do not change 
 
 //=======================================================================
 void handleMindergas()
 {
+  #ifdef USE_MINDERGAS
+  
+  DECLARE_TIMER_MIN(minderGasTimer, 1);
   if (DUE(minderGasTimer) )
   {
-  #ifdef USE_MINDERGAS
     processMindergas();
-  #endif
   }
+  #endif
 
 } // handleMindergas()
 
 
 #ifdef USE_MINDERGAS
+
+DECLARE_TIMER_MIN(MGcountDownTimer, 1); //do not change 
 
 enum states_of_MG { MG_INIT, MG_WAIT_FOR_FIRST_TELEGRAM, MG_WAIT_FOR_NEXT_DAY
                            , MG_WRITE_TO_FILE, MG_DO_COUNTDOWN
@@ -49,7 +39,7 @@ enum states_of_MG stateMindergas = MG_INIT;
 int8_t    MG_Day                    = -1;
 bool      validToken                = false;
 bool      handleMindergasSemaphore  = false;
-
+int8_t    MGminuten                 = 0;
 
 //=======================================================================
 //force mindergas update, by skipping states
@@ -64,7 +54,7 @@ void forceMindergasUpdate()
     MG_Day = day();   // make it thisDay...
     strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "force Mindergas countdown");
     DebugTln(F("Force send data to mindergas.nl in ~1 minute"));
-    CHANGE_INTERVAL_MIN(minderGasTimer, 1);
+    MGminuten=1;
     stateMindergas = MG_DO_COUNTDOWN;
     processMindergas();
   }
@@ -82,7 +72,6 @@ void forceMindergasUpdate()
 // handle finite state machine of mindergas
 void processMindergas()
 {
-  static int8_t MGminuten = 0;
   time_t t;
   File   minderGasFile;
 

@@ -44,20 +44,6 @@ void processSlimmemeterRaw(){
     oled_Print_Msg(3, cMsg, 0);
   #endif
 
-//  while(Serial.available() > 0) 
-//  {   
-//    char rIn = Serial.read();       
-//    if (rIn == '!') 
-//    {
-//      showRawCount++;
-//#if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
-//      sprintf(cMsg, "Raw Count %4d", showRawCount);
-//      oled_Print_Msg(3, cMsg, 0);
-//#endif
-//    }
-//    TelnetStream.write((char)rIn);
-//  }   // while Serial.available()
-
     slimmeMeter.enable(true);
     Serial.setTimeout(5000);  // 5 seconds must be enough ..
     memset(tlgrm, 0, sizeof(tlgrm));
@@ -71,7 +57,7 @@ void processSlimmemeterRaw(){
 //    DebugTf("read [%d] bytes\r\n", l);
     if (l == 0) 
     {
-      DebugTln("RawMode: Timerout - no telegram received within 5 seconds");
+      DebugTln(F("RawMode: Timerout - no telegram received within 5 seconds"));
       return;
     }
 
