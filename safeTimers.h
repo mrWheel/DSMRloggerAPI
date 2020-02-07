@@ -64,25 +64,19 @@
 #define CHANGE_INTERVAL_MIN(timerName, timerTime) if (timerName##_interval != (timerTime * 60*1000))  \
                                                     {timerName##_interval = timerTime * 60 * 1000;  \
                                                     timerName##_last = millis();}     
-#define CHANGE_INTERVAL(timerName, timerTime)     if (timerName##_interval != (timerTime * 1000))     \
+#define CHANGE_INTERVAL_SEC(timerName, timerTime) if (timerName##_interval != (timerTime * 1000))     \
                                                     {timerName##_interval = timerTime * 1000;       \
                                                     timerName##_last = millis();}
 #define CHANGE_INTERVAL_MS(timerName, timerTime)  if (timerName##_interval != timerTime)            \
                                                     {timerName##_interval = timerTime;             \
                                                     timerName##_last = millis();}
-#define CHANGE_INTERVAL_SEC CHANGE_INTERVAL
+#define CHANGE_INTERVAL CHANGE_INTERVAL_SEC
 
-//#define RESTART_TIMER(timerName)                  { timerName##_last = millis(); }
-
-#define RESTART_TIMER_MIN(timerName)              timerName##_last = millis()    
-#define RESTART_TIMER(timerName)                  timerName##_last = millis();
-#define RESTART_TIMER_MS(timerName)               timerName##_last = millis();
-#define RESTART_TIMER_SEC RESTART_TIMER
-
+#define RESTART_TIMER(timerName)                  { timerName##_last = millis(); }
 
 #define SINCE(timerName)  ((int32_t)(millis() - timerName##_last))
-#define DUE(timerName) (( SINCE(timerName) < timerName##_interval) ? 0 : (timerName##_last+=timerName##_interval))
-
+//#define DUE(timerName) (( SINCE(timerName) < timerName##_interval) ? 0 : (timerName##_last+=timerName##_interval))
+#define DUE(timerName) (( SINCE(timerName) < timerName##_interval) ? 0 : (timerName##_last=millis()))
 /*
  * 
 */

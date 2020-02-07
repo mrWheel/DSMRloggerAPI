@@ -27,10 +27,12 @@ static uint8_t msgMode = 0;
 static bool boolDisplay = true; 
 
 uint8_t     lineHeight, charHeight;
-DECLARE_TIMER_MIN(oledSleepTimer, 10);
+DECLARE_TIMER_MIN(oledSleepTimer, 10);  //sleep the display in 10 minutes
 //===========================================================================================
 void checkFlashButton() 
 {
+  if (settingSleepTime == 0) return;  //if the display timer is turned off, then there is not flashbutton to be checked
+  CHANGE_INTERVAL_MIN(oledSleepTimer, settingSleepTime);
   //check if the displaytimer is due... 
   if ( DUE(oledSleepTimer) ) 
   {
@@ -54,7 +56,7 @@ void checkFlashButton()
     oled_Print_Msg(0, "<DSMRloggerAPI>", 0);
     oled_Print_Msg(2, "Wacht ...", 5);
     msgMode = 0; //reset the display loop
-    RESTART_TIMER_MIN(oledSleepTimer);
+    RESTART_TIMER(oledSleepTimer);
   }   
   
 } // checkFlashButton()
@@ -76,7 +78,7 @@ void oled_Init()
                                                         , oled.displayHeight()
                                                         , charHeight, lineHeight, 4);
     boolDisplay = true;
-    RESTART_TIMER_MIN(oledSleepTimer);
+    RESTART_TIMER(oledSleepTimer);
 }   // oled_Init()
 
 //===========================================================================================
@@ -89,11 +91,7 @@ void oled_Clear()
 //===========================================================================================
 void oled_Print_Msg(uint8_t line, String message, uint16_t wait) 
 {
-  if (!boolDisplay) return;
-  if (settingSleepTime==0) return;
-  
-//  DECLARE_TIMER_MS(timerWait, wait);
-//  CHANGE_INTERVAL_MS(timerWait, wait);
+  if (!boolDisplay) return;  
   
   message += "                    ";  
   oled.setCursor(0, ((line * lineHeight)/8));
@@ -102,12 +100,6 @@ void oled_Print_Msg(uint8_t line, String message, uint16_t wait)
   if (wait>0)
     delayms(wait);
 
-//  while (! DUE(timerWait) )
-//  {
-//    checkFlashButton();
-//    doBackgroundtask();
-//    yield();
-//  }
 }   // oled_Print_Msg()
 
 

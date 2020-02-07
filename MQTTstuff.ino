@@ -17,23 +17,15 @@
   
 #ifdef USE_MQTT
   #include <PubSubClient.h>           // MQTT client publish and subscribe functionality
-//  #define MQTT_WAITFORCONNECT   600000  // 10 minutes
-//  #define MQTT_WAITFORRETRY     3       // 3 seconden backoff
 
   DECLARE_TIMER_MS(mqttTimer, 500);                         //every 500 ms do handle state
   DECLARE_TIMER_SEC(mqttRetryTimer, 3);                     //backoff timer 
   DECLARE_TIMER_MIN(timeMQTTReconnect, 10)                  //try reconnecting cyclus timer
   DECLARE_TIMER_SEC(timeMQTTPublish,  settingMQTTinterval); //special case, if telegram interval = mqtt interval, then mqtt interval needs to be shorter
 
-
   static            PubSubClient MQTTclient(wifiClient);
-
-//  uint32_t          MQTThandleTimer   = 0;
   int8_t            reconnectAttempts = 0;
-  //uint32_t          timeMQTTPublish  = 0;
   char              lastMQTTtimestamp[15] = "";
-//uint32_t          timeMQTTLastRetry = 0;
-//uint32_t          timeMQTTReconnect = 0;
   char              mqttBuff[100];
 
   enum states_of_MQTT { MQTT_STATE_INIT, MQTT_STATE_TRY_TO_CONNECT, MQTT_STATE_WAIT_FOR_FIRST_TELEGRAM, MQTT_STATE_IS_CONNECTED, MQTT_STATE_WAIT_CONNECTION_ATTEMPT, MQTT_STATE_WAIT_FOR_RECONNECT, MQTT_STATE_ERROR };
@@ -63,7 +55,8 @@ void handleMQTT()
   {
     case MQTT_STATE_INIT:  
       DebugTln(F("MQTT State: MQTT Initializing")); 
-      WiFi.hostByName(settingMQTTbroker, MQTTbrokerIP);  // lookup the MQTTbroker convert to IP
+      if (!MQTTbrokerIP.fromString(settingMQTTbroker))       // convert string to IP, if fail then
+          WiFi.hostByName(settingMQTTbroker, MQTTbrokerIP);  // lookup the MQTTbroker convert to IP
       sprintf(MQTTbrokerIPchar, "%d.%d.%d.%d", MQTTbrokerIP[0], MQTTbrokerIP[1], MQTTbrokerIP[2], MQTTbrokerIP[3]);
       if (isValidIP(MQTTbrokerIP))  
       {

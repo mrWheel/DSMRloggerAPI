@@ -30,9 +30,9 @@ void handleTestdata()
   time_t nt;
   int16_t slot;
 
-  DECLARE_TIMER_s(telegramTimer, TELEGRAM_INTERVAL);
+  DECLARE_TIMER_SEC(telegramTimer, TELEGRAM_INTERVAL);
  
-  if (!forceBuildRingFiles && (DUE( telegramTimer))  return;   // not yet time for new Telegram
+  if (!forceBuildRingFiles && ( DUE( telegramTimer) )  return;   // not yet time for new Telegram
 
 //  DebugTf("Time for a new Telegram ..");
   if (forceBuildRingFiles)
