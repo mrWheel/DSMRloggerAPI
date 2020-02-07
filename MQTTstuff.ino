@@ -28,8 +28,11 @@
   char              lastMQTTtimestamp[15] = "";
   char              mqttBuff[100];
 
-  enum states_of_MQTT { MQTT_STATE_INIT, MQTT_STATE_TRY_TO_CONNECT, MQTT_STATE_WAIT_FOR_FIRST_TELEGRAM, MQTT_STATE_IS_CONNECTED, MQTT_STATE_WAIT_CONNECTION_ATTEMPT, MQTT_STATE_WAIT_FOR_RECONNECT, MQTT_STATE_ERROR };
-  enum states_of_MQTT stateMQTT = MQTT_STATE_INIT;
+  enum states_of_MQTT { MQTT_STATE_WAIT_FOR_SETUP, MQTT_STATE_INIT, MQTT_STATE_TRY_TO_CONNECT, 
+                        MQTT_STATE_WAIT_FOR_FIRST_TELEGRAM, MQTT_STATE_IS_CONNECTED, 
+                        MQTT_STATE_WAIT_CONNECTION_ATTEMPT, MQTT_STATE_WAIT_FOR_RECONNECT, 
+                        MQTT_STATE_ERROR };
+  enum states_of_MQTT stateMQTT = MQTT_STATE_WAIT_FOR_SETUP;
 
   String            MQTTclientId;
 #endif
@@ -39,8 +42,6 @@ void startMQTT()
 {
 #ifdef USE_MQTT
   stateMQTT = MQTT_STATE_INIT;
-  DebugTf("settingInterval     [%d]\r\n", settingInterval);
-  DebugTf("settingMQTTinterval [%d]\r\n", settingMQTTinterval);
   handleMQTT();
 #endif
 }
@@ -49,10 +50,13 @@ void handleMQTT()
 {
 #ifdef USE_MQTT
 
-  if ( !DUE(mqttTimer) ) return;  // only every 500 ms
+//  if ( !DUE(mqttTimer) ) return;  // only every 500 ms
   
   switch(stateMQTT) 
   {
+    case MQTT_STATE_WAIT_FOR_SETUP:
+      //wait for startMQTT has been called
+      break;
     case MQTT_STATE_INIT:  
       DebugTln(F("MQTT State: MQTT Initializing")); 
       if (!MQTTbrokerIP.fromString(settingMQTTbroker))       // convert string to IP, if fail then
