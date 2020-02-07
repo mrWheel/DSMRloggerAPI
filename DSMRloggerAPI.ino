@@ -33,13 +33,13 @@
 #define USE_UPDATE_SERVER         // define if there is enough memory and updateServer to be used
 #define HAS_OLED_SSD1306          // define if a 0.96" OLED display is present
 //  #define HAS_OLED_SH1106           // define if a 1.3" OLED display is present
-  #define HAS_NO_SLIMMEMETER        // define for testing only!
+//  #define HAS_NO_SLIMMEMETER        // define for testing only!
 //  #define USE_PRE40_PROTOCOL        // define if Slimme Meter is pre DSMR 4.0 (2.2 .. 3.0)
 //  #define USE_NTP_TIME              // define to generate Timestamp from NTP (Only Winter Time for now)
 //  #define SM_HAS_NO_FASE_INFO       // if your SM does not give fase info use total delevered/returned
 #define USE_MQTT                  // define if you want to use MQTT
 #define USE_MINDERGAS             // define if you want to update mindergas (also add token down below)
-//  #define SHOW_PASSWRDS             // well .. show the PSK key and MQTT password, what else?
+//#define SHOW_PASSWRDS             // well .. show the PSK key and MQTT password, what else?
 /******************** don't change anything below this comment **********************/
 
 //prototype delayms... because it could be used all over the place.
@@ -394,7 +394,8 @@ void setup()
 
 //===========================================================================================
 //===[ blink status led in ms ]===
-void blinkLEDms(uint32_t iDelay){
+void blinkLEDms(uint32_t iDelay)
+{
   //blink the statusled, when time passed... #non-blocking blink
   DECLARE_TIMER_MS(timerBlink, iDelay);
   CHANGE_INTERVAL_MS(timerBlink, iDelay);
@@ -403,7 +404,8 @@ void blinkLEDms(uint32_t iDelay){
 }
 
 //===[ blink status now ]===
-void blinkLEDnow(){
+void blinkLEDnow()
+{
     pinMode(LED_BUILTIN, OUTPUT);
     digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
 }
@@ -419,20 +421,23 @@ void delayms(unsigned long delay_ms)
 //===========================================================================================
 
 //===[ Do task every 100ms ]===
-void doTaskEvery100ms(){
+void doTaskEvery100ms()
+{
   //if (Verbose1) DebugTln("doTaskEvery100ms");
   //== do tasks ==
 }
 
 //===[ Do task every 1s ]===
-void doTaskEvery1s(){
+void doTaskEvery1s()
+{
   //if (Verbose1) DebugTln("doTaskEvery1s");
   //== do tasks ==
   upTimeSeconds++;
 }
 
 //===[ Do task every 5s ]===
-void doTaskEvery5s(){
+void doTaskEvery5s()
+{
   //if (Verbose1) DebugTln("doTaskEvery5s");
   //== do tasks ==
   #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
@@ -441,7 +446,8 @@ void doTaskEvery5s(){
 }
 
 //===[ Do task every 30s ]===
-void doTaskEvery30s(){
+void doTaskEvery30s()
+{
   //if (Verbose1) DebugTln("doTaskEvery30s");
   //== do tasks ==
   #if defined(USE_NTP_TIME)                                                         //USE_NTP
@@ -456,7 +462,8 @@ void doTaskEvery30s(){
 
 
 //==[ Do Telegram Processing ]==
-void doTaskTelegram(){
+void doTaskTelegram()
+{
   DebugTln("doTaskTelegram");
   #if defined(HAS_NO_SLIMMEMETER)
     handleTestdata();
@@ -471,7 +478,9 @@ void doTaskTelegram(){
 void doBackgroundTasks()
 {
   //if (Verbose1) DebugTln("doBackgroundTasks");
-  handleSlimmemeter();
+  #ifndef HAS_NO_SLIMMEMETER
+    handleSlimmemeter();
+  #endif
   httpServer.handleClient();
   MDNS.update();
   handleKeyInput();
@@ -480,7 +489,7 @@ void doBackgroundTasks()
 #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
   checkFlashButton();
 #endif
-  blinkLEDms(1000);               // 'blink' the status led every x ms
+//  blinkLEDms(1000);               // 'blink' the status led every x ms
   yield();
 
 }
