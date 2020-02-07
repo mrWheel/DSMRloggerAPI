@@ -82,7 +82,7 @@ void handleMQTT()
     case MQTT_STATE_WAIT_FOR_FIRST_TELEGRAM:
       if (Verbose1) DebugTln(F("MQTT State: MQTT_STATE_WAIT_FOR_FIRST_TELEGRAM"));
       // if you received at least one telegram, then try to connect
-      if (telegramCount > 0) 
+      if (telegramCount > 3) 
       {
         // Now that there is something to send to MQTT, start with connecting to MQTT.
         stateMQTT = MQTT_STATE_TRY_TO_CONNECT;
