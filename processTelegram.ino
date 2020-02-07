@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : processTelegram, part of DSMRloggerAPI
-**  Version  : v0.1.0
+**  Version  : v0.3.3
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -33,7 +33,7 @@ void processTelegram()
   
   // Skip first 3 telegrams .. just to settle down a bit ;-)
   
-  if ((telegramCount - telegramErrors) < 3) 
+  if ((int32_t)(telegramCount - telegramErrors) < 3) 
   {
     return;
   }
