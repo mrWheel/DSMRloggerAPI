@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRindex.js, part of DSMRfirmwareAPI
-**  Version  : v0.3.2
+**  Version  : v0.3.3
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -26,7 +26,7 @@
   var er_tariff2          = 0;
   var gd_tariff           = 0;
   var electr_netw_costs   = 0;
-  var electr_netw_costs   = 0;
+  var gas_netw_costs      = 0;
   
   var data       = [];
   
@@ -119,19 +119,22 @@
     refreshDevTime();
     getDevSettings();
     refreshDevInfo();
-    TimeTimer = setInterval(refreshDevTime, 10 * 1000); // repeat every 10s
+    
+    timeTimer = setInterval(refreshDevTime, 10 * 1000); // repeat every 10s
 
     openTab("ActualTab");
     initActualGraph();
     setPresentationType('TAB');
-  
+      
   } // bootsTrap()
   
   //============================================================================  
   function openTab(tabName) {
-    
+        
     activeTab = tabName;
+
     clearInterval(tabTimer);  
+    clearInterval(actualTimer);  
     
     let bID = "b" + tabName;
     let i;
@@ -157,46 +160,56 @@
     //document.getElementById(bID).style.background='lightgray';
     document.getElementById(tabName).style.display = "block";  
     if (tabName != "ActualTab") {
-      actualTimer = setInterval(refreshSmActual, 60 * 1000); // repeat every 60s
+      actualTimer = setInterval(refreshSmActual, 60 * 1000);                  // repeat every 60s
     }
+    
     if (tabName == "ActualTab") {
       console.log("newTab: ActualTab");
-      //if (presentationType == "GRAPH")  initActualGraph();
       refreshSmActual();
       if (tlgrmInterval < 10)
-            actualTimer = setInterval(refreshSmActual, 10 * 1000); // repeat every 10s
+            actualTimer = setInterval(refreshSmActual, 10 * 1000);            // repeat every 10s
       else  actualTimer = setInterval(refreshSmActual, tlgrmInterval * 1000); // repeat every tlgrmInterval seconds
 
     } else if (tabName == "HoursTab") {
       console.log("newTab: HoursTab");
       refreshHours();
-      tabTimer = setInterval(refreshHours, 60 * 1000); // repeat every 60s
+      tabTimer = setInterval(refreshHours, 58 * 1000); // repeat every 58s
 
     } else if (tabName == "DaysTab") {
       console.log("newTab: DaysTab");
       refreshDays();
-      tabTimer = setInterval(refreshDays, 60 * 1000); // repeat every 60s
+      tabTimer = setInterval(refreshDays, 58 * 1000); // repeat every 58s
+      /***
+      console.log("ed_tariff1["+ed_tariff1+"]");
+      console.log("ed_tariff2["+ed_tariff2+"]");
+      console.log("er_tariff1["+er_tariff1+"]");
+      console.log("er_tariff2["+er_tariff2+"]");
+      console.log(" gd_tariff["+gd_tariff+"]");
+      console.log("electr_netw_costs["+electr_netw_costs+"]");
+      console.log("   gas_netw_costs["+gas_netw_costs+"]");    
+      ***/
 
     } else if (tabName == "MonthsTab") {
       console.log("newTab: MonthsTab");
       refreshMonths();
-      tabTimer = setInterval(refreshMonths, 60 * 1000); // repeat every 60s
+      tabTimer = setInterval(refreshMonths, 118 * 1000); // repeat every 118s
     
     } else if (tabName == "SysInfoTab") {
       console.log("newTab: SysInfoTab");
       refreshDevInfo();
-      tabTimer = setInterval(refreshDevInfo, 60 * 1000); // repeat every 30s
+      tabTimer = setInterval(refreshDevInfo, 58 * 1000); // repeat every 58s
 
     } else if (tabName == "FieldsTab") {
       console.log("newTab: FieldsTab");
       refreshSmFields();
-      tabTimer = setInterval(refreshSmFields, 60 * 1000); // repeat every 30s
+      tabTimer = setInterval(refreshSmFields, 58 * 1000); // repeat every 58s
 
     } else if (tabName == "TelegramTab") {
       console.log("newTab: TelegramTab");
       refreshSmTelegram();
       //tabTimer = setInterval(refreshSmTelegram, 60 * 1000); // do not repeat!
     }
+
   } // openTab()
 
   
@@ -465,11 +478,11 @@
 
       if (i < (data.length -1))
       {
-        data[i].p_ed  = (data[i].edt1 +data[i].edt2)-(data[i+1].edt1 +data[i+1].edt2).toFixed(3);
+        data[i].p_ed  = ((data[i].edt1 +data[i].edt2)-(data[i+1].edt1 +data[i+1].edt2)).toFixed(3);
         data[i].p_edw = (data[i].p_ed * 1000).toFixed(0);
-        data[i].p_er  = (data[i].ert1 +data[i].ert2)-(data[i+1].ert1 +data[i+1].ert2).toFixed(3);
+        data[i].p_er  = ((data[i].ert1 +data[i].ert2)-(data[i+1].ert1 +data[i+1].ert2)).toFixed(3);
         data[i].p_erw = (data[i].p_er * 1000).toFixed(0);
-        data[i].p_gd  = ( data[i].gdt  -data[i+1].gdt).toFixed(3);
+        data[i].p_gd  = (data[i].gdt  -data[i+1].gdt).toFixed(3);
         //var  day = data[i].recid.substring(4,6) * 1;
         //-- calculate Energy Delivered costs
         var     costs = ( (data[i].edt1 - data[i+1].edt1) * ed_tariff1 );
@@ -477,9 +490,11 @@
         //-- add Energy Returned costs
         costs = costs - ( (data[i].ert1 - data[i+1].ert1) * er_tariff1 );
         costs = costs - ( (data[i].ert2 - data[i+1].ert2) * er_tariff2 );
+        //-- add Gas Delivered costs
+        costs = costs + ( (data[i].gdt  - data[i+1].gdt)  * gd_tariff );
         //-- add network costs
         costs = costs + ( electr_netw_costs / 30 );
-        costs = costs + ( gas_netw_costs / 30 );
+        costs = costs + ( gas_netw_costs    / 30 );
         data[i].costs = costs.toFixed(2)
       }
       else
@@ -487,11 +502,12 @@
         data[i].p_ed  = (data[i].edt1 +data[i].edt2).toFixed(3);
         data[i].p_edw = (data[i].p_ed * 1000).toFixed(0);
         data[i].p_er  = (data[i].ert1 +data[i].ert2).toFixed(3);
-        data[i].p_erw = (data[i].p_ed * 1000).toFixed(0);
+        data[i].p_erw = (data[i].p_er * 1000).toFixed(0);
         data[i].p_gd  = (data[i].gdt).toFixed(3);
         data[i].costs = 0.0;
       }
     } // for i ..
+    //console.log("leaving expandData() ..");
 
   } // expandData()
 
@@ -503,33 +519,33 @@
 
     console.log("showActual()");
 
-          for (var i in data) 
-          {
-            data[i].shortName = smToHuman(data[i].name);
-            var tableRef = document.getElementById('actualTable').getElementsByTagName('tbody')[0];
-            if( ( document.getElementById("actualTable_"+data[i].name)) == null )
-            {
-              var newRow   = tableRef.insertRow();
-              newRow.setAttribute("id", "actualTable_"+data[i].name, 0);
-              // Insert a cell in the row at index 0
-              var newCell  = newRow.insertCell(0);            // (short)name
-              var newText  = document.createTextNode('');
-              newCell.appendChild(newText);
-              newCell  = newRow.insertCell(1);                // value
-              newCell.appendChild(newText);
-              newCell  = newRow.insertCell(2);                // unit
-              newCell.appendChild(newText);
-            }
-            tableCells = document.getElementById("actualTable_"+data[i].name).cells;
-            tableCells[0].innerHTML = data[i].shortName;
-            tableCells[1].innerHTML = data[i].value;
-            if (data[i].hasOwnProperty('unit'))
-            {
-              tableCells[1].style.textAlign = "right";        // value
-              tableCells[2].style.textAlign = "center";       // unit
-              tableCells[2].innerHTML = data[i].unit;
-            }
-          }
+    for (var i in data) 
+    {
+      data[i].shortName = smToHuman(data[i].name);
+      var tableRef = document.getElementById('actualTable').getElementsByTagName('tbody')[0];
+      if( ( document.getElementById("actualTable_"+data[i].name)) == null )
+      {
+        var newRow   = tableRef.insertRow();
+        newRow.setAttribute("id", "actualTable_"+data[i].name, 0);
+        // Insert a cell in the row at index 0
+        var newCell  = newRow.insertCell(0);            // (short)name
+        var newText  = document.createTextNode('');
+        newCell.appendChild(newText);
+        newCell  = newRow.insertCell(1);                // value
+        newCell.appendChild(newText);
+        newCell  = newRow.insertCell(2);                // unit
+        newCell.appendChild(newText);
+      }
+      tableCells = document.getElementById("actualTable_"+data[i].name).cells;
+      tableCells[0].innerHTML = data[i].shortName;
+      tableCells[1].innerHTML = data[i].value;
+      if (data[i].hasOwnProperty('unit'))
+      {
+        tableCells[1].style.textAlign = "right";        // value
+        tableCells[2].style.textAlign = "center";       // unit
+        tableCells[2].innerHTML = data[i].unit;
+      }
+    }
 
     //--- hide canvas
     document.getElementById("dataChart").style.display = "none";
@@ -549,7 +565,6 @@
     {
       //console.log("showHistTable("+type+"): data["+i+"] => data["+i+"]name["+data[i].recid+"]");
       var tableRef = document.getElementById('last'+type+'Table').getElementsByTagName('tbody')[0];
-      //if( ( document.getElementById(type +"Table_"+data[i].recid)) == null )
       if( ( document.getElementById(type +"Table_"+type+"_R"+i)) == null )
       {
         var newRow   = tableRef.insertRow();
@@ -584,13 +599,13 @@
             tableCells[2].innerHTML = data[i].p_erw;
       else  tableCells[2].innerHTML = "-";
       tableCells[3].style.textAlign = "right";
-      if (data[i].p_edw >= 0)
+      if (data[i].p_gd >= 0)
             tableCells[3].innerHTML = data[i].p_gd;
       else  tableCells[3].innerHTML = "-";
       if (type == "Days")
       {
         tableCells[4].style.textAlign = "right";
-        tableCells[4].innerHTML = data[i].costs;
+        tableCells[4].innerHTML = (data[i].costs * 1.0).toFixed(2);
       }
     };
 
@@ -607,14 +622,14 @@
   //============================================================================  
   function showMonthsHist(data)
   { 
-    //console.log("now in showMonthsHist() ..");
+    console.log("now in showMonthsHist() ..");
     var showRows = 0;
     if (data.length > 24) showRows = 12;
     else                  showRows = data.length / 2;
     //console.log("showRows is ["+showRows+"]");
     for (let i=0; i<showRows; i++)
     {
-      //console.log("showMonthsHist(): data["+i+"] => data["+i+"]name["+data[i].recid+"]");
+      //console.log("showMonthsHist(): data["+i+"] => data["+i+"].name["+data[i].recid+"]");
       var tableRef = document.getElementById('lastMonthsTable').getElementsByTagName('tbody')[0];
       if( ( document.getElementById("lastMonthsTable_R"+i)) == null )
       {
@@ -661,39 +676,39 @@
       tableCells[1].innerHTML = "20"+data[i].recid.substring(0,2);          // jaar
       tableCells[2].style.textAlign = "right";
       if (data[i].p_ed >= 0)
-            tableCells[2].innerHTML = (data[i].p_ed).toFixed(3);            // verbruik
+            tableCells[2].innerHTML = data[i].p_ed;                         // verbruik
       else  tableCells[2].innerHTML = "-";     
       tableCells[3].style.textAlign = "center";
       tableCells[3].innerHTML = "20"+data[i+12].recid.substring(0,2);       // jaar
       tableCells[4].style.textAlign = "right";
       if (data[i+12].p_ed >= 0)
-            tableCells[4].innerHTML = (data[i+12].p_ed).toFixed(3);         // verbruik
+            tableCells[4].innerHTML = data[i+12].p_ed;                      // verbruik
       else  tableCells[4].innerHTML = "-";     
 
       tableCells[5].style.textAlign = "center";
       tableCells[5].innerHTML = "20"+data[i].recid.substring(0,2);          // jaar
       tableCells[6].style.textAlign = "right";
       if (data[i].p_er >= 0)
-            tableCells[6].innerHTML = (data[i].p_er).toFixed(3);            // opgewekt
+            tableCells[6].innerHTML = data[i].p_er;                         // opgewekt
       else  tableCells[6].innerHTML = "-";     
       tableCells[7].style.textAlign = "center";
       tableCells[7].innerHTML = "20"+data[i+12].recid.substring(0,2);       // jaar
       tableCells[8].style.textAlign = "right";
       if (data[i+12].p_er >= 0)
-            tableCells[8].innerHTML = (data[i+12].p_er).toFixed(3);         // opgewekt
+            tableCells[8].innerHTML = data[i+12].p_er;                      // opgewekt
       else  tableCells[8].innerHTML = "-";     
 
       tableCells[9].style.textAlign = "center";
       tableCells[9].innerHTML = "20"+data[i].recid.substring(0,2);          // jaar
       tableCells[10].style.textAlign = "right";
       if (data[i].p_gd >= 0)
-            tableCells[10].innerHTML = (data[i].p_gd * 1).toFixed(3);       // gas
+            tableCells[10].innerHTML = data[i].p_gd;                        // gas
       else  tableCells[10].innerHTML = "-";     
       tableCells[11].style.textAlign = "center";
       tableCells[11].innerHTML = "20"+data[i+12].recid.substring(0,2);      // jaar
       tableCells[12].style.textAlign = "right";
       if (data[i+12].p_gd >= 0)
-            tableCells[12].innerHTML = (data[i+12].p_gd * 1).toFixed(3);    // gas
+            tableCells[12].innerHTML = data[i+12].p_gd;                     // gas
       else  tableCells[12].innerHTML = "-";     
 
     };
@@ -779,8 +794,8 @@
       document.getElementById('mTAB').checked   = true;
       document.getElementById('mGRAPH').checked = false;
     } else {
-      console.log("setPresentationType to ["+pType+"] is quit shitty!");
-      presentationType = "";
+      console.log("setPresentationType to ["+pType+"] is quit shitty! Set to TAB");
+      presentationType = "TAB";
     }
 
     if (activeTab == "ActualTab")  refreshSmActual();

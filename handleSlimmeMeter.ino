@@ -25,7 +25,7 @@ void handleSlimmeMeter()
         
     if (slimmeMeter.parse(&DSMRdata, &DSMRerror))   // Parse succesful, print result
     {
-      if (telegramCount > 1563000000) 
+      if (telegramCount > (UINT32_MAX - 1)) 
       {
         delay(1000);
         ESP.reset();

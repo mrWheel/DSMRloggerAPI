@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRgraphics.js, part of DSMRloggerAPI
-**  Version  : v0.3.2
+**  Version  : v0.3.3
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -92,24 +92,6 @@ var monthOptions = {
         } // scales
       }; // options
 
-
-var actGasOptions = {
-        responsive: true,
-        maintainAspectRatio: true,
-        scales: {
-          yAxes: [{
-            ticks : {
-              beginAtZero : false
-            },
-            scaleLabel: {
-              display: true,
-              labelString: 'dm3',
-            },
-          }]
-        } // scales
-      }; // options
-
-
 //----------------Chart's-------------------------------------------------------
 var myElectrChart;
 var myGasChart;
@@ -132,7 +114,7 @@ var myGasChart;
   } // renderElectrChart()
 
   //============================================================================  
-  function renderGasChart(dataSet, options) {
+  function renderGasChart(dataSet, labelString) {
     //console.log("Now in renderGasChart() ..");
     
     if (myGasChart) {
@@ -143,7 +125,22 @@ var myGasChart;
     myGasChart = new Chart(ctxGas, {
       type: 'line',
       data: dataSet,
-      options: options,
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        scales: {
+          yAxes: [{
+            ticks : {
+              beginAtZero : true,
+            },
+            scaleLabel: {
+              display: true,
+              labelString: labelString,
+            },
+          }]
+        } // scales
+      } // options
+
     });
     
   } // renderGasChart()
@@ -159,7 +156,8 @@ var myGasChart;
     else  renderElectrChart(electrData, dayOptions);
     myElectrChart.update();
     
-    renderGasChart(gasData, actGasOptions);
+    //renderGasChart(gasData, actGasOptions);
+    renderGasChart(gasData, "dm3");
     myGasChart.update();
   
     //--- hide table
@@ -180,7 +178,8 @@ var myGasChart;
     copyMonthsToChart(data);
     renderElectrChart(electrData, monthOptions);
     myElectrChart.update();
-    renderGasChart(gasData, actGasOptions);
+    //renderGasChart(gasData, actGasOptions);
+    renderGasChart(gasData, "m3");
     myGasChart.update();
   
     //--- hide table
@@ -242,12 +241,12 @@ var myGasChart;
       gasData.labels.push(formatGraphDate(type, data[i].recid)); // adds x axis labels (timestamp)
       if (type == "Hours")
       {
-        if (data[i].p_edw >= 0) electrData.datasets[0].data[y]  = data[i].p_edw;
+        if (data[i].p_edw >= 0) electrData.datasets[0].data[y]  = (data[i].p_edw *  1.0);
         if (data[i].p_erw >= 0) electrData.datasets[1].data[y]  = (data[i].p_erw * -1.0);
       }
       else
       {
-        if (data[i].p_ed >= 0) electrData.datasets[0].data[y]  = (data[i].p_ed).toFixed(3);
+        if (data[i].p_ed >= 0) electrData.datasets[0].data[y]  = (data[i].p_ed *  1.0).toFixed(3);
         if (data[i].p_er >= 0) electrData.datasets[1].data[y]  = (data[i].p_er * -1.0).toFixed(3);
       }
       if (data[i].p_gd  >= 0) gasData.datasets[0].data[y]     = (data[i].p_gd * 1000.0).toFixed(0);
@@ -295,7 +294,7 @@ var myGasChart;
     electrData.datasets[2].backgroundColor = "orange";
     electrData.datasets[2].data            = []; //contains the 'Y; axis data
     electrData.datasets[2].label           = "Gebruikt vorige periode"; //"S"+s; //contains the 'Y; axis label
-    electrData.datasets[2].stack           = "VP"
+    electrData.datasets[2].stack           = "RP"
     // idx 3 => ER -1
     electrData.datasets.push({}); //create a new dataset
     electrData.datasets[3].fill            = 'false';
@@ -303,7 +302,7 @@ var myGasChart;
     electrData.datasets[3].backgroundColor = "lightgreen";
     electrData.datasets[3].data            = []; //contains the 'Y; axis data
     electrData.datasets[3].label           = "Opgewekt vorige Periode"; //"S"+s; //contains the 'Y; axis label
-    electrData.datasets[3].stack           = "VP"
+    electrData.datasets[3].stack           = "RP"
     // idx 0 => GD
     gasData.datasets.push({}); //create a new dataset
     gasData.datasets[0].fill            = 'false';
@@ -319,29 +318,31 @@ var myGasChart;
     gasData.datasets[1].data            = []; //contains the 'Y; axis data
     gasData.datasets[1].label           = "Gas vorige Periode"; //"S"+s; //contains the 'Y; axis label
     
-    console.log("there are ["+data.length+"] rows");
+    //console.log("there are ["+data.length+"] rows");
     var showRows = 0;
     var p        = 0;
     if (data.length > 24) showRows = 11;
     else                  showRows = data.length / 2;
-    console.log("showRows is ["+showRows+"]");
+    //console.log("showRows is ["+showRows+"]");
     for (let i=showRows; i>=0; i--)
     {
       let y = i +12;
       electrData.labels.push(formatGraphDate("Months", data[i].recid)); // adds x axis labels (timestamp)
       gasData.labels.push(formatGraphDate("Months", data[i].recid)); // adds x axis labels (timestamp)
       //electrData.labels.push(p); // adds x axis labels (timestamp)
-      if (data[i].p_ed >= 0) electrData.datasets[0].data[p]  = (data[i].p_ed).toFixed(3);
+      if (data[i].p_ed >= 0) electrData.datasets[0].data[p]  = (data[i].p_ed *  1.0).toFixed(3);
       if (data[i].p_er >= 0) electrData.datasets[1].data[p]  = (data[i].p_er * -1.0).toFixed(3);
-      if (data[y].p_ed >= 0) electrData.datasets[2].data[p]  = (data[y].p_ed).toFixed(3);
+      if (data[y].p_ed >= 0) electrData.datasets[2].data[p]  = (data[y].p_ed *  1.0).toFixed(3);
       if (data[y].p_er >= 0) electrData.datasets[3].data[p]  = (data[y].p_er * -1.0).toFixed(3);
-      gasData.datasets[0].data[p]  = data[i].p_gd;
-      gasData.datasets[1].data[p]  = data[y].p_gd;
+      if (data[i].p_gd >= 0) gasData.datasets[0].data[p]     = data[i].p_gd;
+      if (data[y].p_gd >= 0) gasData.datasets[1].data[p]     = data[y].p_gd;
       p++;
     }
+    //--- hide months Table
+    document.getElementById("lastMonths").style.display = "none";
     //--- show canvas
-    document.getElementById("dataChart").style.display = "block";
-    document.getElementById("gasChart").style.display  = "block";
+    document.getElementById("dataChart").style.display  = "block";
+    document.getElementById("gasChart").style.display   = "block";
 
   } // copyMonthsToChart()
     
@@ -360,8 +361,7 @@ var myGasChart;
         if (data[i].value == actLabel)
         {
           console.log("actLabel["+actLabel+"] == value["+data[i].value+"] =>break!");
-          actPoint--; // 
-          break; // skip all the rest
+          return;
         }
         actElectrData.labels.push(formatGraphDate("Actual", data[i].value)); // adds x axis labels (timestamp)
         actGasData.labels.push(formatGraphDate("Actual", data[i].value)); // adds x axis labels (timestamp)
@@ -392,18 +392,21 @@ var myGasChart;
     
     if (actPoint > maxPoints) 
     {
-      actElectrData.labels.shift();
-      actElectrData.datasets[0].data.shift();
-      actElectrData.datasets[1].data.shift();
-      actElectrData.datasets[2].data.shift();
-      actElectrData.datasets[3].data.shift();
-      actElectrData.datasets[4].data.shift();
-      actElectrData.datasets[5].data.shift();
-      actGasData.labels.shift();
-      actGasData.datasets[0].data.shift();
-      actPoint--;
-    }
-
+      for (let s=0; s<6; s++)
+      {
+        actElectrData.labels.shift();
+        actElectrData.datasets[0].data.shift();
+        actElectrData.datasets[1].data.shift();
+        actElectrData.datasets[2].data.shift();
+        actElectrData.datasets[3].data.shift();
+        actElectrData.datasets[4].data.shift();
+        actElectrData.datasets[5].data.shift();
+        actGasData.labels.shift();
+        actGasData.datasets[0].data.shift();
+        actPoint--;
+      } // for s ..
+    } 
+    
   } // copyActualToChart()
 
   
@@ -505,7 +508,8 @@ var myGasChart;
     renderElectrChart(actElectrData, actElectrOptions);
     myElectrChart.update();
     
-    renderGasChart(actGasData, actGasOptions);
+    //renderGasChart(actGasData, actGasOptions);
+    renderGasChart(actGasData, "dm3");
     gasChart.update();
 
   } // showActualGraph()
