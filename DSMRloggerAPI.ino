@@ -12,7 +12,7 @@
   Arduino-IDE settings for DSMR-logger Version 4 (ESP-12):
 
     - Board: "Generic ESP8266 Module"
-    - Flash mode: "DOUT" | "DIO"    // if you change from one to the other OTA may fail!
+    - Flash mode: "DOUT" | "DIO"    // change only after power-off and on again!
     - Flash size: "4MB (FS: 2MB OAT:~1019KB)"  
     - DebugT port: "Disabled"
     - DebugT Level: "None"
