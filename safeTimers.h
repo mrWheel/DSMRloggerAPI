@@ -64,7 +64,7 @@
 
 
 #define SINCE(timerName)  ((int32_t)(millis() - timerName##_last))
-#define DUE(timerName) (( SINCE(timerName) < timerName##_interval) ? 0 : (timerName##_last=millis()))
+#define DUE(timerName) (( SINCE(timerName) < timerName##_interval) ? 0 : (timerName##_last+=timerName##_interval))
 
 /*
  * 
