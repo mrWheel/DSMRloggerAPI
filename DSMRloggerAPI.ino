@@ -42,6 +42,9 @@
 //  #define SHOW_PASSWRDS             // well .. show the PSK key and MQTT password, what else?
 /******************** don't change anything below this comment **********************/
 
+//prototype delayms... because it could be used all over the place.
+void delayms(unsigned long);
+
 #include "DSMRloggerAPI.h"
 
 #ifdef USE_MINDERGAS
@@ -114,7 +117,6 @@ void setup()
   Serial.printf("\n\nBooting....[%s]\r\n\r\n", String(_FW_VERSION).c_str());
 
 #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
-  DECLARE_TIMER_MIN(oledSleepTimer, 10);
   oled_Init();
   oled_Clear();  // clear the screen so we can paint the menu.
   oled_Print_Msg(0, "<DSMRloggerAPI>", 0);

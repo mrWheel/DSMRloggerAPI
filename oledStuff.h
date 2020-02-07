@@ -28,14 +28,13 @@ static bool boolDisplay = true;
 
 uint8_t     lineHeight, charHeight;
 DECLARE_TIMER_MIN(oledSleepTimer, 10);
-
 //===========================================================================================
 void checkFlashButton() 
 {
   //check if the displaytimer is due... 
-  if (DUE(oledSleepTimer)) 
+  if ( DUE(oledSleepTimer) ) 
   {
-    //Serial.println("Switching display off..");
+    DebugTln("Switching display off..");
     oled.clear();
     boolDisplay = false;
   }
@@ -43,17 +42,19 @@ void checkFlashButton()
   //check the button and turn it on.
   if (digitalRead(FLASH_BUTTON) == LOW && buttonState == LOW) 
   {
-      buttonState = HIGH;
+    DebugTln(F("Pressed the FlashButton!"));
+    buttonState = HIGH;
   } 
   else if (digitalRead(FLASH_BUTTON) == HIGH && buttonState == HIGH) 
   {
-      buttonState = LOW;
-      //Serial.println("Switching display on..");
-      boolDisplay = true;
-      oled.clear();
-      oled_Print_Msg(0, "<DSMRloggerAPI>", 0);
-      oled_Print_Msg(2, "Wacht ...", 5);
-      msgMode = 0; //reset the display loop
+    buttonState = LOW;
+    DebugTln(F("Switching display on.."));
+    boolDisplay = true;
+    oled.clear();
+    oled_Print_Msg(0, "<DSMRloggerAPI>", 0);
+    oled_Print_Msg(2, "Wacht ...", 5);
+    msgMode = 0; //reset the display loop
+    RESTART_TIMER_MIN(oledSleepTimer);
   }   
   
 } // checkFlashButton()
@@ -71,10 +72,11 @@ void oled_Init()
     oled.setFont(X11fixed7x14B);  // this gives us 4 rows by 18 chars
     charHeight  = oled.fontHeight();
     lineHeight  = oled.displayHeight() / 4;
-    Serial.printf("OLED is [%3dx%3d], charHeight[%d], lineHeight[%d], nrLines[%d]\r\n", oled.displayWidth()
+    DebugTf("OLED is [%3dx%3d], charHeight[%d], lineHeight[%d], nrLines[%d]\r\n", oled.displayWidth()
                                                         , oled.displayHeight()
                                                         , charHeight, lineHeight, 4);
-
+    boolDisplay = true;
+    RESTART_TIMER_MIN(oledSleepTimer);
 }   // oled_Init()
 
 //===========================================================================================
@@ -87,22 +89,25 @@ void oled_Clear()
 //===========================================================================================
 void oled_Print_Msg(uint8_t line, String message, uint16_t wait) 
 {
-  DECLARE_TIMER_MS(timerWait, wait);
-  CHANGE_INTERVAL_MS(timerWait, wait);
+  if (!boolDisplay) return;
+  if (settingSleepTime==0) return;
   
-  if ((boolDisplay) && (settingSleepTime>0))
-  { 
-    message += "                    ";
-    
-    oled.setCursor(0, ((line * lineHeight)/8));
-    oled.print(message.c_str()); 
+//  DECLARE_TIMER_MS(timerWait, wait);
+//  CHANGE_INTERVAL_MS(timerWait, wait);
+  
+  message += "                    ";  
+  oled.setCursor(0, ((line * lineHeight)/8));
+  oled.print(message.c_str()); 
 
-    while (!DUE(timerWait) )
-    {
-      checkFlashButton();
-      yield();
-    }
-  }  
+  if (wait>0)
+    delayms(wait);
+
+//  while (! DUE(timerWait) )
+//  {
+//    checkFlashButton();
+//    doBackgroundtask();
+//    yield();
+//  }
 }   // oled_Print_Msg()
 
 

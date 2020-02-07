@@ -59,6 +59,11 @@
                                                     timerName##_last = millis();}
 #define CHANGE_INTERVAL_SEC CHANGE_INTERVAL
 
+#define RESTART_TIMER_MIN(timerName)              timerName##_last = millis()    
+#define RESTART_TIMER(timerName)                  timerName##_last = millis();
+#define RESTART_TIMER_MS(timerName)               timerName##_last = millis();
+#define RESTART_TIMER_SEC RESTART_TIMER
+
 
 #define SINCE(timerName)  ((int32_t)(millis() - timerName##_last))
 #define DUE(timerName) (( SINCE(timerName) < timerName##_interval) ? 0 : (timerName##_last=millis()))
