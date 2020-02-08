@@ -50,8 +50,14 @@ void checkFlashButton()
   else if (digitalRead(FLASH_BUTTON) == HIGH && buttonState == HIGH) 
   {
     buttonState = LOW;
-    DebugTln(F("Switching display on.."));
-    boolDisplay = true;
+    boolDisplay = !boolDisplay;
+    if (boolDisplay) {
+      DebugTln(F("Switching display on.."));    
+    }
+    else
+    {
+      DebugTln(F("Switching display off.."));
+    }
     oled.clear();
     oled_Print_Msg(0, "<DSMRloggerAPI>", 0);
     oled_Print_Msg(2, "Wacht ...", 5);

@@ -85,7 +85,7 @@ void processSlimmemeter(){
   slimmeMeter.loop();
   if (slimmeMeter.available()) 
   {
-    DebugTf("processSlimmerMeter telegramCount=[%4d] telegramErrors=[%4d]\r\n", telegramCount, telegramErrors);
+    DebugTf("processSlimmerMeter telegramCount=[%d] telegramErrors=[%d]\r\n", telegramCount, telegramErrors);
     DebugTln(F("\r\n[Time----][FreeHeap/mBlck][Function----(line):\r"));
     // Voorbeeld: [21:00:11][   9880/  8960] loop        ( 997): read telegram [28] => [140307210001S]
     telegramCount++;
