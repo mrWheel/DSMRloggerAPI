@@ -32,9 +32,11 @@ DECLARE_TIMER_MIN(oledSleepTimer, 10);  //sleep the display in 10 minutes
 void checkFlashButton() 
 {
   if (settingSleepTime == 0) return;  //if the display timer is turned off, then there is not flashbutton to be checked
+  
   CHANGE_INTERVAL_MIN(oledSleepTimer, settingSleepTime);
+  
   //check if the displaytimer is due... 
-  if ( DUE(oledSleepTimer) ) 
+  if ( boolDisplay && DUE(oledSleepTimer) ) 
   {
     DebugTln("Switching display off..");
     oled.clear();

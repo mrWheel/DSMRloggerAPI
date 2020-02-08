@@ -59,8 +59,7 @@ void handleMQTT()
       break;
     case MQTT_STATE_INIT:  
       DebugTln(F("MQTT State: MQTT Initializing")); 
-      if (!MQTTbrokerIP.fromString(settingMQTTbroker))       // convert string to IP, if fail then
-          WiFi.hostByName(settingMQTTbroker, MQTTbrokerIP);  // lookup the MQTTbroker convert to IP
+      WiFi.hostByName(settingMQTTbroker, MQTTbrokerIP);  // lookup the MQTTbroker convert to IP
       sprintf(MQTTbrokerIPchar, "%d.%d.%d.%d", MQTTbrokerIP[0], MQTTbrokerIP[1], MQTTbrokerIP[2], MQTTbrokerIP[3]);
       if (isValidIP(MQTTbrokerIP))  
       {
