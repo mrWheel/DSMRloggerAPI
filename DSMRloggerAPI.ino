@@ -88,10 +88,6 @@ void displayStatus()
   
 } // displayStatus()
 
-void printData()
-{  
-} // printData()
-
 
 //===========================================================================================
 void setup() 
@@ -170,7 +166,6 @@ void setup()
                                                                     
   readSettings(true);
 
-
 //=============start Networkstuff==================================
 #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
   oled_Clear();  // clear the screen 
@@ -242,7 +237,6 @@ void setup()
   Serial.print (WiFi.localIP());
   Serial.println("' voor verdere debugging\r\n");
 
-
 //=============now test if SPIFFS is correct populated!============
   if (DSMRfileExist(settingIndexPage, false) )
   {
@@ -278,17 +272,17 @@ void setup()
   {
     spiffsNotPopulated = true;
   }
-
 //=============end SPIFFS =========================================
 
   
 //=============now test if "convertPRD" file exists================
+
   if (DSMRfileExist("!PRDconvert", false) )
   {
     convertPRD2RING();
   }
 
-//===========================================================================================
+//=================================================================
 
 #if defined(USE_NTP_TIME)                                                           //USE_NTP
   time_t t = now(); // store the current time in time variable t                    //USE_NTP
@@ -304,6 +298,8 @@ void setup()
   oled_Print_Msg(3, cMsg, 1500);
 #endif  // has_oled_ssd1306
 
+//================ Start MQTT  ======================================
+
 #ifdef USE_MQTT                                               //USE_MQTT
   startMQTT();
   #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )    //USE_MQTT
@@ -312,8 +308,10 @@ void setup()
   #endif  // has_oled_ssd1306                                 //USE_MQTT
 #endif                                                        //USE_MQTT
 
-  telegramCount   = 0;
-  telegramErrors  = 0;
+//================ End of Start MQTT  ===============================
+
+
+//================ Start HTTP Server ================================
 
   if (!spiffsNotPopulated) {
     DebugTln(F("SPIFFS correct populated -> normal operation!\r"));
@@ -372,6 +370,9 @@ void setup()
     digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
     delay(250);
   }
+//================ Start HTTP Server ================================
+
+//================ Start Slimme Meter ===============================
 
   DebugTln(F("Enable slimmeMeter..\r"));
   delay(100);
@@ -384,6 +385,12 @@ void setup()
 #if defined( IS_ESP12 ) && !defined( HAS_NO_SLIMMEMETER )
     Serial.swap();
 #endif // is_esp12
+
+
+//================ End of Slimmer Meter ============================
+
+
+//================ The final part of the Setup =====================
 
   sprintf(cMsg, "Last reset reason: [%s]\r", ESP.getResetReason().c_str());
   DebugTln(cMsg);
