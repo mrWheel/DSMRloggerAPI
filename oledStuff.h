@@ -33,7 +33,7 @@ void checkFlashButton()
 {
   if (settingSleepTime == 0) return;  //if the display timer is turned off, then there is not flashbutton to be checked
   
-  CHANGE_INTERVAL_MIN(oledSleepTimer, settingSleepTime);
+  UPDATE_INTERVAL_WHEN_CHANGED_MIN(oledSleepTimer, settingSleepTime);
   
   //check if the displaytimer is due... 
   if ( boolDisplay && DUE(oledSleepTimer) ) 
@@ -108,7 +108,7 @@ void oled_Print_Msg(uint8_t line, String message, uint16_t wait)
   if (wait>0)
   {
     DECLARE_TIMER_MS(timer, wait);
-    CHANGE_INTERVAL_MS(timer, wait);
+    UPDATE_INTERVAL_WHEN_CHANGED_MS(timer, wait);
     while (!DUE(timer))
     {
       yield();

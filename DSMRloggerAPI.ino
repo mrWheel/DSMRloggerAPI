@@ -410,7 +410,7 @@ void blinkLEDms(uint32_t iDelay)
 {
   //blink the statusled, when time passed... #non-blocking blink
   DECLARE_TIMER_MS(timerBlink, iDelay);
-  CHANGE_INTERVAL_MS(timerBlink, iDelay);
+  UPDATE_INTERVAL_WHEN_CHANGED_MS(timerBlink, iDelay);
   if (DUE(timerBlink))
     blinkLEDnow();
 }
@@ -426,7 +426,7 @@ void blinkLEDnow()
 void delayms(unsigned long delay_ms)
 {
   DECLARE_TIMER_MS(timer, delay_ms);
-  CHANGE_INTERVAL_MS(timer, delay_ms);
+  UPDATE_INTERVAL_WHEN_CHANGED_MS(timer, delay_ms);
   while (!DUE(timer))
     doBackgroundTasks();
 }
@@ -516,7 +516,7 @@ void loop ()
   DECLARE_TIMER_MIN(timer10min, 10)
   DECLARE_TIMER_MIN(timer60min, 60)
   DECLARE_TIMER_SEC(timerTelegram, settingInterval)
-  CHANGE_INTERVAL_SEC(timerTelegram, settingInterval)
+  UPDATE_INTERVAL_WHEN_CHANGED_SEC(timerTelegram, settingInterval)
   
   // do the loop...
   loopCount++;

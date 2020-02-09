@@ -108,7 +108,6 @@ void processSlimmemeter(){
       if (Verbose2) 
       {
         DSMRdata.applyEach(showValues());
-        printData();
       }
           
     } 

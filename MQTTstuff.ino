@@ -18,7 +18,6 @@
 #ifdef USE_MQTT
   #include <PubSubClient.h>           // MQTT client publish and subscribe functionality
 
-  DECLARE_TIMER_MS(mqttTimer, 500);                         //every 500 ms do handle state
   DECLARE_TIMER_SEC(mqttRetryTimer, 3);                     //backoff timer 
   DECLARE_TIMER_MIN(timeMQTTReconnect, 10)                  //try reconnecting cyclus timer
   DECLARE_TIMER_SEC(timeMQTTPublish,  settingMQTTinterval); //special case, if telegram interval = mqtt interval, then mqtt interval needs to be shorter
@@ -260,7 +259,7 @@ void sendMQTTData()
   if (!MQTTclient.connected() || !isValidIP(MQTTbrokerIP)) return;
 
   if (settingMQTTinterval == settingInterval) 
-    CHANGE_INTERVAL_SEC(timeMQTTPublish,  settingMQTTinterval); //special case, if telegram interval = mqtt interval, then mqtt interval needs to be shorter
+    UPDATE_INTERVAL_WHEN_CHANGED_SEC(timeMQTTPublish,  settingMQTTinterval); //special case, if telegram interval = mqtt interval, then mqtt interval needs to be shorter
 
   if ( DUE(timeMQTTPublish) ) 
   {
