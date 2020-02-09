@@ -259,7 +259,7 @@ void sendMQTTData()
   if (!MQTTclient.connected() || !isValidIP(MQTTbrokerIP)) return;
 
   if (settingMQTTinterval == settingInterval) 
-    UPDATE_INTERVAL_WHEN_CHANGED_SEC(timeMQTTPublish,  settingMQTTinterval); //special case, if telegram interval = mqtt interval, then mqtt interval needs to be shorter
+    CHANGE_INTERVAL_SEC(timeMQTTPublish,  settingMQTTinterval); //special case, if telegram interval = mqtt interval, then mqtt interval needs to be shorter
 
   if ( DUE(timeMQTTPublish) ) 
   {
