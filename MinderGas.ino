@@ -11,7 +11,7 @@
 */
 #define MG_FILENAME         "/Mindergas.post"
 
-DECLARE_TIMER_MS(minderGasTimer, 500); //twice per second
+DECLARE_TIMER_MIN(minderGasTimer, 1); 
 
 //=======================================================================
 void handleMindergas()

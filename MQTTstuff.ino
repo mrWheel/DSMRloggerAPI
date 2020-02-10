@@ -15,7 +15,6 @@
   static IPAddress  MQTTbrokerIP;
   static char       MQTTbrokerIPchar[20];
 
-    
 #ifdef USE_MQTT
   #include <PubSubClient.h>           // MQTT client publish and subscribe functionality
   
