@@ -188,12 +188,13 @@ int strcicmp(const char *a, const char *b);
   int8_t      showRawCount = 0;
 
 
-#if defined( USE_MINDERGAS )
+#ifdef USE_MINDERGAS
   static char      settingMindergasToken[21] = "";
   static uint16_t  intStatuscodeMindergas    = 0; 
   static char      txtResponseMindergas[30]  = "";
   static char      timeLastResponse[16]      = "";  
 #endif
+
 
 //----------------- old var's -----(remove as soon as possible)-----------------
 

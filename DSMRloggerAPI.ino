@@ -406,10 +406,10 @@ void setup()
 
 //===========================================================================================
 //===[ blink status led in ms ]===
+DECLARE_TIMER_MS(timerBlink, 1);
 void blinkLEDms(uint32_t iDelay)
 {
   //blink the statusled, when time passed... #non-blocking blink
-  DECLARE_TIMER_MS(timerBlink, iDelay);
   CHANGE_INTERVAL_MS(timerBlink, iDelay);
   if (DUE(timerBlink))
     blinkLEDnow();
@@ -423,11 +423,12 @@ void blinkLEDnow()
 }
 
 //===[ no-blocking delay with running background tasks in ms ]===
+DECLARE_TIMER_MS(timer_delay_ms, 1);
 void delayms(unsigned long delay_ms)
 {
-  DECLARE_TIMER_MS(timer, delay_ms);
-  CHANGE_INTERVAL_MS(timer, delay_ms);
-  while (!DUE(timer))
+  CHANGE_INTERVAL_MS(timer_delay_ms, delay_ms);
+  RESTART_TIMER(timer_delay_ms);
+  while (!DUE(timer_delay_ms))
     doBackgroundTasks();
 }
 //===========================================================================================
@@ -442,7 +443,7 @@ void doTaskEvery100ms()
 //===[ Do task every 1s ]===
 void doTaskEvery1s()
 {
-  //if (Verbose1) DebugTln("doTaskEvery1s");
+  if (Verbose1) DebugTln("doTaskEvery1s");
   //== do tasks ==
   upTimeSeconds++;
 }
@@ -450,7 +451,7 @@ void doTaskEvery1s()
 //===[ Do task every 5s ]===
 void doTaskEvery5s()
 {
-  //if (Verbose1) DebugTln("doTaskEvery5s");
+  if (Verbose1) DebugTln("doTaskEvery5s");
   //== do tasks ==
   #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
     displayStatus();
@@ -460,7 +461,7 @@ void doTaskEvery5s()
 //===[ Do task every 30s ]===
 void doTaskEvery30s()
 {
-  //if (Verbose1) DebugTln("doTaskEvery30s");
+  if (Verbose1) DebugTln("doTaskEvery30s");
   //== do tasks ==
   #if defined(USE_NTP_TIME)                                                         //USE_NTP
   if (timeStatus() == timeNeedsSync || prevNtpHour != hour())                     //USE_NTP
@@ -476,7 +477,7 @@ void doTaskEvery30s()
 //==[ Do Telegram Processing ]==
 void doTaskTelegram()
 {
-  DebugTln("doTaskTelegram");
+   if (Verbose1) DebugTln("doTaskTelegram");
   #if defined(HAS_NO_SLIMMEMETER)
     handleTestdata();
   #else
@@ -508,11 +509,9 @@ void doBackgroundTasks()
 //===========================================================================================
 // setup timers for main loop (* delibratly left here, it's just more clear imho *)
 DECLARE_TIMER_MS(timer100ms, 100)
-DECLARE_TIMER_MS(timer1s, 1000)
-DECLARE_TIMER_MS(timer5s, 5000)
-DECLARE_TIMER_MS(timer30s, 30000)
-DECLARE_TIMER_MIN(timer10min, 10)
-DECLARE_TIMER_MIN(timer60min, 60)
+DECLARE_TIMER_SEC(timer1s, 1)
+DECLARE_TIMER_SEC(timer5s, 5)
+DECLARE_TIMER_SEC(timer30s, 30)
 DECLARE_TIMER_SEC(timerTelegram, 10)
   
 void loop () 
