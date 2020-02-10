@@ -506,18 +506,17 @@ void doBackgroundTasks()
 }
 
 //===========================================================================================
-void loop () 
-{
-  // setup timers
-  DECLARE_TIMER_MS(timer100ms, 100)
-  DECLARE_TIMER_MS(timer1s, 1000)
-  DECLARE_TIMER_MS(timer5s, 5000)
-  DECLARE_TIMER_MS(timer30s, 30000)
-  DECLARE_TIMER_MIN(timer10min, 10)
-  DECLARE_TIMER_MIN(timer60min, 60)
-  DECLARE_TIMER_SEC(timerTelegram, settingInterval)
-  CHANGE_INTERVAL_SEC(timerTelegram, settingInterval)
+// setup timers for main loop (* delibratly left here, it's just more clear imho *)
+DECLARE_TIMER_MS(timer100ms, 100)
+DECLARE_TIMER_MS(timer1s, 1000)
+DECLARE_TIMER_MS(timer5s, 5000)
+DECLARE_TIMER_MS(timer30s, 30000)
+DECLARE_TIMER_MIN(timer10min, 10)
+DECLARE_TIMER_MIN(timer60min, 60)
+DECLARE_TIMER_SEC(timerTelegram, 10)
   
+void loop () 
+{  
   // do the loop...
   loopCount++;
 

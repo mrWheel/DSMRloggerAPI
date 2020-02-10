@@ -99,8 +99,8 @@ void handleDevApi(const char *URI, const char *word4, const char *word5, const c
     {
       //------------------------------------------------------------ 
       // json string: {"name":"settingInterval","value":9}  
-      // json string: {"name":"settingInterval","value":123.45}  
-      // json string: {"name":"settingInterval","value":"abc"}  
+      // json string: {"name":"settingIntervalTelegram","value":123.45}  
+      // json string: {"name":"settingIntervalTelegram","value":"abc"}  
       //------------------------------------------------------------ 
       // so, why not use ArduinoJSON library?
       // I say: try it yourself ;-) It won't be easy
@@ -374,7 +374,7 @@ void sendDeviceSettings()
   sendJsonSettingObj("gd_tariff",         settingGDT,             "f", 0, 10,  5);
   sendJsonSettingObj("electr_netw_costs", settingENBK,            "f", 0, 100, 2);
   sendJsonSettingObj("gas_netw_costs",    settingGNBK,            "f", 0, 100, 2);
-  sendJsonSettingObj("tlgrm_interval",    settingInterval,        "i", 1, 60);
+  sendJsonSettingObj("tlgrm_interval",    settingIntervalTelegram,"i", 1, 60);
   sendJsonSettingObj("index_page",        settingIndexPage,       "s", sizeof(settingIndexPage) -1);
   sendJsonSettingObj("mqtt_broker",       settingMQTTbroker,      "s", sizeof(settingMQTTbroker));
   sendJsonSettingObj("mqtt_broker_port",  settingMQTTbrokerPort,  "i", 1, 9999);

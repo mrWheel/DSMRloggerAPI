@@ -56,8 +56,8 @@
 
 #define DECLARE_TIMER   DECLARE_TIMER_SEC
 
-#define CHANGE_INTERVAL_MIN(Name, timerTime)      timerName##_interval = timerTime * 60 * 1000;    
-#define CHANGE_INTERVAL_SEC(timerName, timerTime) timerName##_interval = timerTime * 1000;
+#define CHANGE_INTERVAL_MIN(timerName, timerTime) timerName##_interval = (timerTime * 60 * 1000);    
+#define CHANGE_INTERVAL_SEC(timerName, timerTime) timerName##_interval = (timerTime * 1000);
 #define CHANGE_INTERVAL_MS(timerName, timerTime)  timerName##_interval = timerTime;             
 
 #define CHANGE_INTERVAL CHANGE_INTERVAL_SEC

@@ -2,7 +2,6 @@
 
 #if defined(HAS_NO_SLIMMEMETER)
 
-#define   TELEGRAM_INTERVAL   5 //seconds
 #define   MAXLINELENGTH     128   // longest normal line is 47 char (+3 for \r\n\0)
 
 enum runStates { SInit, SMonth, SDay, SHour, SNormal };
@@ -24,13 +23,14 @@ float       GDelivered;
 bool        forceBuildRingFiles = false;
 int16_t     forceBuildRecs;
 
+#define   TELEGRAM_INTERVAL   5 //seconds
+DECLARE_TIMER_SEC(telegramTimer, TELEGRAM_INTERVAL);
+
 //==================================================================================================
 void handleTestdata()
 {
   time_t nt;
   int16_t slot;
-
-  DECLARE_TIMER_SEC(telegramTimer, TELEGRAM_INTERVAL);
  
   if (!forceBuildRingFiles && ( DUE( telegramTimer) )  return;   // not yet time for new Telegram
 

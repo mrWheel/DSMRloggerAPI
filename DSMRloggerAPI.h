@@ -209,7 +209,7 @@ uint64_t  upTimeSeconds;
 IPAddress ipDNS, ipGateWay, ipSubnet;
 float     settingEDT1, settingEDT2, settingERT1, settingERT2, settingGDT;
 float     settingENBK, settingGNBK;
-uint8_t   settingInterval;
+uint8_t   settingIntervalTelegram;
 char      settingIndexPage[50];
 char      settingMQTTbroker[101], settingMQTTuser[40], settingMQTTpasswd[30], settingMQTTtopTopic[21];
 int32_t   settingMQTTinterval, settingMQTTbrokerPort;

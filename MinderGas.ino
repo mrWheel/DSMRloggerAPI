@@ -11,12 +11,13 @@
 */
 #define MG_FILENAME         "/Mindergas.post"
 
+DECLARE_TIMER_MS(minderGasTimer, 500); //twice per second
+
 //=======================================================================
 void handleMindergas()
 {
   #ifdef USE_MINDERGAS
-  
-  DECLARE_TIMER_MIN(minderGasTimer, 1);
+
   if (DUE(minderGasTimer) )
   {
     processMindergas();
