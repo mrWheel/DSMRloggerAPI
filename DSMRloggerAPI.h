@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
-**  Program  : processTelegram - part of DSMRloggerAPI
-**  Version  : v0.1.7
+**  Program  : DSMRloggerAPI.h - definitions for DSMRloggerAPI
+**  Version  : v0.3.4
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -34,7 +34,6 @@
 #endif  // arduino_esp8266_generic
 
 #define SETTINGS_FILE      "/DSMRsettings.ini"
-#define GUI_COLORS_FILE    "/DSMRchartColors.ini"
 
 #define LED_ON            LOW
 #define LED_OFF          HIGH
@@ -59,7 +58,7 @@
 enum    { PERIOD_UNKNOWN, HOURS, DAYS, MONTHS, YEARS };
 
 #include "Debug.h"
-uint8_t   settingSleepTime; // needs to be declared before the oledStuff.h include
+uint16_t  settingSleepTime; // needs to be declared before the oledStuff.h include
 #if defined( HAS_OLED_SSD1306 ) && defined( HAS_OLED_SH1106 )
   #error Only one OLED display can be defined
 #endif
@@ -170,8 +169,9 @@ struct FSInfo {
   P1Reader    slimmeMeter(&Serial, 0);
 #endif
 
-//===========================prototype=========================================
+//===========================prototype's=======================================
 int strcicmp(const char *a, const char *b);
+void delayms(unsigned long);
 
 //===========================GLOBAL VAR'S======================================
   WiFiClient  wifiClient;
@@ -194,9 +194,6 @@ int strcicmp(const char *a, const char *b);
   static char      txtResponseMindergas[30]  = "";
   static char      timeLastResponse[16]      = "";  
 #endif
-
-
-//----------------- old var's -----(remove as soon as possible)-----------------
 
 char      cMsg[150], fChar[10];
 String    lastReset           = "";

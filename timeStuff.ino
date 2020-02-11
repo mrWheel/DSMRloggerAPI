@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : timeStuff, part of DSMRloggerAPI
-**  Version  : v0.1.6
+**  Version  : v0.3.4
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -41,19 +41,6 @@ void epochToTimestamp(time_t t, char *ts, int8_t len)
   //DebugTf("epochToTimestamp() => [%s]\r\n", ts);
   
 } // epochToTimestamp()
-
-//===========================================================================================
-String getDayName(int weekDayNr) 
-{
-  /*
-  if (weekDayNr >=1 && weekDayNr <= 7)
-      return weekDayName[weekDayNr];
-      
-  return weekDayName[0];    
-  */
-  return "vandaag";  
-} // getDayName()
-
 
 //===========================================================================================
 int8_t SecondFromTimestamp(const char *timeStamp) 

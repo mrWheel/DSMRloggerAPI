@@ -282,7 +282,8 @@ int16_t buildTelegram40(int16_t line, char telegramLine[])
 
 
 //==================================================================================================
-int16_t buildTelegram30(int16_t line, char telegramLine[]) {
+int16_t buildTelegram30(int16_t line, char telegramLine[]) 
+{
 /*
 **  /KMP5 KA6U001585575011                - Telegram begin-marker + manufacturer + serial number
 **  

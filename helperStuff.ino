@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : helperStuff, part of DSMRloggerAPI
-**  Version  : v0.2.1
+**  Version  : v0.3.4
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -87,6 +87,7 @@ boolean isValidIP(IPAddress ip)
     Debugln(F(" = Invalid IP!"));
     
   return _isValidIP;
+  
 } //  isValidIP()
 
 
@@ -257,6 +258,7 @@ int stricmp(const char *a, const char *b)
         if (d != 0 || !*a)
             return d;
     }
+    
 } // stricmp()
 
 //===========================================================================================
@@ -313,16 +315,13 @@ Item& typecastValue(Item& i)
   return i;
 }
 
+//=======================================================================        
 float typecastValue(TimestampedFixedValue i) 
 {
   return strToFloat(String(i).c_str(), 3);
 }
-/**
-String typecastValue(TimestampedFixedValue i) 
-{
-  return String(i);
-}
-**/
+
+//=======================================================================        
 float typecastValue(FixedValue i) 
 {
   return i;

@@ -2,7 +2,7 @@
 ***************************************************************************  
 **  Program  : DSMRloggerAPI (restAPI)
 */
-#define _FW_VERSION "v0.3.3 (06-02-2020)"
+#define _FW_VERSION "v0.3.4 (11-02-2020)"
 /*
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -41,9 +41,6 @@
 #define USE_MINDERGAS             // define if you want to update mindergas (also add token down below)
 //#define SHOW_PASSWRDS             // well .. show the PSK key and MQTT password, what else?
 /******************** don't change anything below this comment **********************/
-
-//prototype delayms... because it could be used all over the place.
-void delayms(unsigned long);
 
 #include "DSMRloggerAPI.h"
 
@@ -204,15 +201,15 @@ void setup()
 
 #if defined(USE_NTP_TIME)                                   //USE_NTP
 //================ startNTP =========================================
-  #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )  //USE_NTP
+  #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )  
     oled_Print_Msg(3, "setup NTP server", 100);             //USE_NTP
   #endif  // has_oled_ssd1306                               //USE_NTP
                                                             //USE_NTP
   if (!startNTP())                                          //USE_NTP
   {                                                         //USE_NTP
     DebugTln(F("ERROR!!! No NTP server reached!\r\n\r"));   //USE_NTP
-  #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )  //USE_NTP
-    oled_Print_Msg(0, "<DSMRloggerAPI>", 0);             //USE_NTP
+  #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 ) 
+    oled_Print_Msg(0, "<DSMRloggerAPI>", 0);                //USE_NTP
     oled_Print_Msg(2, "geen reactie van", 100);             //USE_NTP
     oled_Print_Msg(2, "NTP server's", 100);                 //USE_NTP 
     oled_Print_Msg(3, "Reboot DSMR-logger", 2000);          //USE_NTP
@@ -221,8 +218,8 @@ void setup()
     ESP.restart();                                          //USE_NTP
     delay(3000);                                            //USE_NTP
   }                                                         //USE_NTP
-  #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )  //USE_NTP
-    oled_Print_Msg(0, "<DSMRloggerAPI>", 0);             //USE_NTP
+  #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 ) 
+    oled_Print_Msg(0, "<DSMRloggerAPI>", 0);                //USE_NTP
     oled_Print_Msg(3, "NTP gestart", 1500);                 //USE_NTP
     prevNtpHour = hour();                                   //USE_NTP
   #endif                                                    //USE_NTP
@@ -404,8 +401,8 @@ void setup()
 
 } // setup()
 
-//===========================================================================================
-//===[ blink status led in ms ]===
+
+//===[ blink status led in ms ]===========================================================
 DECLARE_TIMER_MS(timerBlink, 1);
 void blinkLEDms(uint32_t iDelay)
 {
@@ -415,14 +412,15 @@ void blinkLEDms(uint32_t iDelay)
     blinkLEDnow();
 }
 
-//===[ blink status now ]===
+//===[ blink status now ]=================================================================
 void blinkLEDnow()
 {
     pinMode(LED_BUILTIN, OUTPUT);
     digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
-}
+    
+} // blinkLEDnow()
 
-//===[ no-blocking delay with running background tasks in ms ]===
+//===[ no-blocking delay with running background tasks in ms ]============================
 DECLARE_TIMER_MS(timer_delay_ms, 1);
 void delayms(unsigned long delay_ms)
 {
@@ -430,38 +428,41 @@ void delayms(unsigned long delay_ms)
   RESTART_TIMER(timer_delay_ms);
   while (!DUE(timer_delay_ms))
     doBackgroundTasks();
-}
-//===========================================================================================
+    
+} // delayms()
 
-//===[ Do task every 100ms ]===
+//========================================================================================
+
+//===[ Do task every 100ms ]==============================================================
 void doTaskEvery100ms()
 {
   //if (Verbose1) DebugTln("doTaskEvery100ms");
   //== do tasks ==
-}
+} // doTaskEvery100ms()
 
-//===[ Do task every 1s ]===
+//===[ Do task every 1s ]=================================================================
 void doTaskEvery1s()
 {
-  if (Verbose1) DebugTln("doTaskEvery1s");
+  if (Verbose2) DebugTln("doTaskEvery1s");
   //== do tasks ==
   upTimeSeconds++;
-}
+  
+} // doTaskEvery1s()
 
-//===[ Do task every 5s ]===
+//===[ Do task every 5s ]=================================================================
 void doTaskEvery5s()
 {
-  if (Verbose1) DebugTln("doTaskEvery5s");
+  if (Verbose2) DebugTln("doTaskEvery5s");
   //== do tasks ==
   #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
     displayStatus();
   #endif
 }
 
-//===[ Do task every 30s ]===
+//===[ Do task every 30s ]=================================================================
 void doTaskEvery30s()
 {
-  if (Verbose1) DebugTln("doTaskEvery30s");
+  if (Verbose2) DebugTln("doTaskEvery30s");
   //== do tasks ==
   #if defined(USE_NTP_TIME)                                                         //USE_NTP
   if (timeStatus() == timeNeedsSync || prevNtpHour != hour())                     //USE_NTP
@@ -474,10 +475,10 @@ void doTaskEvery30s()
 }
 
 
-//==[ Do Telegram Processing ]==
+//==[ Do Telegram Processing ]===============================================================
 void doTaskTelegram()
 {
-   if (Verbose1) DebugTln("doTaskTelegram");
+  if (Verbose2) DebugTln("doTaskTelegram");
   #if defined(HAS_NO_SLIMMEMETER)
     handleTestdata();
   #else
@@ -487,7 +488,7 @@ void doTaskTelegram()
   blinkLEDnow();
 }
 
-//===[ Do the background tasks ]===
+//===[ Do the background tasks ]=============================================================
 void doBackgroundTasks()
 {
   #ifndef HAS_NO_SLIMMEMETER
@@ -501,10 +502,9 @@ void doBackgroundTasks()
 #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
   checkFlashButton();
 #endif
-//  blinkLEDms(1000);               // 'blink' the status led every x ms
   yield();
 
-}
+} // doBackgroundTasks()
 
 //===========================================================================================
 // setup timers for main loop (* delibratly left here, it's just more clear imho *)

@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : networkStuff.h, part of DSMRloggerAPI
-**  Version  : v0.1.2
+**  Version  : v0.3.4
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -10,14 +10,14 @@
 */
 
 
-#include <ESP8266WiFi.h>  //ESP8266 Core WiFi Library         
+#include <ESP8266WiFi.h>        //ESP8266 Core WiFi Library         
 #include <ESP8266WebServer.h>   // Version 1.0.0 - part of ESP8266 Core https://github.com/esp8266/Arduino
 #include <ESP8266mDNS.h>        // part of ESP8266 Core https://github.com/esp8266/Arduino
 
 #include <WiFiUdp.h>            // part of ESP8266 Core https://github.com/esp8266/Arduino
 #ifdef USE_UPDATE_SERVER
   //#include "ESP8266HTTPUpdateServer.h"
-  #include "ModUpdateServer.h"
+  #include "ModUpdateServer.h"  // https://github.com/mrWheel/ModUpdateServer
   #include "UpdateServerHtml.h"
 #endif
 #include <WiFiManager.h>        // version 0.14.0 - https://github.com/tzapu/WiFiManager
@@ -32,7 +32,6 @@ ESP8266WebServer        httpServer (80);
 #endif
 
 
-bool        OtaInProgress = false;
 static      FSInfo SPIFFSinfo;
 bool        SPIFFSmounted; 
 bool        isConnected = false;

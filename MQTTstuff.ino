@@ -1,13 +1,13 @@
 /* 
 ***************************************************************************  
 **  Program  : MQTTstuff, part of DSMRloggerAPI
-**  Version  : v0.2.5
+**  Version  : v0.3.4
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
-*  RB  changed MQTT stuff to FSM 
+**  RB  changed MQTT stuff to FSM 
 */
 
 // Declare some variables within global scope
@@ -20,7 +20,7 @@
   
   static            PubSubClient MQTTclient(wifiClient);
   int8_t            reconnectAttempts = 0;
-  char              lastMQTTtimestamp[15] = "";
+  char              lastMQTTtimestamp[15] = "-";
   char              mqttBuff[100];
 
   enum states_of_MQTT { MQTT_STATE_WAIT_FOR_SETUP, MQTT_STATE_INIT, MQTT_STATE_TRY_TO_CONNECT, 
@@ -49,8 +49,6 @@ void startMQTT()
 void handleMQTT() 
 {
 #ifdef USE_MQTT
-
-//  if ( !DUE(mqttTimer) ) return;  // only every 500 ms
   
   switch(stateMQTT) 
   {
@@ -59,7 +57,7 @@ void handleMQTT()
       break;
     case MQTT_STATE_INIT:  
       DebugTln(F("MQTT State: MQTT Initializing"));
-      CHANGE_INTERVAL_MIN(timeMQTTPublish,  settingMQTTinterval); //setup interval for MQTT publishing
+      //--AaW--CHANGE_INTERVAL_MIN(timeMQTTPublish,  settingMQTTinterval); //setup interval for MQTT publishing
       RESTART_TIMER(timeMQTTPublish);
       WiFi.hostByName(settingMQTTbroker, MQTTbrokerIP);  // lookup the MQTTbroker convert to IP
       sprintf(MQTTbrokerIPchar, "%d.%d.%d.%d", MQTTbrokerIP[0], MQTTbrokerIP[1], MQTTbrokerIP[2], MQTTbrokerIP[3]);
@@ -121,11 +119,10 @@ void handleMQTT()
         //DebugTln(F("Next State: MQTT_STATE_IS_CONNECTED"));
       }
       else
-      { // no connection, try again, do a non-blocking wait for 3 seconds.
+      { // no connection, try again, 
         Debugln(F(" .. \r"));
-        DebugTf("failed, retrycount=[%d], rc=[%d] ..  try again in 3 seconds\r\n", reconnectAttempts, MQTTclient.state());
+        DebugTf("failed, retrycount=[%d], rc=[%d] .. try again in a moment ..\r\n", reconnectAttempts, MQTTclient.state());
         mqttIsConnected   = false;
-        //mqttRetryTimer_last = millis();
         stateMQTT = MQTT_STATE_WAIT_CONNECTION_ATTEMPT;  // if the re-connect did not work, then return to wait for reconnect
         //DebugTln(F("Next State: MQTT_STATE_WAIT_CONNECTION_ATTEMPT"));
       }
@@ -256,17 +253,27 @@ void sendMQTTData()
   String dateTime, topicId, json;
 
   // only if the DSMR timestamp is different from last, never sent the same telegram twice.
-  DebugTf("Timestamp [last:now] compared [%s]:[%s]\r\n", lastMQTTtimestamp, actTimestamp);
-  if (strcmp(lastMQTTtimestamp, actTimestamp) == 0) return;
+  if (Verbose1) DebugTf("Timestamp [last:now] compared [%s]:[%s]", lastMQTTtimestamp, actTimestamp);
+  if (strcmp(lastMQTTtimestamp, actTimestamp) == 0)
+  {
+    if (Verbose1) Debugln(" => are the same, skip!");
+    return;
+  }
+  if (Verbose1) Debugln(" => do process ..");
 
   if (!MQTTclient.connected() || !isValidIP(MQTTbrokerIP)) return;
 
+  /*--AaW--
   if (settingMQTTinterval == settingIntervalTelegram) 
-    CHANGE_INTERVAL_SEC(timeMQTTPublish,  settingMQTTinterval-1); //special case, if telegram interval = mqtt interval, then mqtt interval needs to be shorter
-
+  {
+    // special case, if telegram interval = mqtt interval, then mqtt
+    // interval needs to be shorter
+    CHANGE_INTERVAL_SEC(timeMQTTPublish,  settingMQTTinterval-1);
+  }
+  */
+  
   if ( DUE(timeMQTTPublish) ) 
   {
-    
     DebugTf("Sending data to MQTT server [%s]:[%d]\r\n", settingMQTTbroker, settingMQTTbrokerPort);
     
     DSMRdata.applyEach(buildJsonMQTT());

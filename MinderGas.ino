@@ -1,6 +1,6 @@
 /**************************************************************************
 **  Program  : MinderGas.ino
-**  Version  : v0.1.7
+**  Version  : v0.3.4
 **
 **  Copyright (c) 2020 Robert van den Breemen
 **
@@ -68,6 +68,7 @@ void forceMindergasUpdate()
   }
   
 } // forceMindergasUpdate()
+
 
 //=======================================================================
 // handle finite state machine of mindergas

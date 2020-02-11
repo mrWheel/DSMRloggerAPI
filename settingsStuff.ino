@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : settingsStuff, part of DSMRloggerAPI
-**  Version  : v0.2.7
+**  Version  : v0.3.4
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -164,7 +164,9 @@ void readSettings(bool show)
     if (words[0].equalsIgnoreCase("SleepTime"))           
     {
       settingSleepTime    = words[1].toInt();    
-      CHANGE_INTERVAL_MIN(oledSleepTimer, settingSleepTime);
+      #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
+        CHANGE_INTERVAL_MIN(oledSleepTimer, settingSleepTime);
+      #endif
     }
     
     if (words[0].equalsIgnoreCase("TelegramInterval"))   
@@ -190,6 +192,14 @@ void readSettings(bool show)
     if (words[0].equalsIgnoreCase("MQTTpasswd"))          strCopy(settingMQTTpasswd  ,25, words[1].c_str());  
     if (words[0].equalsIgnoreCase("MQTTinterval"))        settingMQTTinterval        = words[1].toInt(); 
     if (words[0].equalsIgnoreCase("MQTTtopTopic"))        strCopy(settingMQTTtopTopic, 20, words[1].c_str());  
+    
+    if (settingMQTTinterval == settingIntervalTelegram) 
+    {
+      // special case, if telegram interval = mqtt interval, then mqtt
+      // interval needs to be shorter (does it??)
+      settingMQTTinterval = settingIntervalTelegram -1;
+    }
+    CHANGE_INTERVAL_SEC(timeMQTTPublish,  settingMQTTinterval);
 #endif
     
   } // while available()
@@ -254,6 +264,14 @@ void updateSetting(const char *field, const char *newValue)
   if (!stricmp(field, "gd_tariff"))         settingGDT          = String(newValue).toFloat();  
   if (!stricmp(field, "gas_netw_costs"))    settingGNBK         = String(newValue).toFloat();
 
+  if (!stricmp(field, "oled_screen_time")) 
+  {
+    settingSleepTime    = String(newValue).toInt();  
+    #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
+       CHANGE_INTERVAL_MIN(oledSleepTimer, settingSleepTime)
+    #endif
+  }
+  
   if (!stricmp(field, "tlgrm_interval"))    
   {
     settingIntervalTelegram     = String(newValue).toInt();  
