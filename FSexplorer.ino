@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : FSexplorer, part of DSMRloggerAPI
-**  Version  : v0.2.1
+**  Version  : v0.3.4
 **
 **  Mostly stolen from https://www.arduinoforum.de/User-Fips
 **  For more information visit: https://fipsok.de
@@ -186,6 +186,7 @@ void handleFileUpload()
 //=====================================================================================
 void formatSpiffs() 
 {       //Formatiert den Speicher
+  if (!SPIFFS.exists("/!format")) return;
   DebugTln(F("Format SPIFFS"));
   SPIFFS.format();
   httpServer.sendContent(Header);

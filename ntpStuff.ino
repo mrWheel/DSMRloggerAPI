@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : ntpStuff, part of DSMRloggerAPI
-**  Version  : v0.2.1
+**  Version  : v0.3.4
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -57,6 +57,8 @@ bool startNTP()
 //=======================================================================
 time_t getNtpTime() 
 {
+  DECLARE_TIMER_MS(waitForPackage, 1500);   
+
   while(true) 
   {
     yield;
@@ -76,8 +78,8 @@ time_t getNtpTime()
     TelnetStream.println(ntpServerIP);
     TelnetStream.flush();
     sendNTPpacket(ntpServerIP);
-    uint32_t beginWait = millis();
-    while (millis() - beginWait < 1500) 
+    RESTART_TIMER(waitForPackage);
+    while (!DUE(waitForPackage))
     {
       int size = Udp.parsePacket();
       if (size >= NTP_PACKET_SIZE) 

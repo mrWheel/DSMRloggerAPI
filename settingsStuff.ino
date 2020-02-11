@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : settingsStuff, part of DSMRloggerAPI
-**  Version  : v0.2.7
+**  Version  : v0.3.4
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -24,7 +24,7 @@ void writeSettings()
   yield();
 
   if (strlen(settingIndexPage) < 7) strCopy(settingIndexPage, (sizeof(settingIndexPage) -1), "DSMRindex.html");
-  if (settingInterval < 3)          settingInterval       = 10;
+  if (settingIntervalTelegram < 3)  settingIntervalTelegram = 10;
   if (settingMQTTbrokerPort < 1)    settingMQTTbrokerPort = 1883;
     
   DebugT(F("Start writing setting data "));
@@ -37,7 +37,7 @@ void writeSettings()
   file.print("EnergyVasteKosten = "); file.println(String(settingENBK, 2));     Debug(F("."));
   file.print("GasVasteKosten = ");    file.println(String(settingGNBK, 2));     Debug(F("."));
   file.print("SleepTime = ");         file.println(settingSleepTime);           Debug(F("."));
-  file.print("TelegramInterval = ");  file.println(settingInterval);            Debug(F("."));
+  file.print("TelegramInterval = ");  file.println(settingIntervalTelegram);    Debug(F("."));
   file.print("IndexPage = ");         file.println(settingIndexPage);           Debug(F("."));
 
 #ifdef USE_MQTT
@@ -50,8 +50,11 @@ void writeSettings()
   file.print("MQTTtopTopic = ");      file.println(settingMQTTtopTopic);        Debug(F("."));
 #endif
   
+#ifdef USE_MINDERGAS
   file.print("MindergasAuthtoken = ");file.println(settingMindergasToken);  Debug(F("."));
-  file.close();  
+#endif
+
+file.close();  
   
   Debugln(F(" done"));
   if (Verbose1) 
@@ -65,7 +68,7 @@ void writeSettings()
     DebugT(F("EnergyVasteKosten = ")); Debugln(String(settingENBK, 2));    
     DebugT(F("GasVasteKosten = "));    Debugln(String(settingGNBK, 2));    
     DebugT(F("SleepTime = "));         Debugln(settingSleepTime);           
-    DebugT(F("TelegramInterval = "));  Debugln(settingInterval);            
+    DebugT(F("TelegramInterval = "));  Debugln(settingIntervalTelegram);            
     DebugT(F("IndexPage = "));         Debugln(settingIndexPage);             
 
 #ifdef USE_MQTT
@@ -82,7 +85,11 @@ void writeSettings()
 #endif
   
 #ifdef USE_MINDERGAS
-    DebugT(F("MindergasAuthtoken = "));Debugln(settingMindergasToken);  
+  #ifdef SHOW_PASSWRDS   
+    DebugT(F("MindergasAuthtoken = "));Debugln(settingMindergasToken);
+  #else
+    DebugTln(F("MindergasAuthtoken = ********")); 
+  #endif
 #endif
   } // Verbose1
   
@@ -105,8 +112,8 @@ void readSettings(bool show)
   settingGDT        = 0.5;
   settingENBK       = 15.15;
   settingGNBK       = 11.11;
-  settingInterval   = 10; // seconds
-  settingSleepTime  =  0; // infinite
+  settingIntervalTelegram   = 10; // seconds
+  settingSleepTime          =  0; // infinite
   strCopy(settingIndexPage, sizeof(settingIndexPage), "DSMRindex.html");
   settingMQTTbroker[0]     = '\0';
   settingMQTTbrokerPort    = 1883;
@@ -114,7 +121,10 @@ void readSettings(bool show)
   settingMQTTpasswd[0]     = '\0';
   settingMQTTinterval      = 60;
   sprintf(settingMQTTtopTopic, "%s", _HOSTNAME);
+
+#ifdef USE_MINDERGAS
   settingMindergasToken[0] = '\0';
+#endif
 
   if (!SPIFFS.exists(SETTINGS_FILE)) 
   {
@@ -151,15 +161,29 @@ void readSettings(bool show)
     if (words[0].equalsIgnoreCase("EnergyVasteKosten"))   settingENBK         = strToFloat(words[1].c_str(), 2);
     if (words[0].equalsIgnoreCase("GasVasteKosten"))      settingGNBK         = strToFloat(words[1].c_str(), 2);
 
-    if (words[0].equalsIgnoreCase("SleepTime"))           settingSleepTime    = words[1].toInt();  
-    if (words[0].equalsIgnoreCase("TelegramInterval"))    settingInterval     = words[1].toInt();  
+    if (words[0].equalsIgnoreCase("SleepTime"))           
+    {
+      settingSleepTime    = words[1].toInt();    
+      #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
+        CHANGE_INTERVAL_MIN(oledSleepTimer, settingSleepTime);
+      #endif
+    }
+    
+    if (words[0].equalsIgnoreCase("TelegramInterval"))   
+    {
+      settingIntervalTelegram     = words[1].toInt(); 
+      CHANGE_INTERVAL_SEC(timerTelegram, settingIntervalTelegram); 
+    }
 
     if (words[0].equalsIgnoreCase("IndexPage"))           strCopy(settingIndexPage, (sizeof(settingIndexPage) -1), words[1].c_str());  
 
+#ifdef USE_MINDERGAS
     if (words[0].equalsIgnoreCase("MindergasAuthtoken"))  strCopy(settingMindergasToken, 20, words[1].c_str());  
-   
+#endif
+
 #ifdef USE_MQTT
-    if (words[0].equalsIgnoreCase("MQTTbroker"))  {
+    if (words[0].equalsIgnoreCase("MQTTbroker"))  
+    {
       memset(settingMQTTbroker, '\0', sizeof(settingMQTTbroker));
       strCopy(settingMQTTbroker, 100, words[1].c_str());
     }
@@ -167,8 +191,15 @@ void readSettings(bool show)
     if (words[0].equalsIgnoreCase("MQTTuser"))            strCopy(settingMQTTuser    ,35 ,words[1].c_str());  
     if (words[0].equalsIgnoreCase("MQTTpasswd"))          strCopy(settingMQTTpasswd  ,25, words[1].c_str());  
     if (words[0].equalsIgnoreCase("MQTTinterval"))        settingMQTTinterval        = words[1].toInt(); 
-    if (settingMQTTinterval < settingInterval)            settingMQTTinterval = (settingInterval + 1); 
     if (words[0].equalsIgnoreCase("MQTTtopTopic"))        strCopy(settingMQTTtopTopic, 20, words[1].c_str());  
+    
+    if (settingMQTTinterval == settingIntervalTelegram) 
+    {
+      // special case, if telegram interval = mqtt interval, then mqtt
+      // interval needs to be shorter (does it??)
+      settingMQTTinterval = settingIntervalTelegram -1;
+    }
+    CHANGE_INTERVAL_SEC(timeMQTTPublish,  settingMQTTinterval);
 #endif
     
   } // while available()
@@ -178,7 +209,7 @@ void readSettings(bool show)
 
 
   if (strlen(settingIndexPage) < 7) strCopy(settingIndexPage, (sizeof(settingIndexPage) -1), "DSMRindex.html");
-  if (settingInterval < 3)          settingInterval       = 10;
+  if (settingIntervalTelegram < 3)  settingIntervalTelegram = 10;
   if (settingMQTTbrokerPort < 1)    settingMQTTbrokerPort = 1883;
 
   if (!show) return;
@@ -191,9 +222,9 @@ void readSettings(bool show)
   Debugf("        Gas Delivered Tarief : %9.7f\r\n",  settingGDT);
   Debugf("     Energy Netbeheer Kosten : %9.2f\r\n",  settingENBK);
   Debugf("        Gas Netbeheer Kosten : %9.2f\r\n",  settingGNBK);
-  Debugf("   Telegram Process Interval : %d\r\n", settingInterval);
-  Debugf("OLED Sleep Min. (0=oneindig) : %d\r\n", settingSleepTime);
-  Debugf("                  Index Page : %s\r\n", settingIndexPage);
+  Debugf("   Telegram Process Interval : %d\r\n",     settingIntervalTelegram);
+  Debugf("OLED Sleep Min. (0=oneindig) : %d\r\n",     settingSleepTime);
+  Debugf("                  Index Page : %s\r\n",     settingIndexPage);
 
 #ifdef USE_MQTT
   Debugln(F("\r\n==== MQTT settings ==============================================\r"));
@@ -233,12 +264,26 @@ void updateSetting(const char *field, const char *newValue)
   if (!stricmp(field, "gd_tariff"))         settingGDT          = String(newValue).toFloat();  
   if (!stricmp(field, "gas_netw_costs"))    settingGNBK         = String(newValue).toFloat();
 
-  if (!stricmp(field, "tlgrm_interval"))    settingInterval     = String(newValue).toInt();  
+  if (!stricmp(field, "oled_screen_time")) 
+  {
+    settingSleepTime    = String(newValue).toInt();  
+    #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
+       CHANGE_INTERVAL_MIN(oledSleepTimer, settingSleepTime)
+    #endif
+  }
+  
+  if (!stricmp(field, "tlgrm_interval"))    
+  {
+    settingIntervalTelegram     = String(newValue).toInt();  
+    CHANGE_INTERVAL_SEC(timerTelegram, settingIntervalTelegram)
+  }
 
   if (!stricmp(field, "index_page"))        strCopy(settingIndexPage, (sizeof(settingIndexPage) -1), newValue);  
-  
+
+#ifdef USE_MINDERGAS
   if (!stricmp(field, "MindergasToken"))    strCopy(settingMindergasToken, 20, newValue);  
-   
+#endif //USE_MINDERGAS
+
 #ifdef USE_MQTT
   if (!stricmp(field, "mqtt_broker"))  {
     DebugT("settingMQTTbroker! to : ");

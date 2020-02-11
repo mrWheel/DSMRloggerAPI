@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : restAPI, part of DSMRloggerAPI
-**  Version  : v0.3.0
+**  Version  : v0.3.4
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -99,8 +99,8 @@ void handleDevApi(const char *URI, const char *word4, const char *word5, const c
     {
       //------------------------------------------------------------ 
       // json string: {"name":"settingInterval","value":9}  
-      // json string: {"name":"settingInterval","value":123.45}  
-      // json string: {"name":"settingInterval","value":"abc"}  
+      // json string: {"name":"settingIntervalTelegram","value":123.45}  
+      // json string: {"name":"settingIntervalTelegram","value":"abc"}  
       //------------------------------------------------------------ 
       // so, why not use ArduinoJSON library?
       // I say: try it yourself ;-) It won't be easy
@@ -374,7 +374,8 @@ void sendDeviceSettings()
   sendJsonSettingObj("gd_tariff",         settingGDT,             "f", 0, 10,  5);
   sendJsonSettingObj("electr_netw_costs", settingENBK,            "f", 0, 100, 2);
   sendJsonSettingObj("gas_netw_costs",    settingGNBK,            "f", 0, 100, 2);
-  sendJsonSettingObj("tlgrm_interval",    settingInterval,        "i", 1, 60);
+  sendJsonSettingObj("tlgrm_interval",    settingIntervalTelegram,"i", 1, 60);
+  sendJsonSettingObj("oled_screen_time",  settingSleepTime,       "i", 1, 300);
   sendJsonSettingObj("index_page",        settingIndexPage,       "s", sizeof(settingIndexPage) -1);
   sendJsonSettingObj("mqtt_broker",       settingMQTTbroker,      "s", sizeof(settingMQTTbroker));
   sendJsonSettingObj("mqtt_broker_port",  settingMQTTbrokerPort,  "i", 1, 9999);
@@ -442,14 +443,15 @@ void sendJsonFields(const char *Name)
 
 
 //=======================================================================
+DECLARE_TIMER_SEC(antiWearTimer, 61);
 void sendJsonHist(int8_t fileType, const char *fileName, const char *timeStamp, bool desc) 
 {
   uint8_t startSlot, nrSlots, recNr  = 0;
   char    typeApi[10];
 
-  if (millis() - antiWearTimer > 61000)
+
+  if (DUE(antiWearTimer))
   {
-    antiWearTimer = millis();
     writeDataToFiles();
     writeLastStatus();
   }
