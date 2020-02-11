@@ -76,8 +76,8 @@ time_t getNtpTime()
     TelnetStream.println(ntpServerIP);
     TelnetStream.flush();
     sendNTPpacket(ntpServerIP);
-    uint32_t beginWait = millis();
-    while (millis() - beginWait < 1500) 
+    DECLARE_TIMER_MS(beginWait, 1500);  //can be declared here... 
+    while (!DUE(beginWait))
     {
       int size = Udp.parsePacket();
       if (size >= NTP_PACKET_SIZE) 

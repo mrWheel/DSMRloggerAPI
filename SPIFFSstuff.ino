@@ -13,7 +13,6 @@ int16_t   bytesWritten;
 
 //static    FSInfo SPIFFSinfo;
 
-
 //====================================================================
 void readLastStatus()
 {

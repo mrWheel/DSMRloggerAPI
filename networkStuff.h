@@ -9,11 +9,12 @@
 ***************************************************************************      
 */
 
-#include <ESP8266WiFi.h>        // version 1.0.0 - part of ESP8266 Core https://github.com/esp8266/Arduino
+
+#include <ESP8266WiFi.h>  //ESP8266 Core WiFi Library         
 #include <ESP8266WebServer.h>   // Version 1.0.0 - part of ESP8266 Core https://github.com/esp8266/Arduino
-//#include <DNSServer.h>        // part of ESP8266 Core https://github.com/esp8266/Arduino
-#include <WiFiUdp.h>            // part of ESP8266 Core https://github.com/esp8266/Arduino
 #include <ESP8266mDNS.h>        // part of ESP8266 Core https://github.com/esp8266/Arduino
+
+#include <WiFiUdp.h>            // part of ESP8266 Core https://github.com/esp8266/Arduino
 #ifdef USE_UPDATE_SERVER
   //#include "ESP8266HTTPUpdateServer.h"
   #include "ModUpdateServer.h"
@@ -24,10 +25,12 @@
 //#include <Hash.h>
 #include <FS.h>                 // part of ESP8266 Core https://github.com/esp8266/Arduino
 
+
 ESP8266WebServer        httpServer (80);
 #ifdef USE_UPDATE_SERVER
   ESP8266HTTPUpdateServer httpUpdater(true);
 #endif
+
 
 bool        OtaInProgress = false;
 static      FSInfo SPIFFSinfo;

@@ -1,44 +1,35 @@
-/*
+/**************************************************************************
+**  Program  : MinderGas.ino
+**  Version  : v0.1.7
+**
 **  Copyright (c) 2020 Robert van den Breemen
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
-* Inspired by the code from Harold - SolarMeter code
-* Created by Robert van den Breemen (26 nov 2019)
-*   - AaW  - bug fix (RvdB) en introductie rollover-proof timers.h
-*   - AaW  - cleanup code
-*   - RvdB - changing into a statemachine and survive reboot
-*   - RvdB - added AuthToken to settings
-*   - RvdB - many more formatting for gas changed to 3 digits in DSMRlogger data
-*   - RvdB - gas delivered should be [.3f] - lots of formatting of gasdelivered changed to 3 digits
-*   - RvdB - changed around the way debug is done in rollover on month, day and hour
-*   - RvdB - fixing the mindergas integration - mindergas.ino
-*   - RvdB - added initial support for mindergas
+* Created by Robert van den Breemen (8 feb 2020)
 *
 */
-#define MINDERGAS_INTERVAL  3  // 2 minuten -> mag ook 5 zijn .. toch?
 #define MG_FILENAME         "/Mindergas.post"
 
-DECLARE_TIMER_MIN(minderGasTimer, MINDERGAS_INTERVAL);
-DECLARE_TIMER_MIN(MGcountDownTimer, 1);
-
-uint32_t  mindergasTime     = millis();
+DECLARE_TIMER_MIN(minderGasTimer, 1); 
 
 //=======================================================================
 void handleMindergas()
 {
-  if (DUE( minderGasTimer) )
-  {
-    //===mindergasTime = millis();
   #ifdef USE_MINDERGAS
+
+  if (DUE(minderGasTimer) )
+  {
     processMindergas();
-  #endif
   }
+  #endif
 
 } // handleMindergas()
 
 
 #ifdef USE_MINDERGAS
+
+DECLARE_TIMER_MIN(MGcountDownTimer, 1); //do not change 
 
 enum states_of_MG { MG_INIT, MG_WAIT_FOR_FIRST_TELEGRAM, MG_WAIT_FOR_NEXT_DAY
                            , MG_WRITE_TO_FILE, MG_DO_COUNTDOWN
@@ -47,10 +38,9 @@ enum states_of_MG { MG_INIT, MG_WAIT_FOR_FIRST_TELEGRAM, MG_WAIT_FOR_NEXT_DAY
 enum states_of_MG stateMindergas = MG_INIT;
 
 int8_t    MG_Day                    = -1;
-uint32_t  lastTime                  = millis();
 bool      validToken                = false;
 bool      handleMindergasSemaphore  = false;
-
+int8_t    MGminuten                 = 0;
 
 //=======================================================================
 //force mindergas update, by skipping states
@@ -65,6 +55,7 @@ void forceMindergasUpdate()
     MG_Day = day();   // make it thisDay...
     strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "force Mindergas countdown");
     DebugTln(F("Force send data to mindergas.nl in ~1 minute"));
+    MGminuten=1;
     stateMindergas = MG_DO_COUNTDOWN;
     processMindergas();
   }
@@ -82,7 +73,6 @@ void forceMindergasUpdate()
 // handle finite state machine of mindergas
 void processMindergas()
 {
-  static int8_t MGminuten = 0;
   time_t t;
   File   minderGasFile;
 
@@ -99,7 +89,7 @@ void processMindergas()
   switch(stateMindergas) {
     case MG_INIT:  // only after reboot
       DebugTln(F("Mindergas State: MG_INIT"));
-      sprintf(timeLastResponse, "@%02d|%02d:%02d -> ", day(), hour(), minute());
+      sprintf(timeLastResponse, "@%02d|%02d:%02d -> ", day() , hour(), minute());
       if (SPIFFS.exists(MG_FILENAME))
       {
         strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "found Mindergas.post");
@@ -187,7 +177,6 @@ void processMindergas()
 
       // start countdown
       MGminuten = random(10,120);
-      //MGminuten = 4;  // test test test
       DebugTf("MinderGas update in [%d] minute(s)\r\n", MGminuten);
       // Lets'do the countdown
       stateMindergas = MG_DO_COUNTDOWN;
@@ -197,9 +186,9 @@ void processMindergas()
       DebugTf("Mindergas State: MG_DO_COUNTDOWN (%d minuten te gaan)\r\n", MGminuten);
       sprintf(timeLastResponse, "@%02d|%02d:%02d -> ", day(), hour(), minute());
       strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "countdown for sending");
-      if ( DUE(MGcountDownTimer) )
-      {
-        MGminuten--;
+      if ( DUE(MGcountDownTimer) ) //this timer need to run every minute to let this work
+      { 
+        MGminuten--; 
         DebugTf("MinderGas update in less than [%d] minutes\r\n", MGminuten);
         intStatuscodeMindergas = MGminuten;
       }
@@ -240,7 +229,7 @@ void processMindergas()
             DebugTln(F("Send to Mindergas.nl..."));
             MGclient.println(sBuffer);
             // read response from mindergas.nl
-            sprintf(timeLastResponse, "@%02d|%02d:%02d >> ", day(), hour(), minute());
+            sprintf(timeLastResponse, "@%02d|%02d:%02d >> ", day() , hour(), minute());
             DebugTf("[%s] Mindergas response: ", timeLastResponse);
             bool bDoneResponse = false;
             while (!bDoneResponse && (MGclient.connected() || MGclient.available())) 

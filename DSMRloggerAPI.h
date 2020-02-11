@@ -182,32 +182,40 @@ int strcicmp(const char *a, const char *b);
   char        newTimestamp[20] = "";
   uint32_t    slotErrors = 0;
   uint32_t    nrReboots  = 0;
+  uint32_t    loopCount = 0;
+  uint32_t    telegramCount = 0, telegramErrors = 0;
+  bool        showRaw = false;
+  int8_t      showRawCount = 0;
+
+
+#ifdef USE_MINDERGAS
+  static char      settingMindergasToken[21] = "";
+  static uint16_t  intStatuscodeMindergas    = 0; 
+  static char      txtResponseMindergas[30]  = "";
+  static char      timeLastResponse[16]      = "";  
+#endif
+
 
 //----------------- old var's -----(remove as soon as possible)-----------------
-uint32_t  telegramInterval, noMeterWait, telegramCount, telegramErrors, lastOledStatus;
+
 char      cMsg[150], fChar[10];
 String    lastReset           = "";
 bool      spiffsNotPopulated  = false;
 bool      hasAlternativeIndex = false;
 bool      mqttIsConnected     = false;
-bool      doLog = false, Verbose1 = false, Verbose2 = false, showRaw = false;
+bool      doLog = false, Verbose1 = false, Verbose2 = false;
 int8_t    thisHour = -1, prevNtpHour = 0, thisDay = -1, thisMonth = -1, lastMonth, thisYear = 15;
-int8_t    showRawCount        = 0;
-uint32_t  nextSecond, unixTimestamp;
+uint32_t  unixTimestamp;
 uint64_t  upTimeSeconds;
 IPAddress ipDNS, ipGateWay, ipSubnet;
 float     settingEDT1, settingEDT2, settingERT1, settingERT2, settingGDT;
 float     settingENBK, settingGNBK;
-uint8_t   settingInterval;
+uint8_t   settingIntervalTelegram;
 char      settingIndexPage[50];
 char      settingMQTTbroker[101], settingMQTTuser[40], settingMQTTpasswd[30], settingMQTTtopTopic[21];
 int32_t   settingMQTTinterval, settingMQTTbrokerPort;
-#if defined( USE_MINDERGAS )
-  char      settingMindergasToken[21] = "";
-  uint16_t  intStatuscodeMindergas    = 0; 
-  char      txtResponseMindergas[30]  = "";
-  char      timeLastResponse[16]      = "";  
-#endif
+String    pTimestamp;
+
 
 
 /***************************************************************************
