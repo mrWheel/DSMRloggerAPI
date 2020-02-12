@@ -67,9 +67,9 @@
 #define SINCE(timerName)                          ((uint32_t)(millis() - timerName##_last))
 #define DUE(timerName)                            (( SINCE(timerName) < timerName##_interval) ? 0 : (timerName##_last=millis()))
 
-#define TIME_LEFT_MIN(timerName)                  (uint32_t)((timerName##_interval - millis() - timerName##_last) / 60 / 1000)
-#define TIME_LEFT_SEC(timerName)                  (uint32_t)((timerName##_interval - millis() - timerName##_last) / 1000)
-#define TIME_LEFT_MS(timerName)                   (uint32_t)( timerName##_interval - millis() - timerName##_last)
+#define TIME_LEFT_MIN(timerName)                  (uint32_t)((timerName##_interval + timerName##_last - millis()) / 60 / 1000)
+#define TIME_LEFT_SEC(timerName)                  (uint32_t)((timerName##_interval + timerName##_last - millis())/ 1000)
+#define TIME_LEFT_MS(timerName)                   (uint32_t)( timerName##_interval + timerName##_last - millis())
 #define TIME_LEFT TIMER_LEFT_SEC
 /*
  * 
