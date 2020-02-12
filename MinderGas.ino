@@ -42,13 +42,14 @@ void forceMindergasUpdate()
     {
           CHANGE_INTERVAL_MIN(MGminuten, 1); //force 1 minute
           RESTART_TIMER(MGminuten);
+          DebugTf("Force send data to mindergas.nl in %d seconds(s)\r\n", TIME_LEFT_SEC(MGminuten));
     }
     else
     {
           CHANGE_INTERVAL_MIN(MGminuten, random(10,120)); //force normal behaviour not at midnight
           RESTART_TIMER(MGminuten);
+          DebugTf("Force send data to mindergas.nl in %d minute(s)\r\n", TIME_LEFT_MIN(MGminuten));
     }
-    DebugTf("Force send data to mindergas.nl in %d minute(s)\r\n", TIME_LEFT_MIN(MGminuten));
     stateMindergas = MG_DO_COUNTDOWN;
     handleMindergas();
   }
@@ -179,7 +180,14 @@ void handleMindergas()
       
     case MG_DO_COUNTDOWN:
       //The FSM should never be run faster than once per minute, otherwise time 
-      DebugTf("Mindergas State: MG_DO_COUNTDOWN (%d minuten te gaan)\r\n", TIME_LEFT_MIN(MGminuten));
+      if (TIME_LEFT_MIN(MGminuten)>0)
+      {
+        DebugTf("Mindergas State: MG_DO_COUNTDOWN (%d minuten te gaan)\r\n", TIME_LEFT_MIN(MGminuten));        
+      } 
+      else
+      {
+        DebugTf("Mindergas State: MG_DO_COUNTDOWN (%d seconden te gaan)\r\n", TIME_LEFT_SEC(MGminuten));
+      }
       sprintf(timeLastResponse, "@%02d|%02d:%02d -> ", day(), hour(), minute());
       strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "countdown for sending");
       intStatuscodeMindergas = TIME_LEFT_MIN(MGminuten);
