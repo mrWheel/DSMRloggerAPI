@@ -9,27 +9,11 @@
 * Created by Robert van den Breemen (8 feb 2020)
 *
 */
-#define MG_FILENAME         "/Mindergas.post"
-
-DECLARE_TIMER_MIN(minderGasTimer, 1); 
-
-//=======================================================================
-void handleMindergas()
-{
-  #ifdef USE_MINDERGAS
-
-  if (DUE(minderGasTimer) )
-  {
-    processMindergas();
-  }
-  #endif
-
-} // handleMindergas()
-
 
 #ifdef USE_MINDERGAS
 
-DECLARE_TIMER_MIN(MGcountDownTimer, 1); //do not change 
+#define MG_FILENAME         "/Mindergas.post"
+DECLARE_TIMER_MIN(MGminuten, 1); 
 
 enum states_of_MG { MG_INIT, MG_WAIT_FOR_FIRST_TELEGRAM, MG_WAIT_FOR_NEXT_DAY
                            , MG_WRITE_TO_FILE, MG_DO_COUNTDOWN
@@ -40,7 +24,7 @@ enum states_of_MG stateMindergas = MG_INIT;
 int8_t    MG_Day                    = -1;
 bool      validToken                = false;
 bool      handleMindergasSemaphore  = false;
-int8_t    MGminuten                 = 0;
+
 
 //=======================================================================
 //force mindergas update, by skipping states
@@ -55,16 +39,16 @@ void forceMindergasUpdate()
     MG_Day = day();   // make it thisDay...
     strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "force Mindergas countdown");
     DebugTln(F("Force send data to mindergas.nl in ~1 minute"));
-    MGminuten=1;
+    CHANGE_INTERVAL_MIN(MGminuten, 1);
     stateMindergas = MG_DO_COUNTDOWN;
-    processMindergas();
+    handleMindergas();
   }
   else
   {
     strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "Force Write Mindergas.post");
     DebugTln(F("Force Write data to post file now!"));
     stateMindergas = MG_WRITE_TO_FILE;  // write file is next state
-    processMindergas();
+    handleMindergas();
   }
   
 } // forceMindergasUpdate()
@@ -72,7 +56,7 @@ void forceMindergasUpdate()
 
 //=======================================================================
 // handle finite state machine of mindergas
-void processMindergas()
+void handleMindergas()
 {
   time_t t;
   File   minderGasFile;
@@ -177,23 +161,20 @@ void processMindergas()
       strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "Mindergas.post aangemaakt");
 
       // start countdown
-      MGminuten = random(10,120);
-      DebugTf("MinderGas update in [%d] minute(s)\r\n", MGminuten);
+      CHANGE_INTERVAL_MIN(MGminuten, random(10,120));
+      RESTART_TIMER(MGminuten);
+      DebugTf("MinderGas update in [%d] minute(s)\r\n", TIME_LEFT_MIN(MGminuten));
       // Lets'do the countdown
       stateMindergas = MG_DO_COUNTDOWN;
       break;
       
     case MG_DO_COUNTDOWN:
-      DebugTf("Mindergas State: MG_DO_COUNTDOWN (%d minuten te gaan)\r\n", MGminuten);
+      //The FSM should never be run faster than once per minute, otherwise time 
+      DebugTf("Mindergas State: MG_DO_COUNTDOWN (%d minuten te gaan)\r\n", TIME_LEFT_MIN(MGminuten));
       sprintf(timeLastResponse, "@%02d|%02d:%02d -> ", day(), hour(), minute());
       strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "countdown for sending");
-      if ( DUE(MGcountDownTimer) ) //this timer need to run every minute to let this work
-      { 
-        MGminuten--; 
-        DebugTf("MinderGas update in less than [%d] minutes\r\n", MGminuten);
-        intStatuscodeMindergas = MGminuten;
-      }
-      if (MGminuten <= 0)
+      intStatuscodeMindergas = (uint16_t)(TIME_LEFT_MIN(MGminuten));
+      if ( DUE(MGminuten) )
       {
         //--- when waitime is done, it's time to send the POST string
         intStatuscodeMindergas = 0;

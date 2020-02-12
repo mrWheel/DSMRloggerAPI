@@ -40,6 +40,7 @@
 #define USE_MQTT                  // define if you want to use MQTT
 #define USE_MINDERGAS             // define if you want to update mindergas (also add token down below)
 //#define SHOW_PASSWRDS             // well .. show the PSK key and MQTT password, what else?
+//#define DSMR_IN_BELGIUM         // define if you want to use the logger in Belgium. For now you do need to install arduino-dsmr-nl-be fork.
 /******************** don't change anything below this comment **********************/
 
 #include "DSMRloggerAPI.h"
@@ -433,12 +434,12 @@ void delayms(unsigned long delay_ms)
 
 //========================================================================================
 
-//===[ Do task every 100ms ]==============================================================
-void doTaskEvery100ms()
-{
-  //if (Verbose1) DebugTln("doTaskEvery100ms");
-  //== do tasks ==
-} // doTaskEvery100ms()
+////===[ Do task every 100ms ]==============================================================
+//void doTaskEvery100ms()
+//{
+//  //if (Verbose1) DebugTln("doTaskEvery100ms");
+//  //== do tasks ==
+//} // doTaskEvery100ms()
 
 //===[ Do task every 1s ]=================================================================
 void doTaskEvery1s()
@@ -488,6 +489,16 @@ void doTaskTelegram()
   blinkLEDnow();
 }
 
+//==[ Do Mindergas Processing ]============================================================
+void doTaskMindergas()
+{
+  // this taks needs to run once every minute
+  #if defined(USE_MINDERGAS)
+    if (Verbose2) DebugTln("doMindergas");
+    handleMindergas();
+  #endif
+}
+
 //===[ Do the background tasks ]=============================================================
 void doBackgroundTasks()
 {
@@ -498,7 +509,7 @@ void doBackgroundTasks()
   MDNS.update();
   handleKeyInput();
   handleMQTT();                 // MQTT transmissions
-  handleMindergas();            // Mindergas update 
+
 #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
   checkFlashButton();
 #endif
@@ -508,10 +519,11 @@ void doBackgroundTasks()
 
 //===========================================================================================
 // setup timers for main loop (* delibratly left here, it's just more clear imho *)
-DECLARE_TIMER_MS(timer100ms, 100)
+//DECLARE_TIMER_MS(timer100ms, 100)
 DECLARE_TIMER_SEC(timer1s, 1)
 DECLARE_TIMER_SEC(timer5s, 5)
 DECLARE_TIMER_SEC(timer30s, 30)
+DECLARE_TIMER_SEC(timerMindergas, 60)
 DECLARE_TIMER_SEC(timerTelegram, 10)
   
 void loop () 
@@ -520,8 +532,8 @@ void loop ()
   loopCount++;
 
   // check the timers?
-  if DUE(timer100ms)
-    doTaskEvery100ms();
+//  if DUE(timer100ms)
+//    doTaskEvery100ms();
 
   if DUE(timer1s)
     doTaskEvery1s();
@@ -532,6 +544,9 @@ void loop ()
   if DUE(timer30s)
     doTaskEvery30s();
 
+  if DUE(timerMindergas) 
+    doTaskMindergas();
+    
   if DUE(timerTelegram) 
     doTaskTelegram();
 

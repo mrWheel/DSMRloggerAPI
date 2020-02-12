@@ -64,9 +64,13 @@
 
 #define RESTART_TIMER(timerName)                  timerName##_last = millis(); 
 
-#define SINCE(timerName)  ((int32_t)(millis() - timerName##_last))
-#define DUE(timerName) (( SINCE(timerName) < timerName##_interval) ? 0 : (timerName##_last=millis()))
+#define SINCE(timerName)                          ((int32_t)(millis() - timerName##_last))
+#define DUE(timerName)                            (( SINCE(timerName) < timerName##_interval) ? 0 : (timerName##_last=millis()))
 
+#define TIME_LEFT_MIN(timerName)                  (uint32_t)(SINCE(timerName) / 60 / 1000)
+#define TIME_LEFT_SEC(timerName)                  (uint32_t)(SINCE(timerName)/ 1000)
+#define TIME_LEFT_MS(timerName)                   (uint32_t)(SINCE(timerName))
+#define TIME_LEFT TIMER_LEFT_SEC
 /*
  * 
 */
