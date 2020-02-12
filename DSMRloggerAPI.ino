@@ -492,7 +492,7 @@ void doTaskTelegram()
 //==[ Do Mindergas Processing ]============================================================
 void doTaskMindergas()
 {
-  // this taks needs to run once every minute
+  // run this taks once a minute
   #if defined(USE_MINDERGAS)
     if (Verbose2) DebugTln("doMindergas");
     handleMindergas();
@@ -523,8 +523,8 @@ void doBackgroundTasks()
 DECLARE_TIMER_SEC(timer1s, 1)
 DECLARE_TIMER_SEC(timer5s, 5)
 DECLARE_TIMER_SEC(timer30s, 30)
-DECLARE_TIMER_SEC(timerMindergas, 60)
 DECLARE_TIMER_SEC(timerTelegram, 10)
+DECLARE_TIMER_SEC(timerMindergas, 60)
   
 void loop () 
 {  

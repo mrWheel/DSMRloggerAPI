@@ -38,8 +38,17 @@ void forceMindergasUpdate()
   {
     MG_Day = day();   // make it thisDay...
     strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "force Mindergas countdown");
-    DebugTln(F("Force send data to mindergas.nl in ~1 minute"));
-    CHANGE_INTERVAL_MIN(MGminuten, 1);
+    if (stateMindergas == MG_DO_COUNTDOWN)
+    {
+          CHANGE_INTERVAL_MIN(MGminuten, 1); //force 1 minute
+          RESTART_TIMER(MGminuten);
+    }
+    else
+    {
+          CHANGE_INTERVAL_MIN(MGminuten, random(10,120)); //force normal behaviour not at midnight
+          RESTART_TIMER(MGminuten);
+    }
+    DebugTf("Force send data to mindergas.nl in %d minute(s)\r\n", TIME_LEFT_MIN(MGminuten));
     stateMindergas = MG_DO_COUNTDOWN;
     handleMindergas();
   }
@@ -173,7 +182,7 @@ void handleMindergas()
       DebugTf("Mindergas State: MG_DO_COUNTDOWN (%d minuten te gaan)\r\n", TIME_LEFT_MIN(MGminuten));
       sprintf(timeLastResponse, "@%02d|%02d:%02d -> ", day(), hour(), minute());
       strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "countdown for sending");
-      intStatuscodeMindergas = (uint16_t)(TIME_LEFT_MIN(MGminuten));
+      intStatuscodeMindergas = TIME_LEFT_MIN(MGminuten);
       if ( DUE(MGminuten) )
       {
         //--- when waitime is done, it's time to send the POST string
