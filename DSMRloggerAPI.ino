@@ -1,8 +1,8 @@
-  /*
+/*
 ***************************************************************************  
 **  Program  : DSMRloggerAPI (restAPI)
 */
-#define _FW_VERSION "v0.3.4 (25-02-2020)"
+#define _FW_VERSION "v0.3.4 (26-02-2020)"
 /*
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -376,6 +376,10 @@ void setup()
   slimmeMeter.enable(true);
 
   //test(); monthTabel
+  
+#ifdef USE_MINDERGAS
+    handleMindergas();
+#endif
 
   DebugTf("Startup complete! actTimestamp[%s]\r\n", actTimestamp);  
 

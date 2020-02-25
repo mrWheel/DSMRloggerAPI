@@ -119,7 +119,7 @@ void readSettings(bool show)
   settingMQTTbrokerPort    = 1883;
   settingMQTTuser[0]       = '\0';
   settingMQTTpasswd[0]     = '\0';
-  settingMQTTinterval      = 60;
+  settingMQTTinterval      =  0;
   sprintf(settingMQTTtopTopic, "%s", _HOSTNAME);
 
 #ifdef USE_MINDERGAS

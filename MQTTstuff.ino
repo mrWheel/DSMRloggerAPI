@@ -65,8 +65,9 @@ bool connectMQTT_FSM()
           if (!isValidIP(MQTTbrokerIP))  
           {
             DebugTf("ERROR: [%s] => is not a valid URL\r\n", settingMQTTbroker);
-            stateMQTT = MQTT_STATE_ERROR;
+            settingMQTTinterval = 0;
             DebugTln(F("Next State: MQTT_STATE_ERROR"));
+            stateMQTT = MQTT_STATE_ERROR;
             return false;
           }
           
@@ -180,7 +181,7 @@ struct buildJsonMQTT {
         //DebugTf("topicId[%s] -> [%s]\r\n", topicId, mqttBuff);
         if (!MQTTclient.publish(topicId, mqttBuff) )
         {
-          DebugTf("Error publish(%s)\r\n", mqttBuff);
+          DebugTf("Error publish(%s) [%d bytes]\r\n", mqttBuff, strlen(mqttBuff));
         }
       }
   }
