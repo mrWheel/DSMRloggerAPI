@@ -508,7 +508,7 @@ void copyToFieldsArray(const char inArray[][35], int elemts)
 {
   int i = 0;
   memset(fieldsArray,0,sizeof(fieldsArray));
-  DebugTln("start copying ....");
+  if (Verbose2) DebugTln("start copying ....");
   
   for ( i=0; i<elemts; i++)
   {

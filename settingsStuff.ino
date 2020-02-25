@@ -172,7 +172,7 @@ void readSettings(bool show)
     if (words[0].equalsIgnoreCase("TelegramInterval"))   
     {
       settingIntervalTelegram     = words[1].toInt(); 
-      CHANGE_INTERVAL_SEC(timerTelegram, settingIntervalTelegram); 
+      CHANGE_INTERVAL_SEC(nextTelegram, settingIntervalTelegram); 
     }
 
     if (words[0].equalsIgnoreCase("IndexPage"))           strCopy(settingIndexPage, (sizeof(settingIndexPage) -1), words[1].c_str());  
@@ -193,13 +193,8 @@ void readSettings(bool show)
     if (words[0].equalsIgnoreCase("MQTTinterval"))        settingMQTTinterval        = words[1].toInt(); 
     if (words[0].equalsIgnoreCase("MQTTtopTopic"))        strCopy(settingMQTTtopTopic, 20, words[1].c_str());  
     
-    if (settingMQTTinterval == settingIntervalTelegram) 
-    {
-      // special case, if telegram interval = mqtt interval, then mqtt
-      // interval needs to be shorter (does it??)
-      settingMQTTinterval = settingIntervalTelegram -1;
-    }
-    CHANGE_INTERVAL_SEC(timeMQTTPublish,  settingMQTTinterval);
+    CHANGE_INTERVAL_SEC(publishMQTTtimer, settingMQTTinterval);
+    CHANGE_INTERVAL_MIN(reconnectMQTTtimer, 1);
 #endif
     
   } // while available()
@@ -275,7 +270,7 @@ void updateSetting(const char *field, const char *newValue)
   if (!stricmp(field, "tlgrm_interval"))    
   {
     settingIntervalTelegram     = String(newValue).toInt();  
-    CHANGE_INTERVAL_SEC(timerTelegram, settingIntervalTelegram)
+    CHANGE_INTERVAL_SEC(nextTelegram, settingIntervalTelegram)
   }
 
   if (!stricmp(field, "index_page"))        strCopy(settingIndexPage, (sizeof(settingIndexPage) -1), newValue);  
@@ -290,11 +285,28 @@ void updateSetting(const char *field, const char *newValue)
     memset(settingMQTTbroker, '\0', sizeof(settingMQTTbroker));
     strCopy(settingMQTTbroker, 100, newValue);
     Debugf("[%s]\r\n", settingMQTTbroker);
+    mqttIsConnected = false;
+    CHANGE_INTERVAL_MS(reconnectMQTTtimer, 100); // try reconnecting cyclus timer
   }
-  if (!stricmp(field, "mqtt_broker_port"))  settingMQTTbrokerPort = String(newValue).toInt();  
-  if (!stricmp(field, "mqtt_user"))         strCopy(settingMQTTuser    ,35, newValue);  
-  if (!stricmp(field, "mqtt_passwd"))       strCopy(settingMQTTpasswd  ,25, newValue);  
-  if (!stricmp(field, "mqtt_interval"))     settingMQTTinterval   = String(newValue).toInt();  
+  if (!stricmp(field, "mqtt_broker_port")) {
+    settingMQTTbrokerPort = String(newValue).toInt();  
+    mqttIsConnected = false;
+    CHANGE_INTERVAL_MS(reconnectMQTTtimer, 100); // try reconnecting cyclus timer
+  }
+  if (!stricmp(field, "mqtt_user")) {
+    strCopy(settingMQTTuser    ,35, newValue);  
+    mqttIsConnected = false;
+    CHANGE_INTERVAL_MS(reconnectMQTTtimer, 100); // try reconnecting cyclus timer
+  }
+  if (!stricmp(field, "mqtt_passwd")) {
+    strCopy(settingMQTTpasswd  ,25, newValue);  
+    mqttIsConnected = false;
+    CHANGE_INTERVAL_MS(reconnectMQTTtimer, 100); // try reconnecting cyclus timer
+  }
+  if (!stricmp(field, "mqtt_interval")) {
+    settingMQTTinterval   = String(newValue).toInt();  
+    CHANGE_INTERVAL_SEC(publishMQTTtimer, settingMQTTinterval);
+  }
   if (!stricmp(field, "mqtt_toptopic"))     strCopy(settingMQTTtopTopic, 20, newValue);  
 #endif
 

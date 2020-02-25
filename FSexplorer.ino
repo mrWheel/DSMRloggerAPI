@@ -59,10 +59,10 @@ void setupFSexplorer()    // Funktionsaufruf "spiffs();" muss im Setup eingebund
   httpServer.on("/update", updateFirmware);
   httpServer.onNotFound([]() 
   {
-    DebugTf("in 'onNotFound()'!! [%s] => ", String(httpServer.uri()).c_str());
+    if (Verbose2) DebugTf("in 'onNotFound()'!! [%s] => ", String(httpServer.uri()).c_str());
     if (httpServer.uri().indexOf("/api/") == 0) 
     {
-      Debugf("next: processAPI(%s)\r\n", String(httpServer.uri()).c_str());
+      if (Verbose1) Debugf("next: processAPI(%s)\r\n", String(httpServer.uri()).c_str());
       processAPI();
     }
     else
@@ -70,7 +70,9 @@ void setupFSexplorer()    // Funktionsaufruf "spiffs();" muss im Setup eingebund
       Debugf("next: handleFile(%s)\r\n"
                       , String(httpServer.urlDecode(httpServer.uri())).c_str());
       if (!handleFile(httpServer.urlDecode(httpServer.uri())))
+      {
         httpServer.send(404, "text/plain", "FileNotFound");
+      }
     }
   });
   

@@ -11,25 +11,17 @@
 */
 #define MG_FILENAME         "/Mindergas.post"
 
-DECLARE_TIMER_MIN(minderGasTimer, 1); 
-
 //=======================================================================
 void handleMindergas()
 {
   #ifdef USE_MINDERGAS
-
-  if (DUE(minderGasTimer) )
-  {
-    processMindergas();
-  }
+    processMindergas_FSM();
   #endif
 
 } // handleMindergas()
 
 
 #ifdef USE_MINDERGAS
-
-DECLARE_TIMER_MIN(MGcountDownTimer, 1); //do not change 
 
 enum states_of_MG { MG_INIT, MG_WAIT_FOR_FIRST_TELEGRAM, MG_WAIT_FOR_NEXT_DAY
                            , MG_WRITE_TO_FILE, MG_DO_COUNTDOWN
@@ -56,15 +48,17 @@ void forceMindergasUpdate()
     strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "force Mindergas countdown");
     DebugTln(F("Force send data to mindergas.nl in ~1 minute"));
     MGminuten=1;
+    CHANGE_INTERVAL_MIN(minderGasTimer, 1);
     stateMindergas = MG_DO_COUNTDOWN;
-    processMindergas();
+    processMindergas_FSM();
   }
   else
   {
     strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "Force Write Mindergas.post");
     DebugTln(F("Force Write data to post file now!"));
+    CHANGE_INTERVAL_MIN(minderGasTimer, 1);
     stateMindergas = MG_WRITE_TO_FILE;  // write file is next state
-    processMindergas();
+    processMindergas_FSM();
   }
   
 } // forceMindergasUpdate()
@@ -72,7 +66,7 @@ void forceMindergasUpdate()
 
 //=======================================================================
 // handle finite state machine of mindergas
-void processMindergas()
+void processMindergas_FSM()
 {
   time_t t;
   File   minderGasFile;
@@ -181,18 +175,17 @@ void processMindergas()
       DebugTf("MinderGas update in [%d] minute(s)\r\n", MGminuten);
       // Lets'do the countdown
       stateMindergas = MG_DO_COUNTDOWN;
+      CHANGE_INTERVAL_MIN(minderGasTimer, 1);
       break;
       
     case MG_DO_COUNTDOWN:
       DebugTf("Mindergas State: MG_DO_COUNTDOWN (%d minuten te gaan)\r\n", MGminuten);
       sprintf(timeLastResponse, "@%02d|%02d:%02d -> ", day(), hour(), minute());
       strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "countdown for sending");
-      if ( DUE(MGcountDownTimer) ) //this timer need to run every minute to let this work
-      { 
-        MGminuten--; 
-        DebugTf("MinderGas update in less than [%d] minutes\r\n", MGminuten);
-        intStatuscodeMindergas = MGminuten;
-      }
+      MGminuten--; 
+      DebugTf("MinderGas update in less than [%d] minutes\r\n", MGminuten);
+      intStatuscodeMindergas = MGminuten;
+
       if (MGminuten <= 0)
       {
         //--- when waitime is done, it's time to send the POST string
@@ -203,6 +196,8 @@ void processMindergas()
       
     case MG_SEND_MINDERGAS:
       DebugTln(F("Mindergas State: MG_SEND_MINDERGAS"));
+      CHANGE_INTERVAL_MIN(minderGasTimer, 30);
+
       strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "try to send Mindergas.post");
 
       // if POST response for Mindergas exists, then send it... btw it should exist by now :)
@@ -314,10 +309,13 @@ void processMindergas()
       
     case MG_ERROR:
       DebugTln(F("Mindergas State: MG_ERROR"));
+      CHANGE_INTERVAL_MIN(minderGasTimer, 30);
       break;
       
     default:
       DebugTln(F("Mindergas State: Impossible, default state!")); 
+      CHANGE_INTERVAL_MIN(minderGasTimer, 30);
+      stateMindergas = MG_INIT; 
       break;  
           
   } // switch(..)
@@ -325,7 +323,7 @@ void processMindergas()
   //on exit, allow next handle state event
   handleMindergasSemaphore = false;
   
-} // processMindergas()
+} // processMindergas_FSM()
 
 #endif
 

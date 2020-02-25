@@ -2,7 +2,7 @@
 ***************************************************************************  
 **  Program  : DSMRloggerAPI (restAPI)
 */
-#define _FW_VERSION "v0.3.4 (11-02-2020)"
+#define _FW_VERSION "v0.3.4 (25-02-2020)"
 /*
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -274,7 +274,7 @@ void setup()
   
 //=============now test if "convertPRD" file exists================
 
-  if (DSMRfileExist("!PRDconvert", false) )
+  if (SPIFFS.exists("/!PRDconvert") )
   {
     convertPRD2RING();
   }
@@ -298,7 +298,7 @@ void setup()
 //================ Start MQTT  ======================================
 
 #ifdef USE_MQTT                                               //USE_MQTT
-  startMQTT();
+  connectMQTT();
   #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )    //USE_MQTT
     oled_Print_Msg(0, "<DSMRloggerAPI>", 0);               //USE_MQTT
     oled_Print_Msg(3, "MQTT server set!", 1500);              //USE_MQTT
@@ -427,58 +427,18 @@ void delayms(unsigned long delay_ms)
   CHANGE_INTERVAL_MS(timer_delay_ms, delay_ms);
   RESTART_TIMER(timer_delay_ms);
   while (!DUE(timer_delay_ms))
-    doBackgroundTasks();
+  {
+    doTimeCriticalTasks();
+  }
     
 } // delayms()
 
 //========================================================================================
 
-//===[ Do task every 100ms ]==============================================================
-void doTaskEvery100ms()
-{
-  //if (Verbose1) DebugTln("doTaskEvery100ms");
-  //== do tasks ==
-} // doTaskEvery100ms()
-
-//===[ Do task every 1s ]=================================================================
-void doTaskEvery1s()
-{
-  if (Verbose2) DebugTln("doTaskEvery1s");
-  //== do tasks ==
-  upTimeSeconds++;
-  
-} // doTaskEvery1s()
-
-//===[ Do task every 5s ]=================================================================
-void doTaskEvery5s()
-{
-  if (Verbose2) DebugTln("doTaskEvery5s");
-  //== do tasks ==
-  #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
-    displayStatus();
-  #endif
-}
-
-//===[ Do task every 30s ]=================================================================
-void doTaskEvery30s()
-{
-  if (Verbose2) DebugTln("doTaskEvery30s");
-  //== do tasks ==
-  #if defined(USE_NTP_TIME)                                                         //USE_NTP
-  if (timeStatus() == timeNeedsSync || prevNtpHour != hour())                     //USE_NTP
-  {                                                                               //USE_NTP
-    prevNtpHour = hour();                                                         //USE_NTP
-    setSyncProvider(getNtpTime);                                                  //USE_NTP
-    setSyncInterval(600);                                                         //USE_NTP
-  }                                                                               //USE_NTP
-  #endif                                                                            //USE_NTP
-}
-
-
 //==[ Do Telegram Processing ]===============================================================
 void doTaskTelegram()
 {
-  if (Verbose2) DebugTln("doTaskTelegram");
+  if (Verbose1) DebugTln("doTaskTelegram");
   #if defined(HAS_NO_SLIMMEMETER)
     handleTestdata();
   #else
@@ -489,7 +449,7 @@ void doTaskTelegram()
 }
 
 //===[ Do the background tasks ]=============================================================
-void doBackgroundTasks()
+void doTimeCriticalTasks()
 {
   #ifndef HAS_NO_SLIMMEMETER
     handleSlimmemeter();
@@ -497,46 +457,56 @@ void doBackgroundTasks()
   httpServer.handleClient();
   MDNS.update();
   handleKeyInput();
-  handleMQTT();                 // MQTT transmissions
-  handleMindergas();            // Mindergas update 
 #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
   checkFlashButton();
 #endif
   yield();
 
-} // doBackgroundTasks()
+} // doTimeCriticalTasks()
 
-//===========================================================================================
-// setup timers for main loop (* delibratly left here, it's just more clear imho *)
-DECLARE_TIMER_MS(timer100ms, 100)
-DECLARE_TIMER_SEC(timer1s, 1)
-DECLARE_TIMER_SEC(timer5s, 5)
-DECLARE_TIMER_SEC(timer30s, 30)
-DECLARE_TIMER_SEC(timerTelegram, 10)
   
 void loop () 
 {  
-  // do the loop...
+  // do the background tasks
+  doTimeCriticalTasks();
+
   loopCount++;
 
-  // check the timers?
-  if DUE(timer100ms)
-    doTaskEvery100ms();
-
-  if DUE(timer1s)
-    doTaskEvery1s();
-
-  if DUE(timer5s)
-    doTaskEvery5s();
-
-  if DUE(timer30s)
-    doTaskEvery30s();
-
-  if DUE(timerTelegram) 
+  if DUE(nextTelegram)
+  {
     doTaskTelegram();
+  }
+  
+  if DUE(updateSeconds)
+  {
+    upTimeSeconds++;
+  }
 
-  // do the background tasks
-  doBackgroundTasks();
+#if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
+  if DUE(updateDisplay)
+  {
+    displayStatus();
+  }
+#endif
+
+#ifdef USE_MINDERGAS
+  if ( DUE(minderGasTimer) )
+  {
+    handleMindergas();
+  }
+#endif
+
+#if defined(USE_NTP_TIME)                                           //USE_NTP
+  if DUE(synchrNTP)                                                 //USE_NTP
+  {
+    if (timeStatus() == timeNeedsSync || prevNtpHour != hour())     //USE_NTP
+    {
+      prevNtpHour = hour();                                         //USE_NTP
+      setSyncProvider(getNtpTime);                                  //USE_NTP
+      setSyncInterval(600);                                         //USE_NTP
+    }
+  }
+#endif                                                              //USE_NTP
   
 } // loop()
 

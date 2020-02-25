@@ -1,6 +1,6 @@
 /*
 ***************************************************************************  
-**  Program  : processTelegram - part of DSMRloggerAPI
+**  Program  : handleSlimmeMeter - part of DSMRloggerAPI
 **  Version  : v0.3.4
 **
 **  Copyright (c) 2020 Willem Aandewiel
@@ -111,8 +111,6 @@ void processSlimmemeter()
       }
       digitalWrite(LED_BUILTIN, LED_OFF);
       processTelegram();
-      sendMQTTData();      
-      
       if (Verbose2) 
       {
         DSMRdata.applyEach(showValues());

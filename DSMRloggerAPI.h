@@ -213,7 +213,15 @@ char      settingMQTTbroker[101], settingMQTTuser[40], settingMQTTpasswd[30], se
 int32_t   settingMQTTinterval, settingMQTTbrokerPort;
 String    pTimestamp;
 
-
+//===========================================================================================
+// setup timers 
+DECLARE_TIMER_SEC(updateSeconds,       1, CATCH_UP_MISSED_TICKS);
+DECLARE_TIMER_SEC(updateDisplay,       5);
+DECLARE_TIMER_SEC(synchrNTP,          30);
+DECLARE_TIMER_SEC(nextTelegram,       10);
+DECLARE_TIMER_MIN(reconnectMQTTtimer, 10); // try reconnecting cyclus timer
+DECLARE_TIMER_SEC(publishMQTTtimer,   60, SKIP_MISSED_TICKS); // interval time between MQTT messages  
+DECLARE_TIMER_MIN(minderGasTimer,     10, CATCH_UP_MISSED_TICKS); 
 
 /***************************************************************************
 *

@@ -52,6 +52,11 @@ void processTelegram()
     writeLastStatus();
   }
 
+  if ( DUE(publishMQTTtimer) )
+  {
+    sendMQTTData();      
+  }    
+
 } // processTelegram()
 
 
