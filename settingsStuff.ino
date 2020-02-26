@@ -29,6 +29,7 @@ void writeSettings()
     
   DebugT(F("Start writing setting data "));
 
+  file.print("Hostname = ");          file.println(settingHostname);            Debug(F("."));
   file.print("EnergyDeliveredT1 = "); file.println(String(settingEDT1, 5));     Debug(F("."));
   file.print("EnergyDeliveredT2 = "); file.println(String(settingEDT2, 5));     Debug(F("."));
   file.print("EnergyReturnedT1 = ");  file.println(String(settingERT1, 5));     Debug(F("."));
@@ -101,17 +102,19 @@ void readSettings(bool show)
 {
   String sTmp, nColor;
   String words[10];
+  
   File file;
   
   DebugTf(" %s ..\r\n", SETTINGS_FILE);
 
-  settingEDT1       = 0.1;
-  settingEDT2       = 0.2;
-  settingERT1       = 0.3;
-  settingERT2       = 0.4;
-  settingGDT        = 0.5;
-  settingENBK       = 15.15;
-  settingGNBK       = 11.11;
+  sprintf(settingHostname, "%s", _DEFAULT_HOSTNAME);
+  settingEDT1               = 0.1;
+  settingEDT2               = 0.2;
+  settingERT1               = 0.3;
+  settingERT2               = 0.4;
+  settingGDT                = 0.5;
+  settingENBK               = 15.15;
+  settingGNBK               = 11.11;
   settingIntervalTelegram   = 10; // seconds
   settingSleepTime          =  0; // infinite
   strCopy(settingIndexPage, sizeof(settingIndexPage), "DSMRindex.html");
@@ -120,7 +123,7 @@ void readSettings(bool show)
   settingMQTTuser[0]       = '\0';
   settingMQTTpasswd[0]     = '\0';
   settingMQTTinterval      =  0;
-  sprintf(settingMQTTtopTopic, "%s", _HOSTNAME);
+  sprintf(settingMQTTtopTopic, "%s", settingHostname);
 
 #ifdef USE_MINDERGAS
   settingMindergasToken[0] = '\0';
@@ -153,6 +156,7 @@ void readSettings(bool show)
     words[0].toLowerCase();
     nColor    = words[1].substring(0,15);
 
+    if (words[0].equalsIgnoreCase("Hostname"))            strCopy(settingHostname, 29, words[1].c_str());
     if (words[0].equalsIgnoreCase("EnergyDeliveredT1"))   settingEDT1         = strToFloat(words[1].c_str(), 5);  
     if (words[0].equalsIgnoreCase("EnergyDeliveredT2"))   settingEDT2         = strToFloat(words[1].c_str(), 5);
     if (words[0].equalsIgnoreCase("EnergyReturnedT1"))    settingERT1         = strToFloat(words[1].c_str(), 5);
@@ -198,8 +202,13 @@ void readSettings(bool show)
 #endif
     
   } // while available()
-
+  
   file.close();  
+
+  //--- this will take some time to settle in
+  //--- probably need a reboot before that to happen :-(
+  MDNS.setHostname(settingHostname);    // start advertising with new(?) settingHostname
+
   DebugTln(F(" .. done\r"));
 
 
@@ -210,6 +219,7 @@ void readSettings(bool show)
   if (!show) return;
   
   Debugln(F("\r\n==== Settings ===================================================\r"));
+  Debugf("                    Hostname : %s\r\n",   settingHostname);
   Debugf("   Energy Delivered Tarief 1 : %9.7f\r\n",  settingEDT1);
   Debugf("   Energy Delivered Tarief 2 : %9.7f\r\n",  settingEDT2);
   Debugf("   Energy Delivered Tarief 1 : %9.7f\r\n",  settingERT1);
@@ -250,6 +260,18 @@ void updateSetting(const char *field, const char *newValue)
 {
   DebugTf("-> field[%s], newValue[%s]\r\n", field, newValue);
 
+  if (!stricmp(field, "Hostname")) {
+    strCopy(settingHostname, 29, newValue); 
+    if (strlen(settingHostname) < 1) strCopy(settingHostname, 29, _DEFAULT_HOSTNAME); 
+    char *dotPntr = strchr(settingHostname, '.') ;
+    if (dotPntr != NULL)
+    {
+      byte dotPos = (dotPntr-settingHostname);
+      if (dotPos > 0)  settingHostname[dotPos] = '\0';
+    }
+    Debugln();
+    DebugTf("Need reboot before new %s.local will be available!\r\n\n", settingHostname);
+  }
   if (!stricmp(field, "ed_tariff1"))        settingEDT1         = String(newValue).toFloat();  
   if (!stricmp(field, "ed_tariff2"))        settingEDT2         = String(newValue).toFloat();  
   if (!stricmp(field, "er_tariff1"))        settingERT1         = String(newValue).toFloat();  

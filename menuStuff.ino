@@ -126,7 +126,7 @@ void displayBoardInfo()
   Debug(F("]\r\n               PSK key [**********"));
 #endif
   Debug(F("]\r\n            IP Address ["));  Debug( WiFi.localIP().toString() );
-  Debug(F("]\r\n              Hostname ["));  Debug( _HOSTNAME );
+  Debug(F("]\r\n              Hostname ["));  Debug( settingHostname );
   Debug(F("]\r\n     Last reset reason ["));  Debug( ESP.getResetReason() );
   Debug(F("]\r\n                upTime ["));  Debug( upTime() );
   Debugln(F("]\r"));
@@ -184,7 +184,7 @@ void handleKeyInput()
       case 'M':     displayMonthsHist(true);
                     break;
                     
-      case 'W':     Debugf("\r\nConnect to AP [%s] and go to ip address shown in the AP-name\r\n", _HOSTNAME);
+      case 'W':     Debugf("\r\nConnect to AP [%s] and go to ip address shown in the AP-name\r\n", settingHostname);
                     delay(1000);
                     WiFi.disconnect(true);  // deletes credentials !
                     //setupWiFi(true);

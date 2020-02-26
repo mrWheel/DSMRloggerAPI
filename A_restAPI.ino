@@ -321,7 +321,7 @@ void sendDeviceInfo()
 //sendNestedJsonObj("pskkey", WiFi.psk());   // uncomment if you want to see this
   sendNestedJsonObj("ipaddress", WiFi.localIP().toString().c_str());
   sendNestedJsonObj("wifirssi", WiFi.RSSI());
-  sendNestedJsonObj("hostname", _HOSTNAME);
+  sendNestedJsonObj("hostname", settingHostname);
   sendNestedJsonObj("uptime", upTime());
   sendNestedJsonObj("telegramcount", (int)telegramCount);
   sendNestedJsonObj("telegramerrors", (int)telegramErrors);
@@ -367,6 +367,7 @@ void sendDeviceSettings()
 
   sendStartJsonObj("settings");
   
+  sendJsonSettingObj("hostname",          settingHostname,        "s", sizeof(settingHostname) -1);
   sendJsonSettingObj("ed_tariff1",        settingEDT1,            "f", 0, 10,  5);
   sendJsonSettingObj("ed_tariff2",        settingEDT2,            "f", 0, 10,  5);
   sendJsonSettingObj("er_tariff1",        settingERT1,            "f", 0, 10,  5);
@@ -377,14 +378,14 @@ void sendDeviceSettings()
   sendJsonSettingObj("tlgrm_interval",    settingIntervalTelegram,"i", 1, 60);
   sendJsonSettingObj("oled_screen_time",  settingSleepTime,       "i", 1, 300);
   sendJsonSettingObj("index_page",        settingIndexPage,       "s", sizeof(settingIndexPage) -1);
-  sendJsonSettingObj("mqtt_broker",       settingMQTTbroker,      "s", sizeof(settingMQTTbroker));
+  sendJsonSettingObj("mqtt_broker",       settingMQTTbroker,      "s", sizeof(settingMQTTbroker) -1);
   sendJsonSettingObj("mqtt_broker_port",  settingMQTTbrokerPort,  "i", 1, 9999);
-  sendJsonSettingObj("mqtt_user",         settingMQTTuser,        "s", sizeof(settingMQTTuser));
-  sendJsonSettingObj("mqtt_passwd",       settingMQTTpasswd,      "s", sizeof(settingMQTTpasswd));
-  sendJsonSettingObj("mqtt_toptopic",     settingMQTTtopTopic,    "s", sizeof(settingMQTTtopTopic));
+  sendJsonSettingObj("mqtt_user",         settingMQTTuser,        "s", sizeof(settingMQTTuser) -1);
+  sendJsonSettingObj("mqtt_passwd",       settingMQTTpasswd,      "s", sizeof(settingMQTTpasswd) -1);
+  sendJsonSettingObj("mqtt_toptopic",     settingMQTTtopTopic,    "s", sizeof(settingMQTTtopTopic) -1);
   sendJsonSettingObj("mqtt_interval",     settingMQTTinterval,    "i", 0, 600);
 #if defined (USE_MINDERGAS )
-  sendJsonSettingObj("mindergastoken",  settingMindergasToken,    "s", sizeof(settingMindergasToken));
+  sendJsonSettingObj("mindergastoken",  settingMindergasToken,    "s", sizeof(settingMindergasToken) -1);
 #endif
 
   sendEndJsonObj();

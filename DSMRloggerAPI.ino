@@ -31,7 +31,7 @@
 /******************** compiler options  ********************************************/
 #define IS_ESP12                  // define if it's a 'bare' ESP-12 (no reset/flash functionality on board)
 #define USE_UPDATE_SERVER         // define if there is enough memory and updateServer to be used
-#define HAS_OLED_SSD1306          // define if a 0.96" OLED display is present
+  #define HAS_OLED_SSD1306          // define if a 0.96" OLED display is present
 //  #define HAS_OLED_SH1106           // define if a 1.3" OLED display is present
 //  #define HAS_NO_SLIMMEMETER        // define for testing only!
 //  #define USE_PRE40_PROTOCOL        // define if Slimme Meter is pre DSMR 4.0 (2.2 .. 3.0)
@@ -101,8 +101,11 @@ void setup()
   pinMode(DTR_ENABLE, OUTPUT);
 #endif
   
-  //setup randomseed the right way
-  randomSeed(RANDOM_REG32); //This is 8266 HWRNG used to seed the Random PRNG: Read more: https://config9.com/arduino/getting-a-truly-random-number-in-arduino/
+  //--- setup randomseed the right way
+  //--- This is 8266 HWRNG used to seed the Random PRNG
+  //--- Read more: https://config9.com/arduino/getting-a-truly-random-number-in-arduino/
+  randomSeed(RANDOM_REG32); 
+  sprintf(settingHostname, "%s", _DEFAULT_HOSTNAME);
   Serial.printf("\n\nBooting....[%s]\r\n\r\n", String(_FW_VERSION).c_str());
 
 #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
@@ -171,7 +174,7 @@ void setup()
 #endif  // has_oled_ssd1306
 
   digitalWrite(LED_BUILTIN, LED_ON);
-  startWiFi();
+  startWiFi(settingHostname);
 
 #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
   oled_Print_Msg(0, "<DSMRloggerAPI>", 0);
@@ -192,7 +195,7 @@ void setup()
   }
   digitalWrite(LED_BUILTIN, LED_OFF);
 
-  startMDNS(_HOSTNAME);
+  startMDNS(settingHostname);
 #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
   oled_Print_Msg(3, "mDNS gestart", 1500);
 #endif  // has_oled_ssd1306
@@ -432,7 +435,7 @@ void delayms(unsigned long delay_ms)
   RESTART_TIMER(timer_delay_ms);
   while (!DUE(timer_delay_ms))
   {
-    doTimeCriticalTasks();
+    doSystemTasks();
   }
     
 } // delayms()
@@ -452,8 +455,8 @@ void doTaskTelegram()
   blinkLEDnow();
 }
 
-//===[ Do the background tasks ]=============================================================
-void doTimeCriticalTasks()
+//===[ Do System tasks ]=============================================================
+void doSystemTasks()
 {
   #ifndef HAS_NO_SLIMMEMETER
     handleSlimmemeter();
@@ -466,13 +469,13 @@ void doTimeCriticalTasks()
 #endif
   yield();
 
-} // doTimeCriticalTasks()
+} // doSystemTasks()
 
   
 void loop () 
 {  
   // do the background tasks
-  doTimeCriticalTasks();
+  doSystemTasks();
 
   loopCount++;
 

@@ -76,7 +76,7 @@ bool connectMQTT_FSM()
           DebugTf("[%s] => setServer(%s, %d) \r\n", settingMQTTbroker, MQTTbrokerIPchar, settingMQTTbrokerPort);
           MQTTclient.setServer(MQTTbrokerIPchar, settingMQTTbrokerPort);
           DebugTf("setServer  -> MQTT status, rc=%d \r\n", MQTTclient.state());
-          MQTTclientId  = String(_HOSTNAME) + WiFi.macAddress();
+          MQTTclientId  = String(settingHostname) + WiFi.macAddress();
           stateMQTT = MQTT_STATE_TRY_TO_CONNECT;
           DebugTln(F("Next State: MQTT_STATE_TRY_TO_CONNECT"));
           reconnectAttempts = 0;

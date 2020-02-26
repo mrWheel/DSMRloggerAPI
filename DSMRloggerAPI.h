@@ -21,17 +21,10 @@
   #include <dsmr.h>               // Version 0.1 - Commit f79c906 on 18 Sep 2018
 #endif
 
-#ifdef ARDUINO_ESP8266_GENERIC
-  #define _HOSTNAME     "DSMR-API"  
-  #ifdef IS_ESP12
+#define _DEFAULT_HOSTNAME     "DSMR-API"  
+#ifdef IS_ESP12
     #define DTR_ENABLE  12
-  #endif  // is_esp12
-#else // not arduino_esp8266_generic
-  #define _HOSTNAME     "ESP12-DSMR"
-  #ifdef IS_ESP12
-    #define DTR_ENABLE  12
-  #endif
-#endif  // arduino_esp8266_generic
+#endif  // is_esp12
 
 #define SETTINGS_FILE      "/DSMRsettings.ini"
 
@@ -208,6 +201,7 @@ IPAddress ipDNS, ipGateWay, ipSubnet;
 float     settingEDT1, settingEDT2, settingERT1, settingERT2, settingGDT;
 float     settingENBK, settingGNBK;
 uint8_t   settingIntervalTelegram;
+char      settingHostname[30];
 char      settingIndexPage[50];
 char      settingMQTTbroker[101], settingMQTTuser[40], settingMQTTpasswd[30], settingMQTTtopTopic[21];
 int32_t   settingMQTTinterval, settingMQTTbrokerPort;

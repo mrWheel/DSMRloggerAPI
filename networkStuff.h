@@ -56,11 +56,11 @@ void configModeCallback (WiFiManager *myWiFiManager)
 
 
 //===========================================================================================
-void startWiFi() 
+void startWiFi(const char* hostname) 
 {
   WiFiManager manageWiFi;
 
-  String thisAP = String(_HOSTNAME) + "-" + WiFi.macAddress();
+  String thisAP = String(hostname) + "-" + WiFi.macAddress();
   
   manageWiFi.setDebugOutput(true);
   
