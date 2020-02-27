@@ -2,7 +2,7 @@
 ***************************************************************************  
 **  Program  : DSMRloggerAPI (restAPI)
 */
-#define _FW_VERSION "v0.3.4 (26-02-2020)"
+#define _FW_VERSION "v0.3.4 (03-03-2020)"
 /*
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -31,7 +31,7 @@
 /******************** compiler options  ********************************************/
 #define IS_ESP12                  // define if it's a 'bare' ESP-12 (no reset/flash functionality on board)
 #define USE_UPDATE_SERVER         // define if there is enough memory and updateServer to be used
-  #define HAS_OLED_SSD1306          // define if a 0.96" OLED display is present
+#define HAS_OLED_SSD1306          // define if a 0.96" OLED display is present
 //  #define HAS_OLED_SH1106           // define if a 1.3" OLED display is present
 //  #define HAS_NO_SLIMMEMETER        // define for testing only!
 //  #define USE_PRE40_PROTOCOL        // define if Slimme Meter is pre DSMR 4.0 (2.2 .. 3.0)
@@ -250,13 +250,13 @@ void setup()
       }
       hasAlternativeIndex        = true;
     }
-    else  hasAlternativeIndex        = false;
+    else  hasAlternativeIndex    = false;
   }
   if (!hasAlternativeIndex && !DSMRfileExist("/DSMRindex.html", false) )
   {
     spiffsNotPopulated = true;
   }
-  if (!hasAlternativeIndex)
+  if (!hasAlternativeIndex)    //--- there's no alternative index.html
   {
     DSMRfileExist("/DSMRindex.js",    false);
     DSMRfileExist("/DSMRindex.css",   false);
@@ -326,6 +326,12 @@ void setup()
       httpServer.serveStatic("/",                 SPIFFS, settingIndexPage);
       httpServer.serveStatic("/index",            SPIFFS, settingIndexPage);
       httpServer.serveStatic("/index.html",       SPIFFS, settingIndexPage);
+      httpServer.serveStatic("/DSMRindex.html",   SPIFFS, settingIndexPage);
+      if (strcmp(settingIndexPage, "GitHub") != 0)
+      {
+        DebugTln(F("set [/DSMReditor.html] to [/DSMReditorGitHub.html]"));
+        httpServer.serveStatic("/DSMReditor.html",  SPIFFS, "/DSMReditorGitHub.html");
+      }
     }
     else
     {

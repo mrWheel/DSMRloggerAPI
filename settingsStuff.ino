@@ -24,7 +24,7 @@ void writeSettings()
   yield();
 
   if (strlen(settingIndexPage) < 7) strCopy(settingIndexPage, (sizeof(settingIndexPage) -1), "DSMRindex.html");
-  if (settingIntervalTelegram < 3)  settingIntervalTelegram = 10;
+  if (settingTelegramInterval < 3)  settingTelegramInterval = 10;
   if (settingMQTTbrokerPort < 1)    settingMQTTbrokerPort = 1883;
     
   DebugT(F("Start writing setting data "));
@@ -38,7 +38,7 @@ void writeSettings()
   file.print("EnergyVasteKosten = "); file.println(String(settingENBK, 2));     Debug(F("."));
   file.print("GasVasteKosten = ");    file.println(String(settingGNBK, 2));     Debug(F("."));
   file.print("SleepTime = ");         file.println(settingSleepTime);           Debug(F("."));
-  file.print("TelegramInterval = ");  file.println(settingIntervalTelegram);    Debug(F("."));
+  file.print("TelegramInterval = ");  file.println(settingTelegramInterval);    Debug(F("."));
   file.print("IndexPage = ");         file.println(settingIndexPage);           Debug(F("."));
 
 #ifdef USE_MQTT
@@ -69,7 +69,7 @@ file.close();
     DebugT(F("EnergyVasteKosten = ")); Debugln(String(settingENBK, 2));    
     DebugT(F("GasVasteKosten = "));    Debugln(String(settingGNBK, 2));    
     DebugT(F("SleepTime = "));         Debugln(settingSleepTime);           
-    DebugT(F("TelegramInterval = "));  Debugln(settingIntervalTelegram);            
+    DebugT(F("TelegramInterval = "));  Debugln(settingTelegramInterval);            
     DebugT(F("IndexPage = "));         Debugln(settingIndexPage);             
 
 #ifdef USE_MQTT
@@ -115,7 +115,7 @@ void readSettings(bool show)
   settingGDT                = 0.5;
   settingENBK               = 15.15;
   settingGNBK               = 11.11;
-  settingIntervalTelegram   = 10; // seconds
+  settingTelegramInterval   = 10; // seconds
   settingSleepTime          =  0; // infinite
   strCopy(settingIndexPage, sizeof(settingIndexPage), "DSMRindex.html");
   settingMQTTbroker[0]     = '\0';
@@ -175,8 +175,8 @@ void readSettings(bool show)
     
     if (words[0].equalsIgnoreCase("TelegramInterval"))   
     {
-      settingIntervalTelegram     = words[1].toInt(); 
-      CHANGE_INTERVAL_SEC(nextTelegram, settingIntervalTelegram); 
+      settingTelegramInterval     = words[1].toInt(); 
+      CHANGE_INTERVAL_SEC(nextTelegram, settingTelegramInterval); 
     }
 
     if (words[0].equalsIgnoreCase("IndexPage"))           strCopy(settingIndexPage, (sizeof(settingIndexPage) -1), words[1].c_str());  
@@ -213,7 +213,7 @@ void readSettings(bool show)
 
 
   if (strlen(settingIndexPage) < 7) strCopy(settingIndexPage, (sizeof(settingIndexPage) -1), "DSMRindex.html");
-  if (settingIntervalTelegram < 3)  settingIntervalTelegram = 10;
+  if (settingTelegramInterval < 3)  settingTelegramInterval = 10;
   if (settingMQTTbrokerPort < 1)    settingMQTTbrokerPort = 1883;
 
   if (!show) return;
@@ -227,7 +227,7 @@ void readSettings(bool show)
   Debugf("        Gas Delivered Tarief : %9.7f\r\n",  settingGDT);
   Debugf("     Energy Netbeheer Kosten : %9.2f\r\n",  settingENBK);
   Debugf("        Gas Netbeheer Kosten : %9.2f\r\n",  settingGNBK);
-  Debugf("   Telegram Process Interval : %d\r\n",     settingIntervalTelegram);
+  Debugf("   Telegram Process Interval : %d\r\n",     settingTelegramInterval);
   Debugf("OLED Sleep Min. (0=oneindig) : %d\r\n",     settingSleepTime);
   Debugf("                  Index Page : %s\r\n",     settingIndexPage);
 
@@ -291,8 +291,8 @@ void updateSetting(const char *field, const char *newValue)
   
   if (!stricmp(field, "tlgrm_interval"))    
   {
-    settingIntervalTelegram     = String(newValue).toInt();  
-    CHANGE_INTERVAL_SEC(nextTelegram, settingIntervalTelegram)
+    settingTelegramInterval     = String(newValue).toInt();  
+    CHANGE_INTERVAL_SEC(nextTelegram, settingTelegramInterval)
   }
 
   if (!stricmp(field, "index_page"))        strCopy(settingIndexPage, (sizeof(settingIndexPage) -1), newValue);  

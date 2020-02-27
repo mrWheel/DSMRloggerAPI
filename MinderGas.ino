@@ -153,6 +153,7 @@ void processMindergas_FSM()
     case MG_WRITE_TO_FILE: 
           DebugTln(F("Mindergas State: MG_WRITE_TO_FILE"));
           writePostToFile();
+          CHANGE_INTERVAL_MIN(minderGasTimer, 1);
           break; 
       
     case MG_DO_COUNTDOWN: 
@@ -193,7 +194,7 @@ void processMindergas_FSM()
               //--- will not influence behaviour in a negative way
               DebugTln(F("Failed to delete POST Mindergas file"));
             } 
-            bDoneResponse = true; 
+//          bDoneResponse = true; 
           }   
           CHANGE_INTERVAL_MIN(minderGasTimer, 30);
           break; 
@@ -232,6 +233,8 @@ void sendMindergasPostFile()
   WiFiClient  MGclient;   
   File        minderGasFile;
 
+  bDoneResponse = false; 
+
   //--- try to connect to minderGas
   DebugTln(F("Connecting to Mindergas..."));
   //--- connect over http with mindergas
@@ -260,20 +263,28 @@ void sendMindergasPostFile()
     {
       if (MGclient.available()) 
       {
-        //-- read the status code the response
+        //--- skip to find HTTP/1.1
+        //--- then parse response code
         if (MGclient.find("HTTP/1.1"))
         {
-          //--- skip to find HTTP/1.1
-          //--- then parse response code
           intStatuscodeMindergas = MGclient.parseInt(); // parse status code
           //Debugln();
           Debugf("Statuscode: [%d]\r\n", intStatuscodeMindergas);
           switch (intStatuscodeMindergas) {
+            case 201:  
+                validToken = true;
+                //--- report error back to see in settings page
+                strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "Created entry");
+                Debugln(F("Succes, the gas delivered has been added to your mindergas.nl account"));
+                DebugTln(F("Next State: MG_WAIT_FOR_NEXT_DAY"));
+                stateMindergas = MG_WAIT_FOR_NEXT_DAY;               
+                break;
+          
             case 401:
                 validToken = false;
                 strCopy(settingMindergasToken, sizeof(settingMindergasToken), "Invalid token"); 
                 strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "Unauthorized, token invalid!"); // report error back to see in settings page
-                DebugTln(F("Invalid Mindergas Authenication Token"));
+                Debugln(F("Invalid Mindergas Authenication Token"));
                 stateMindergas = MG_NO_AUTHTOKEN;
                 break;
           
@@ -281,24 +292,15 @@ void sendMindergasPostFile()
                 validToken = true;
                 //--- report error back to see in settings page
                 strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "Unprocessed entity");
-                DebugTln(F("Unprocessed entity, goto website mindergas for more information")); 
+                Debugln(F("Unprocessed entity, goto website mindergas for more information")); 
                 stateMindergas = MG_WAIT_FOR_NEXT_DAY; 
-                break;
-          
-            case 201:  
-                validToken = true;
-                //--- report error back to see in settings page
-                strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "Created entry");
-                DebugTln(F("Succes, the gas delivered has been added to your mindergas.nl account"));
-                DebugTln(F("Next State: MG_WAIT_FOR_NEXT_DAY"));
-                stateMindergas = MG_WAIT_FOR_NEXT_DAY;               
                 break;
           
             default:
                 validToken = true;
                 //--- report error back to see in settings page
                 strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "Unknown response code");
-                DebugTln(F("Unknown responsecode, goto mindergas for information"));
+                Debugln(F("Unknown responsecode, goto mindergas for information"));
                 stateMindergas = MG_WAIT_FOR_NEXT_DAY;           
                 break;
           } // end switch-case             
@@ -307,7 +309,8 @@ void sendMindergasPostFile()
         //--- close HTTP connection
         MGclient.stop();
         DebugTln(F("Disconnected from mindergas.nl"));
-      
+        bDoneResponse = true; 
+    
       } // end-if client.available() 
       else 
       {

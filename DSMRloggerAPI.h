@@ -200,7 +200,7 @@ uint64_t  upTimeSeconds;
 IPAddress ipDNS, ipGateWay, ipSubnet;
 float     settingEDT1, settingEDT2, settingERT1, settingERT2, settingGDT;
 float     settingENBK, settingGNBK;
-uint8_t   settingIntervalTelegram;
+uint8_t   settingTelegramInterval;
 char      settingHostname[30];
 char      settingIndexPage[50];
 char      settingMQTTbroker[101], settingMQTTuser[40], settingMQTTpasswd[30], settingMQTTtopTopic[21];
@@ -216,6 +216,7 @@ DECLARE_TIMER_SEC(nextTelegram,       10);
 DECLARE_TIMER_MIN(reconnectMQTTtimer, 10); // try reconnecting cyclus timer
 DECLARE_TIMER_SEC(publishMQTTtimer,   60, SKIP_MISSED_TICKS); // interval time between MQTT messages  
 DECLARE_TIMER_MIN(minderGasTimer,     10, CATCH_UP_MISSED_TICKS); 
+DECLARE_TIMER_SEC(antiWearTimer,      61);
 
 /***************************************************************************
 *
