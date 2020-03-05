@@ -2,7 +2,7 @@
 ***************************************************************************  
 **  Program  : DSMRloggerAPI (restAPI)
 */
-#define _FW_VERSION "v0.3.4 (03-03-2020)"
+#define _FW_VERSION "v0.3.5 (05-03-2020)"
 /*
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -33,10 +33,11 @@
 #define USE_UPDATE_SERVER         // define if there is enough memory and updateServer to be used
 #define HAS_OLED_SSD1306          // define if a 0.96" OLED display is present
 //  #define HAS_OLED_SH1106           // define if a 1.3" OLED display is present
-//  #define HAS_NO_SLIMMEMETER        // define for testing only!
+//  #define USE_BELGIUM_PROTOCOL      // define if Slimme Meter it is a Belgium Smart Meter
 //  #define USE_PRE40_PROTOCOL        // define if Slimme Meter is pre DSMR 4.0 (2.2 .. 3.0)
 //  #define USE_NTP_TIME              // define to generate Timestamp from NTP (Only Winter Time for now)
 //  #define SM_HAS_NO_FASE_INFO       // if your SM does not give fase info use total delevered/returned
+//  #define HAS_NO_SLIMMEMETER        // define for testing only!
 #define USE_MQTT                  // define if you want to use MQTT
 #define USE_MINDERGAS             // define if you want to update mindergas (also add token down below)
 //#define SHOW_PASSWRDS             // well .. show the PSK key and MQTT password, what else?

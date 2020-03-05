@@ -13,9 +13,12 @@
 #include <TelnetStream.h>       // Version 0.0.1 - https://github.com/jandrassy/TelnetStream
 #include "safeTimers.h"
 
-#ifdef USE_PRE40_PROTOCOL                                       //PRE40
+#if defined( USE_PRE40_PROTOCOL )                               //PRE40
   //  https://github.com/mrWheel/arduino-dsmr30.git             //PRE40
   #include <dsmr30.h>                                           //PRE40
+#elif defined( USE_BELGIUM_PROTOCOL )                           //Belgium
+  //  https://github.com/mrWheel/arduino-dsmr-be.git            //Belgium
+  #include <dsmr-be.h>                                          //Belgium
 #else                                                           //else
   //  https://github.com/matthijskooijman/arduino-dsmr
   #include <dsmr.h>               // Version 0.1 - Commit f79c906 on 18 Sep 2018
