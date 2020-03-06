@@ -33,6 +33,7 @@ char infoArray[][35]   = { "identification","p1_version","equipment_id","electri
                           ,"gas_device_type","gas_equipment_id"
                           , "\0" };
   
+bool onlyIfPresent  = false;
 
 //=======================================================================
 void processAPI() 
@@ -54,7 +55,7 @@ void processAPI()
     DebugT(">>");
     for (int w=0; w<wc; w++)
     {
-      DebugTf("word[%d] => [%s], ", w, words[w].c_str());
+      Debugf("word[%d] => [%s], ", w, words[w].c_str());
     }
     Debugln(" ");
   }
@@ -206,18 +207,21 @@ void handleSmApi(const char *word4, const char *word5, const char *word6)
   if (strcmp(word4, "info") == 0)
   {
     //sendSmInfo();
+    onlyIfPresent = false;
     copyToFieldsArray(infoArray, infoElements);
     sendJsonFields(word4);
   }
   else if (strcmp(word4, "actual") == 0)
   {
     //sendSmActual();
+    onlyIfPresent = true;
     copyToFieldsArray(actualArray, actualElements);
     sendJsonFields(word4);
   }
   else if (strcmp(word4, "fields") == 0)
   {
     fieldsElements = 0;
+    onlyIfPresent = false;
 
     if (strlen(word5) > 0)
     {
@@ -277,15 +281,50 @@ void handleSmApi(const char *word4, const char *word5, const char *word6)
 //=======================================================================
 void sendDeviceInfo() 
 {
+  char compileOptions[200] = "";
+
+#ifdef IS_ESP12
+    strConcat(compileOptions, sizeof(compileOptions), "[IS_ESP12]");
+#endif
+#if defined( USE_PRE40_PROTOCOL )
+    strConcat(compileOptions, sizeof(compileOptions), "[USE_PRE40_PROTOCOL]");
+#elif defined( USE_BELGIUM_PROTOCOL )
+    strConcat(compileOptions, sizeof(compileOptions), "[USE_BELGIUM_PROTOCOL]");
+#else
+    strConcat(compileOptions, sizeof(compileOptions), "[USE_DUTCH_PROTOCOL]");
+#endif
+#ifdef USE_UPDATE_SERVER
+    strConcat(compileOptions, sizeof(compileOptions), "[USE_UPDATE_SERVER]");
+#endif
+#ifdef USE_MQTT
+    strConcat(compileOptions, sizeof(compileOptions), "[USE_MQTT]");
+#endif
+#ifdef USE_MINDERGAS
+    strConcat(compileOptions, sizeof(compileOptions), "[USE_MINDERGAS]");
+#endif
+#ifdef USE_NTP_TIME
+    strConcat(compileOptions, sizeof(compileOptions), "[USE_NTP_TIME]");
+#endif
+#if defined( HAS_OLED_SSD1306 )
+    strConcat(compileOptions, sizeof(compileOptions), "[HAS_OLED_SSD1306]");
+#endif
+#if defined( HAS_OLED_SH1106 )
+    strConcat(compileOptions, sizeof(compileOptions), "[HAS_OLED_SH1106]");
+#endif
+#ifdef SM_HAS_NO_FASE_INFO
+    strConcat(compileOptions, sizeof(compileOptions), "[SM_HAS_NO_FASE_INFO]");
+#endif
+
   sendStartJsonObj("devinfo");
 
   sendNestedJsonObj("author", "Willem Aandewiel (www.aandewiel.nl)");
   sendNestedJsonObj("fwversion", _FW_VERSION);
 
-  sprintf(cMsg, "%s %s", __DATE__, __TIME__);
+  snprintf(cMsg, sizeof(cMsg), "%s %s", __DATE__, __TIME__);
   sendNestedJsonObj("compiled", cMsg);
   sendNestedJsonObj("hostname", settingHostname);
   sendNestedJsonObj("ipaddress", WiFi.localIP().toString().c_str());
+  sendNestedJsonObj("indexfile", settingIndexPage);
   sendNestedJsonObj("freeheap", ESP.getFreeHeap(), "bytes");
   sendNestedJsonObj("maxfreeblock", ESP.getMaxFreeBlockSize(), "bytes");
   sendNestedJsonObj("chipid", String( ESP.getChipId(), HEX ).c_str());
@@ -293,14 +332,18 @@ void sendDeviceInfo()
   sendNestedJsonObj("sdkversion", String( ESP.getSdkVersion() ).c_str());
   sendNestedJsonObj("cpufreq", ESP.getCpuFreqMHz(), "MHz");
   sendNestedJsonObj("sketchsize", formatFloat( (ESP.getSketchSize() / 1024.0), 3), "kB");
-  sendNestedJsonObj("freesketchSpace", formatFloat( (ESP.getFreeSketchSpace() / 1024.0), 3), "kB");
+  sendNestedJsonObj("freesketchspace", formatFloat( (ESP.getFreeSketchSpace() / 1024.0), 3), "kB");
 
   if ((ESP.getFlashChipId() & 0x000000ff) == 0x85) 
-        sprintf(cMsg, "%08X (PUYA)", ESP.getFlashChipId());
-  else  sprintf(cMsg, "%08X", ESP.getFlashChipId());
+        snprintf(cMsg, sizeof(cMsg), "%08X (PUYA)", ESP.getFlashChipId());
+  else  snprintf(cMsg, sizeof(cMsg), "%08X", ESP.getFlashChipId());
   sendNestedJsonObj("flashchipid", cMsg);  // flashChipId
   sendNestedJsonObj("flashchipsize", formatFloat((ESP.getFlashChipSize() / 1024.0 / 1024.0), 3), "MB");
   sendNestedJsonObj("flashchiprealsize", formatFloat((ESP.getFlashChipRealSize() / 1024.0 / 1024.0), 3), "MB");
+
+  SPIFFS.info(SPIFFSinfo);
+  sendNestedJsonObj("spiffssize", formatFloat( (SPIFFSinfo.totalBytes / (1024.0 * 1024.0)), 0), "MB");
+
   sendNestedJsonObj("flashchipspeed", formatFloat((ESP.getFlashChipSpeed() / 1000.0 / 1000.0), 0), "MHz");
 
   FlashMode_t ideMode = ESP.getFlashChipMode();
@@ -319,8 +362,11 @@ void sendDeviceInfo()
      "ESP8266_ESP12"
 #endif
   );
+  sendNestedJsonObj("compileoptions", compileOptions);
   sendNestedJsonObj("ssid", WiFi.SSID().c_str());
-//sendNestedJsonObj("pskkey", WiFi.psk());   // uncomment if you want to see this
+#ifdef SHOW_PASSWRDS
+  sendNestedJsonObj("pskkey", WiFi.psk());   
+#endif
   sendNestedJsonObj("wifirssi", WiFi.RSSI());
   sendNestedJsonObj("uptime", upTime());
   sendNestedJsonObj("telegraminterval", (int)settingTelegramInterval);
@@ -328,7 +374,7 @@ void sendDeviceInfo()
   sendNestedJsonObj("telegramerrors",   (int)telegramErrors);
 
 #ifdef USE_MQTT
-  sprintf(cMsg, "%s:%04d", settingMQTTbroker, settingMQTTbrokerPort);
+  snprintf(cMsg, sizeof(cMsg), "%s:%04d", settingMQTTbroker, settingMQTTbrokerPort);
   sendNestedJsonObj("mqttbroker", cMsg);
   sendNestedJsonObj("mqttinterval", settingMQTTinterval);
   if (mqttIsConnected)
@@ -336,7 +382,7 @@ void sendDeviceInfo()
   else  sendNestedJsonObj("mqttbroker_connected", "no");
 #endif
 #ifdef USE_MINDERGAS
-  sprintf(cMsg, "%s:%d", timeLastResponse, intStatuscodeMindergas);
+  snprintf(cMsg, sizeof(cMsg), "%s:%d", timeLastResponse, intStatuscodeMindergas);
   sendNestedJsonObj("mindergas_response",     txtResponseMindergas);
   sendNestedJsonObj("mindergas_status",       cMsg);
 #endif
@@ -425,14 +471,14 @@ struct buildJsonApi {
             sendNestedJsonObj(Name.c_str(), typecastValue(i.val()));
           }
         }
-        else
+        else if (!onlyIfPresent)
         {
           sendNestedJsonObj(Name.c_str(), "-");
         }
       }
   }
 
-};
+};  // buildJsonApi()
 
 //=======================================================================
 void sendJsonFields(const char *Name) 
@@ -497,7 +543,7 @@ bool isInFieldsArray(const char* lookUp, int elemts)
 
   for (int i=0; i<elemts; i++)
   {
-    if (Verbose2) DebugTf("[%2d] Looking for [%s] in array[%s]\r\n", i, lookUp, fieldsArray[i]); 
+    //if (Verbose2) DebugTf("[%2d] Looking for [%s] in array[%s]\r\n", i, lookUp, fieldsArray[i]); 
     if (strcmp(lookUp, fieldsArray[i]) == 0) return true;
   }
   return false;
@@ -509,12 +555,12 @@ void copyToFieldsArray(const char inArray[][35], int elemts)
 {
   int i = 0;
   memset(fieldsArray,0,sizeof(fieldsArray));
-  if (Verbose2) DebugTln("start copying ....");
+  //if (Verbose2) DebugTln("start copying ....");
   
   for ( i=0; i<elemts; i++)
   {
     strncpy(fieldsArray[i], inArray[i], 34);
-    if (Verbose1) DebugTf("[%2d] => inArray[%s] fieldsArray[%s]\r\n", i, inArray[i], fieldsArray[i]); 
+    //if (Verbose1) DebugTf("[%2d] => inArray[%s] fieldsArray[%s]\r\n", i, inArray[i], fieldsArray[i]); 
 
   }
   fieldsElements = i;

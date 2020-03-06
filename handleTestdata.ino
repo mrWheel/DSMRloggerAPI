@@ -116,7 +116,7 @@ void handleTestdata()
       int16_t len = buildTelegram40(line, telegramLine);  // also: prints to DSMRsend
       calcCRC = decodeTelegram(len);
     } 
-    sprintf(cMsg, "!%04X\r\n\r\n", (calcCRC & 0xFFFF));
+    snprintf(cMsg, sizeof(cMsg), "!%04X\r\n\r\n", (calcCRC & 0xFFFF));
     if (Verbose2) Debug(cMsg);
     strConcat(telegram, sizeof(telegram), cMsg);
     

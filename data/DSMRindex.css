@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRindex.css, part of DSMRfirmwareAPI
-**  Version  : v0.3.4
+**  Version  : v0.3.5
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -24,6 +24,7 @@ html {
 table {
   color: black;
   border-collapse: collapse;
+  width: 90%;
   background: lightblue;
 }
 
@@ -111,69 +112,6 @@ input {
 
 }
 
-.flex-item {
-  padding: 50;
-  margin: 50;
-  list-style: none;
-  flex-direction: row; /*row | row-reverse | column | column-reverse*/
-  
-  display: -webkit-box;
-  display: -moz-box;
-  display: -ms-flexbox;
-  display: -webkit-flex;
-  display: flex;
-  
-  -webkit-flex-flow: row wrap;
-  justify-content: space-around; /* flex-start | flex-end | center | space-between | space-around | space-evenly */
-
-}
-
-.flexLabel200 {
-  background: white;
-  padding: 1px;
-  width: 200px;
-/*  height: 16px; */
-  height: 20px;
-  margin-top: 0px;
-  margin-left: 10px;
-  
-  line-height: 15px;
-  color: white;
-  font-size: 0.9em;
-  text-align: left;
-}
-
-.flexLabel300 {
-  background: white;
-  padding: 1px;
-  padding-right: 20px;
-  width: 300px;
-/*  height: 16px; */
-  height: 24px;
-  margin-top: 0px;
-  margin-right: 0px;
-  
-  line-height: 20px;
-  color: white;
-  font-size: 0.9em;
-  text-align: right;
-}
-
-.flexValue250 {
-  background: white;
-  padding: 1px;
-  width: 250px;
-/*  height: 16px; */
-  height: 20px;
-  margin-top: 0px;
-  
-  line-height: 15px;
-  color: white;
-/*  font-weight: bold; */
-  font-size: 1em;
-  text-align: left;
-}
-
 /*--------------------- N A V - B A R -----------------*/
 .nav-container {
   list-style: none;
@@ -239,7 +177,7 @@ input {
 }
 
 /*-------------------------*/
-
+/***
 @media all and (max-width: 600px) {
   .nav-container {
     justify-content: space-around;
@@ -253,15 +191,7 @@ input {
     padding: 0;
   }
 }
-
-/*
-#logWindow {
-    font-size: 14px;
-    margin-left: 20px;
-    width: 90vw;
-    height: 20vh;
-}
-*/
+***/
 
 .editButton {
   background-color: white;

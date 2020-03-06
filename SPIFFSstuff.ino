@@ -41,7 +41,7 @@ void readLastStatus()
   if (strlen(spiffsTimestamp) != 13) {
     strcpy(spiffsTimestamp, "010101010101X");
   }
-  sprintf(actTimestamp, "%s", spiffsTimestamp);
+  snprintf(actTimestamp, sizeof(actTimestamp), "%s", spiffsTimestamp);
   
 }  // readLastStatus()
 
@@ -56,7 +56,7 @@ void writeLastStatus()
   {
     DebugTln("write(): No /DSMRstatus.csv found ..");
   }
-  sprintf(buffer, "%-13.13s; %010u; %010u; %s;\n", actTimestamp
+  snprintf(buffer, sizeof(buffer), "%-13.13s; %010u; %010u; %s;\n", actTimestamp
                                           , nrReboots
                                           , slotErrors
                                           , "meta data");
@@ -76,7 +76,7 @@ bool buildDataRecordFromSM(char *recIn)
   uint16_t recSlot = timestampToHourSlot(actTimestamp, strlen(actTimestamp));
   strCopy(key, 10, actTimestamp, 0, 8);
 
-  sprintf(record, (char*)DATA_FORMAT, key , (float)DSMRdata.energy_delivered_tariff1
+  snprintf(record, sizeof(record), (char*)DATA_FORMAT, key , (float)DSMRdata.energy_delivered_tariff1
                                           , (float)DSMRdata.energy_delivered_tariff2
                                           , (float)DSMRdata.energy_returned_tariff1
                                           , (float)DSMRdata.energy_returned_tariff2
@@ -124,7 +124,7 @@ uint16_t buildDataRecordFromJson(char *recIn, String jsonIn)
   recSlot = timestampToMonthSlot(uKey, strlen(uKey));
  
   DebugTf("MONTHS: Write [%s] to slot[%02d] in %s\r\n", uKey, recSlot, MONTHS_FILE);
-  sprintf(record, (char*)DATA_FORMAT, uKey , (float)uEDT1
+  snprintf(record, sizeof(record), (char*)DATA_FORMAT, uKey , (float)uEDT1
                                            , (float)uEDT2
                                            , (float)uERT1
                                            , (float)uERT2
@@ -341,7 +341,7 @@ bool createFile(const char *fileName, uint16_t noSlots)
 
     File dataFile  = SPIFFS.open(fileName, "a");  // create File
     // -- first write fileHeader ----------------------------------------
-    sprintf(cMsg, "%s", DATA_CSV_HEADER);  // you cannot modify *fileHeader!!!
+    snprintf(cMsg, sizeof(cMsg), "%s", DATA_CSV_HEADER);  // you cannot modify *fileHeader!!!
     fillRecord(cMsg, DATA_RECLEN);
     DebugT(cMsg); Debugln(F("\r"));
     bytesWritten = dataFile.print(cMsg);
@@ -351,9 +351,9 @@ bool createFile(const char *fileName, uint16_t noSlots)
     }
     DebugTln(F(".. that went well! Now add next record ..\r"));
     // -- as this file is empty, write one data record ------------
-    sprintf(cMsg, "%02d%02d%02d%02d", 0, 0, 0, 0);
+    snprintf(cMsg, sizeof(cMsg), "%02d%02d%02d%02d", 0, 0, 0, 0);
     
-    sprintf(cMsg, DATA_FORMAT, cMsg, 0.000, 0.000, 0.000, 0.000, 0.000);
+    snprintf(cMsg, sizeof(cMsg), DATA_FORMAT, cMsg, 0.000, 0.000, 0.000, 0.000, 0.000);
 
     fillRecord(cMsg, DATA_RECLEN);
     for(int r = 1; r <= noSlots; r++)

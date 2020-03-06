@@ -70,6 +70,9 @@ void displayBoardInfo()
 #if defined( HAS_OLED_SH1106 )
   Debug(F("[HAS_OLED_SH1106]"));
 #endif
+#ifdef USE_BELGIUM_PROTOCOL
+  Debug(F("[USE_BELGIUM_PROTOCOL]"));
+#endif
 #ifdef SM_HAS_NO_FASE_INFO
   Debug(F("[SM_HAS_NO_FASE_INFO]"));
 #endif
@@ -89,8 +92,8 @@ void displayBoardInfo()
   Debug(F("]\r\nFree Sketch Space (kB) ["));  Debug( ESP.getFreeSketchSpace() / 1024.0 );
 
   if ((ESP.getFlashChipId() & 0x000000ff) == 0x85) 
-        sprintf(cMsg, "%08X (PUYA)", ESP.getFlashChipId());
-  else  sprintf(cMsg, "%08X", ESP.getFlashChipId());
+        snprintf(cMsg, sizeof(cMsg), "%08X (PUYA)", ESP.getFlashChipId());
+  else  snprintf(cMsg, sizeof(cMsg), "%08X", ESP.getFlashChipId());
 
   SPIFFS.info(SPIFFSinfo);
 
@@ -243,8 +246,10 @@ void handleKeyInput()
                     break;
 //    case 'X':     convertPRD2RING();
 //                  break;
-      case 'Z':     slotErrors  = 0;
-                    nrReboots   = 0;
+      case 'Z':     slotErrors      = 0;
+                    nrReboots       = 0;
+                    telegramCount   = 0;
+                    telegramErrors  = 0;
                     break;
       default:      Debugln(F("\r\nCommands are:\r\n"));
                     Debugln(F("   B - Board Info\r"));

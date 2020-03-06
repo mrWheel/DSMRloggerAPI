@@ -67,7 +67,7 @@ time_t getNtpTime()
     {
       ntpPoolIndx = 0;
     }
-    sprintf(ntpServerName, "%s", String(ntpPool[ntpPoolIndx]).c_str());
+    snprintf(ntpServerName, sizeof(ntpServerName), "%s", String(ntpPool[ntpPoolIndx]).c_str());
 
     while (Udp.parsePacket() > 0) ; // discard any previously received packets
     TelnetStream.println("Transmit NTP Request");
@@ -93,7 +93,7 @@ time_t getNtpTime()
         secsSince1900 |= (unsigned long)packetBuffer[42] << 8;
         secsSince1900 |= (unsigned long)packetBuffer[43];
         time_t t = (secsSince1900 - 2208988800UL + timeZone * SECS_PER_HOUR);
-        sprintf(cMsg, "%02d:%02d:%02d", hour(t), minute(t), second(t));   
+        snprintf(cMsg, sizeof(cMsg), "%02d:%02d:%02d", hour(t), minute(t), second(t));   
         TelnetStream.printf("[%s] Received NTP Response => new time [%s]  (Winter)\r\n", cMsg, cMsg);
         // return epoch ..
         return secsSince1900 - 2208988800UL + timeZone * SECS_PER_HOUR;

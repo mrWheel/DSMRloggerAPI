@@ -2,7 +2,7 @@
 ***************************************************************************  
 **  Program  : DSMRloggerAPI (restAPI)
 */
-#define _FW_VERSION "v0.3.5 (05-03-2020)"
+#define _FW_VERSION "v0.3.5 (09-03-2020)"
 /*
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -13,7 +13,7 @@
 
     - Board: "Generic ESP8266 Module"
     - Flash mode: "DOUT" | "DIO"    // change only after power-off and on again!
-    - Flash size: "4MB (FS: 2MB OAT:~1019KB)"  
+    - Flash size: "4MB (FS: 2MB OAT:~1019KB)"  << LET OP! 2MB SPIFFS
     - DebugT port: "Disabled"
     - DebugT Level: "None"
     - IwIP Variant: "v2 Lower Memory"
@@ -22,7 +22,7 @@
     - VTables: "Flash"
     - Flash Frequency: "40MHz"
     - CPU Frequency: "80 MHz"
-    - Buildin Led: "2"  // ESP-01 (Black) GPIO01 - Pin 2 // "2" for Wemos and ESP-01S
+    - Buildin Led: "2"  // GPIO02 for Wemos and ESP-12
     - Upload Speed: "115200"                                                                                                                                                                                                                                                 
     - Erase Flash: "Only Sketch"
     - Port: <select correct port>
@@ -33,13 +33,13 @@
 #define USE_UPDATE_SERVER         // define if there is enough memory and updateServer to be used
 #define HAS_OLED_SSD1306          // define if a 0.96" OLED display is present
 //  #define HAS_OLED_SH1106           // define if a 1.3" OLED display is present
-//  #define USE_BELGIUM_PROTOCOL      // define if Slimme Meter it is a Belgium Smart Meter
+//  #define USE_BELGIUM_PROTOCOL      // define if Slimme Meter is a Belgium Smart Meter
 //  #define USE_PRE40_PROTOCOL        // define if Slimme Meter is pre DSMR 4.0 (2.2 .. 3.0)
 //  #define USE_NTP_TIME              // define to generate Timestamp from NTP (Only Winter Time for now)
 //  #define SM_HAS_NO_FASE_INFO       // if your SM does not give fase info use total delevered/returned
 //  #define HAS_NO_SLIMMEMETER        // define for testing only!
 #define USE_MQTT                  // define if you want to use MQTT
-#define USE_MINDERGAS             // define if you want to update mindergas (also add token down below)
+#define USE_MINDERGAS             // define if you want to update mindergas
 //#define SHOW_PASSWRDS             // well .. show the PSK key and MQTT password, what else?
 /******************** don't change anything below this comment **********************/
 
@@ -55,9 +55,9 @@ struct showValues {
       TelnetStream.print(F(": "));
       TelnetStream.print(i.val());
       TelnetStream.print(Item::unit());
-    } else 
-    {
-      TelnetStream.print(F("<no value>"));
+    //} else 
+    //{
+    //  TelnetStream.print(F("<no value>"));
     }
     TelnetStream.println();
   }
@@ -69,15 +69,15 @@ void displayStatus()
 {
 #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
   switch(msgMode) { 
-    case 1:   sprintf(cMsg, "Up:%15.15s", upTime().c_str());
+    case 1:   snprintf(cMsg, sizeof(cMsg), "Up:%15.15s", upTime().c_str());
               break;
-    case 2:   sprintf(cMsg, "WiFi RSSI:%4d dBm", WiFi.RSSI());
+    case 2:   snprintf(cMsg, sizeof(cMsg), "WiFi RSSI:%4d dBm", WiFi.RSSI());
               break;
-    case 3:   sprintf(cMsg, "Heap:%7d Bytes", ESP.getFreeHeap());
+    case 3:   snprintf(cMsg, sizeof(cMsg), "Heap:%7d Bytes", ESP.getFreeHeap());
               break;
-    case 4:   sprintf(cMsg, "IP %s", WiFi.localIP().toString().c_str());
+    case 4:   snprintf(cMsg, sizeof(cMsg), "IP %s", WiFi.localIP().toString().c_str());
               break;
-    default:  sprintf(cMsg, "Telgrms:%6d/%3d", telegramCount, telegramErrors);
+    default:  snprintf(cMsg, sizeof(cMsg), "Telgrms:%6d/%3d", telegramCount, telegramErrors);
               break;
   }
   oled_Print_Msg(3, cMsg, 0);
@@ -106,7 +106,7 @@ void setup()
   //--- This is 8266 HWRNG used to seed the Random PRNG
   //--- Read more: https://config9.com/arduino/getting-a-truly-random-number-in-arduino/
   randomSeed(RANDOM_REG32); 
-  sprintf(settingHostname, "%s", _DEFAULT_HOSTNAME);
+  snprintf(settingHostname, sizeof(settingHostname), "%s", _DEFAULT_HOSTNAME);
   Serial.printf("\n\nBooting....[%s]\r\n\r\n", String(_FW_VERSION).c_str());
 
 #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
@@ -114,7 +114,7 @@ void setup()
   oled_Clear();  // clear the screen so we can paint the menu.
   oled_Print_Msg(0, "<DSMRloggerAPI>", 0);
   int8_t sPos = String(_FW_VERSION).indexOf(' ');
-  sprintf(cMsg, "(c)2019 [%s]", String(_FW_VERSION).substring(0,sPos).c_str());
+  snprintf(cMsg, sizeof(cMsg), "(c)2019 [%s]", String(_FW_VERSION).substring(0,sPos).c_str());
   oled_Print_Msg(1, cMsg, 0);
   oled_Print_Msg(2, " Willem Aandewiel", 0);
   oled_Print_Msg(3, " >> Have fun!! <<", 1000);
@@ -180,7 +180,7 @@ void setup()
 #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
   oled_Print_Msg(0, "<DSMRloggerAPI>", 0);
   oled_Print_Msg(1, WiFi.SSID(), 0);
-  sprintf(cMsg, "IP %s", WiFi.localIP().toString().c_str());
+  snprintf(cMsg, sizeof(cMsg), "IP %s", WiFi.localIP().toString().c_str());
   oled_Print_Msg(2, cMsg, 1500);
 #endif  // has_oled_ssd1306
   digitalWrite(LED_BUILTIN, LED_OFF);
@@ -231,7 +231,7 @@ void setup()
 #endif  //USE_NTP_TIME                                      //USE_NTP
 //================ end NTP =========================================
 
-  sprintf(cMsg, "Last reset reason: [%s]\r", ESP.getResetReason().c_str());
+  snprintf(cMsg, sizeof(cMsg), "Last reset reason: [%s]\r", ESP.getResetReason().c_str());
   DebugTln(cMsg);
 
   Serial.print("\nGebruik 'telnet ");
@@ -287,14 +287,15 @@ void setup()
 
 #if defined(USE_NTP_TIME)                                                           //USE_NTP
   time_t t = now(); // store the current time in time variable t                    //USE_NTP
-  sprintf(cMsg, "%02d%02d%02d%02d%02d%02dW\0\0", (year(t) - 2000), month(t), day(t) //USE_NTP
+  snprintf(cMsg, sizeof(cMsg), "%02d%02d%02d%02d%02d%02dW\0\0"                      //USE_NTP
+                                               , (year(t) - 2000), month(t), day(t) //USE_NTP
                                                , hour(t), minute(t), second(t));    //USE_NTP
   pTimestamp = cMsg;                                                                //USE_NTP
   DebugTf("Time is set to [%s] from NTP\r\n", cMsg);                                //USE_NTP
 #endif  // use_dsmr_30
 
 #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
-  sprintf(cMsg, "DT: %02d%02d%02d%02d0101W", thisYear, thisMonth, thisDay, thisHour);
+  snprintf(cMsg, sizeof(cMsg), "DT: %02d%02d%02d%02d0101W", thisYear, thisMonth, thisDay, thisHour);
   oled_Print_Msg(0, "<DSMRloggerAPI>", 0);
   oled_Print_Msg(3, cMsg, 1500);
 #endif  // has_oled_ssd1306
@@ -403,7 +404,7 @@ void setup()
 
 //================ The final part of the Setup =====================
 
-  sprintf(cMsg, "Last reset reason: [%s]\r", ESP.getResetReason().c_str());
+  snprintf(cMsg, sizeof(cMsg), "Last reset reason: [%s]\r", ESP.getResetReason().c_str());
   DebugTln(cMsg);
 
 #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
@@ -468,6 +469,9 @@ void doSystemTasks()
   #ifndef HAS_NO_SLIMMEMETER
     handleSlimmemeter();
   #endif
+  #ifndef USE_MQTT
+    MQTTclient.loop();
+  #endif
   httpServer.handleClient();
   MDNS.update();
   handleKeyInput();
@@ -521,6 +525,8 @@ void loop ()
     }
   }
 #endif                                                              //USE_NTP
+  
+  yield();
   
 } // loop()
 

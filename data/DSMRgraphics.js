@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRgraphics.js, part of DSMRloggerAPI
-**  Version  : v0.3.4
+**  Version  : v0.3.5
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -189,6 +189,8 @@ var myGasChart;
     //--- show canvas
     document.getElementById("dataChart").style.display  = "block";
     document.getElementById("gasChart").style.display   = "block";
+    
+    document.getElementById('mCOST').checked   = false;
 
   } // showMonthsGraph()
   

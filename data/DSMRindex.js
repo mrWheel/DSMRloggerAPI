@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRindex.js, part of DSMRfirmwareAPI
-**  Version  : v0.3.4
+**  Version  : v0.3.5
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -257,7 +257,19 @@
             } else if (data[i].name == 'tlgrm_interval')
             {
               tlgrmInterval = data[i].value;
+            } else if (data[i].name == "compileoptions" && data[i].value.length > 50) 
+            {
+              tableCells[1].innerHTML = data[i].value.substring(0,50);
+              var lLine = data[i].value.substring(50);
+              while (lLine.length > 50)
+              {
+                tableCells[1].innerHTML += "<br>" + lLine.substring(0,50);
+                lLine = lLine.substring(50);
+              }
+              tableCells[1].innerHTML += "<br>" + lLine;
+              tableCells[0].setAttribute("style", "vertical-align: top");
             }
+
           }
       })
       .catch(function(error) {
@@ -346,7 +358,23 @@
             tableCells = document.getElementById("fieldsTable_"+data[i].name).cells;
             tableCells[0].innerHTML = data[i].name;
             tableCells[1].innerHTML = data[i].shortName;
-            tableCells[2].innerHTML = data[i].value;
+            if (data[i].name == "electricity_failure_log" && data[i].value.length > 50) 
+            {
+              tableCells[2].innerHTML = data[i].value.substring(0,50);
+              var lLine = data[i].value.substring(50);
+              while (lLine.length > 50)
+              {
+                tableCells[2].innerHTML += "<br>" + lLine.substring(0,50);
+                lLine = lLine.substring(50);
+              }
+              tableCells[2].innerHTML += "<br>" + lLine;
+              tableCells[0].setAttribute("style", "vertical-align: top");
+              tableCells[1].setAttribute("style", "vertical-align: top");
+            }
+            else
+            {
+              tableCells[2].innerHTML = data[i].value;
+            }
             if (data[i].hasOwnProperty('unit'))
             {
               tableCells[2].style.textAlign = "right";              // value
@@ -421,7 +449,11 @@
         data = json.months;
         expandData(data);
         if (presentationType == "TAB")
-              showMonthsHist(data);
+        {
+          if (document.getElementById('mCOST').checked)
+                showMonthsCosts(data);
+          else  showMonthsHist(data);
+        }
         else  showMonthsGraph(data);
       })
       .catch(function(error) {
@@ -469,12 +501,15 @@
      //console.log("now in expandData() ..");
      for (let i=0; i<data.length; i++)
      {
-      data[i].p_ed  = {};
-      data[i].p_edw = {};
-      data[i].p_er  = {};
-      data[i].p_erw = {};
-      data[i].p_gd  = {};
-      data[i].costs = {};
+      data[i].p_ed      = {};
+      data[i].p_edw     = {};
+      data[i].p_er      = {};
+      data[i].p_erw     = {};
+      data[i].p_gd      = {};
+      data[i].costs_e   = {};
+      data[i].costs_g   = {};
+      data[i].costs_nw  = {};
+      data[i].costs_tt  = {};
 
       if (i < (data.length -1))
       {
@@ -487,24 +522,30 @@
         //-- calculate Energy Delivered costs
         var     costs = ( (data[i].edt1 - data[i+1].edt1) * ed_tariff1 );
         costs = costs + ( (data[i].edt2 - data[i+1].edt2) * ed_tariff2 );
-        //-- add Energy Returned costs
+        //-- subtract Energy Returned costs
         costs = costs - ( (data[i].ert1 - data[i+1].ert1) * er_tariff1 );
         costs = costs - ( (data[i].ert2 - data[i+1].ert2) * er_tariff2 );
+        data[i].costs_e = costs;
         //-- add Gas Delivered costs
-        costs = costs + ( (data[i].gdt  - data[i+1].gdt)  * gd_tariff );
-        //-- add network costs
-        costs = costs + ( electr_netw_costs / 30 );
-        costs = costs + ( gas_netw_costs    / 30 );
-        data[i].costs = costs.toFixed(2)
+        data[i].costs_g = ( (data[i].gdt  - data[i+1].gdt)  * gd_tariff );
+        //-- compute network costs
+        data[i].costs_nw = (electr_netw_costs + gas_netw_costs);
+        //costs = (data[i].costs_e + data[i].costs_g + data[i].costs_nw);
+        //-- compute total costs
+      //data[i].costs_tt = ( (data[i].costs_e + data[i].costs_g + data[i].costs_nw) * 1.0).toFixed(2);
+        data[i].costs_tt = ( (data[i].costs_e + data[i].costs_g + data[i].costs_nw) * 1.0);
       }
       else
       {
-        data[i].p_ed  = (data[i].edt1 +data[i].edt2).toFixed(3);
-        data[i].p_edw = (data[i].p_ed * 1000).toFixed(0);
-        data[i].p_er  = (data[i].ert1 +data[i].ert2).toFixed(3);
-        data[i].p_erw = (data[i].p_er * 1000).toFixed(0);
-        data[i].p_gd  = (data[i].gdt).toFixed(3);
-        data[i].costs = 0.0;
+        data[i].p_ed      = (data[i].edt1 +data[i].edt2).toFixed(3);
+        data[i].p_edw     = (data[i].p_ed * 1000).toFixed(0);
+        data[i].p_er      = (data[i].ert1 +data[i].ert2).toFixed(3);
+        data[i].p_erw     = (data[i].p_er * 1000).toFixed(0);
+        data[i].p_gd      = (data[i].gdt).toFixed(3);
+        data[i].costs_e   = 0.0;
+        data[i].costs_g   = 0.0;
+        data[i].costs_nw  = 0.0;
+        data[i].costs_tt  = 0.0;
       }
     } // for i ..
     //console.log("leaving expandData() ..");
@@ -605,7 +646,7 @@
       if (type == "Days")
       {
         tableCells[4].style.textAlign = "right";
-        tableCells[4].innerHTML = (data[i].costs * 1.0).toFixed(2);
+        tableCells[4].innerHTML = ( (data[i].costs_e + data[i].costs_g) * 1.0).toFixed(2);
       }
     };
 
@@ -721,6 +762,99 @@
 
   } // showMonthsHist()
 
+    
+  //============================================================================  
+  function showMonthsCosts(data)
+  { 
+    console.log("now in showMonthsCosts() ..");
+    var showRows = 0;
+    if (data.length > 24) showRows = 12;
+    else                  showRows = data.length / 2;
+    //console.log("showRows is ["+showRows+"]");
+    for (let i=0; i<showRows; i++)
+    {
+      //console.log("showMonthsHist(): data["+i+"] => data["+i+"].name["+data[i].recid+"]");
+      var tableRef = document.getElementById('lastMonthsTableCosts').getElementsByTagName('tbody')[0];
+      if( ( document.getElementById("lastMonthsTableCosts_R"+i)) == null )
+      {
+        var newRow   = tableRef.insertRow();
+        newRow.setAttribute("id", "lastMonthsTableCosts_R"+i, 0);
+        // Insert a cell in the row at index 0
+        var newCell  = newRow.insertCell(0);          // maand
+        var newText  = document.createTextNode('-');
+        newCell.appendChild(newText);
+        newCell  = newRow.insertCell(1);              // jaar
+        newCell.appendChild(newText);
+        newCell  = newRow.insertCell(2);              // kosten electra
+        newCell.appendChild(newText);
+        newCell  = newRow.insertCell(3);              // kosten gas
+        newCell.appendChild(newText);
+        newCell  = newRow.insertCell(4);              // vast recht
+        newCell.appendChild(newText);
+        newCell  = newRow.insertCell(5);              // kosten totaal
+        newCell.appendChild(newText);
+
+        newCell  = newRow.insertCell(6);              // jaar
+        newCell.appendChild(newText);
+        newCell  = newRow.insertCell(7);              // kosten electra
+        newCell.appendChild(newText);
+        newCell  = newRow.insertCell(8);              // kosten gas
+        newCell.appendChild(newText);
+        newCell  = newRow.insertCell(9);              // vast recht
+        newCell.appendChild(newText);
+        newCell  = newRow.insertCell(10);              // kosten totaal
+        newCell.appendChild(newText);
+      }
+      var mmNr = parseInt(data[i].recid.substring(2,4), 10);
+
+      tableCells = document.getElementById("lastMonthsTableCosts_R"+i).cells;
+      tableCells[0].style.textAlign = "right";
+      tableCells[0].innerHTML = monthNames[mmNr];                           // maand
+      
+      tableCells[1].style.textAlign = "center";
+      tableCells[1].innerHTML = "20"+data[i].recid.substring(0,2);          // jaar
+      tableCells[2].style.textAlign = "right";
+      tableCells[2].innerHTML = (data[i].costs_e).toFixed(2);               // kosten electra
+      tableCells[3].style.textAlign = "right";
+      tableCells[3].innerHTML = (data[i].costs_g).toFixed(2);               // kosten gas
+      tableCells[4].style.textAlign = "right";
+      tableCells[4].innerHTML = (data[i].costs_nw).toFixed(2);              // netw kosten
+      tableCells[5].style.textAlign = "right";
+      tableCells[5].style.fontWeight = 'bold';
+      tableCells[5].innerHTML = "€ " + (data[i].costs_tt).toFixed(2);       // kosten totaal
+
+      tableCells[6].style.textAlign = "center";
+      tableCells[6].innerHTML = "20"+data[i+12].recid.substring(0,2);       // jaar
+      tableCells[7].style.textAlign = "right";
+      tableCells[7].innerHTML = (data[i+12].costs_e).toFixed(2);            // kosten electra
+      tableCells[8].style.textAlign = "right";
+      tableCells[8].innerHTML = (data[i+12].costs_g).toFixed(2);            // kosten gas
+      tableCells[9].style.textAlign = "right";
+      tableCells[9].innerHTML = (data[i+12].costs_nw).toFixed(2);           // netw kosten
+      tableCells[10].style.textAlign = "right";
+      tableCells[10].style.fontWeight = 'bold';
+      tableCells[10].innerHTML = "€ " + (data[i+12].costs_tt).toFixed(2);   // kosten totaal
+
+    };
+    
+    //--- hide canvas
+    document.getElementById("dataChart").style.display  = "none";
+    document.getElementById("gasChart").style.display   = "none";
+    //--- show table
+    if (document.getElementById('mCOST').checked)
+    {
+      document.getElementById("lastMonthsTableCosts").style.display = "block";
+      document.getElementById("lastMonthsTable").style.display = "none";
+    }
+    else
+    {
+      document.getElementById("lastMonthsTable").style.display = "block";
+      document.getElementById("lastMonthsTableCosts").style.display = "none";
+    }
+    document.getElementById("lastMonths").style.display = "block";
+
+  } // showMonthsCosts()
+
   
   //============================================================================  
   function getDevSettings()
@@ -782,6 +916,10 @@
       document.getElementById('dTAB').checked   = false;
       document.getElementById('mGRAPH').checked = true;
       document.getElementById('mTAB').checked   = false;
+      document.getElementById('mCOST').checked  = false;
+      document.getElementById("lastMonthsTable").style.display      = "block";
+      document.getElementById("lastMonthsTableCosts").style.display = "none";
+
     } else if (pType == "TAB") {
       console.log("Set presentationType to Tabular mode!");
       presentationType = pType;
@@ -793,6 +931,8 @@
       document.getElementById('dGRAPH').checked = false;
       document.getElementById('mTAB').checked   = true;
       document.getElementById('mGRAPH').checked = false;
+      document.getElementById('mCOST').checked  = false;
+
     } else {
       console.log("setPresentationType to ["+pType+"] is quit shitty! Set to TAB");
       presentationType = "TAB";
@@ -804,7 +944,31 @@
     if (activeTab == "MonthsTab")  refreshMonths();
 
   } // setPresenationType()
-
+  
+    
+  //============================================================================  
+  function setMonthTableType() {
+    console.log("Set Month Table Type");
+    if (presentationType == 'GRAPH') 
+    {
+      document.getElementById('mCOST').checked = false;
+      return;
+    }
+    if (document.getElementById('mCOST').checked)
+    {
+      document.getElementById("lastMonthsTableCosts").style.display = "block";
+      document.getElementById("lastMonthsTable").style.display      = "none";
+    }
+    else
+    {
+      document.getElementById("lastMonthsTable").style.display      = "block";
+      document.getElementById("lastMonthsTableCosts").style.display = "none";
+    }
+    document.getElementById('lastMonthsTableCosts').getElementsByTagName('tbody').innerHTML = "";
+    refreshMonths();
+      
+  } // setMonthTableType()
+  
   
   //============================================================================  
   function smToHuman(longName) {

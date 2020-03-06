@@ -42,7 +42,7 @@ bool      bDoneResponse             = false;
 //force mindergas update, by skipping states
 void forceMindergasUpdate()
 {
-  sprintf(timeLastResponse, "@%02d|%02d:%02d -> ", day(), hour(), minute());
+  snprintf(timeLastResponse, sizeof(timeLastResponse), "@%02d|%02d:%02d -> ", day(), hour(), minute());
 
   validToken = true;
 
@@ -89,7 +89,7 @@ void processMindergas_FSM()
   {
     case MG_INIT: //--- only after reboot
           DebugTln(F("Mindergas State: MG_INIT"));
-          sprintf(timeLastResponse, "@%02d|%02d:%02d -> ", day() , hour(), minute());
+          snprintf(timeLastResponse, sizeof(timeLastResponse), "@%02d|%02d:%02d -> ", day() , hour(), minute());
           if (intStatuscodeMindergas == 0)
           {
             strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "INITIAL STATE");
@@ -135,7 +135,7 @@ void processMindergas_FSM()
           DebugTln(F("Mindergas State: MG_WAIT_FOR_NEXT_DAY"));
           if (intStatuscodeMindergas == 0)
           {
-            sprintf(timeLastResponse, "@%02d|%02d:%02d -> ", day(), hour(), minute());
+            snprintf(timeLastResponse, sizeof(timeLastResponse), "@%02d|%02d:%02d -> ", day(), hour(), minute());
             strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "WAIT_FOR_NEXT_DAY");
           }
           CHANGE_INTERVAL_MIN(minderGasTimer, 30);
@@ -143,7 +143,7 @@ void processMindergas_FSM()
           if (MG_Day != day())                  // It is no longer the same day, so it must be past midnight
           {
             MG_Day = day();                     // make it thisDay...
-            sprintf(timeLastResponse, "@%02d|%02d:%02d -> ", day(), hour(), minute());
+            snprintf(timeLastResponse, sizeof(timeLastResponse), "@%02d|%02d:%02d -> ", day(), hour(), minute());
             strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "WRITE_TO_FILE");
             CHANGE_INTERVAL_MIN(minderGasTimer, 1);
             stateMindergas = MG_WRITE_TO_FILE;  // write file is next state
@@ -158,8 +158,8 @@ void processMindergas_FSM()
       
     case MG_DO_COUNTDOWN: 
           DebugTf("Mindergas State: MG_DO_COUNTDOWN (%d minuten te gaan)\r\n", MGminuten);
-          sprintf(timeLastResponse, "@%02d|%02d:%02d -> ", day(), hour(), minute());
-          sprintf(txtResponseMindergas, "Send DATA in %d minutes", MGminuten );
+          snprintf(timeLastResponse, sizeof(timeLastResponse), "@%02d|%02d:%02d -> ", day(), hour(), minute());
+          snprintf(txtResponseMindergas, sizeof(txtResponseMindergas), "Send DATA in %d minutes", MGminuten );
           DebugTf("MinderGas update in less than [%d] minutes\r\n", MGminuten );
           MGminuten--; 
           intStatuscodeMindergas = MGminuten;
@@ -175,7 +175,7 @@ void processMindergas_FSM()
     case MG_SEND_MINDERGAS: 
           DebugTln(F("Mindergas State: MG_SEND_MINDERGAS"));
 
-          sprintf(timeLastResponse, "@%02d|%02d:%02d -> ", day(), hour(), minute());
+          snprintf(timeLastResponse, sizeof(timeLastResponse), "@%02d|%02d:%02d -> ", day(), hour(), minute());
           strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "SEND_MINDERGAS");
 
           //--- if POST response for Mindergas exists, then send it... btw it should exist by now :)
@@ -256,7 +256,7 @@ void sendMindergasPostFile()
     DebugTln(F("Send to Mindergas.nl..."));
     MGclient.println(sBuffer);
     //--- read response from mindergas.nl
-    sprintf(timeLastResponse, "@%02d|%02d:%02d >> ", day() , hour(), minute());
+    snprintf(timeLastResponse, sizeof(timeLastResponse), "@%02d|%02d:%02d >> ", day() , hour(), minute());
     DebugTf("[%s] Mindergas response: ", timeLastResponse);
 
     while (!bDoneResponse && (MGclient.connected() || MGclient.available())) 
@@ -348,7 +348,7 @@ void writePostToFile()
   //--- we want to upload the gas usage of yesterday so rewind the clock for 1 day
   time_t t = now() - SECS_PER_DAY;  
   char dataString[80];
-  sprintf(dataString,"{ \"date\": \"%04d-%02d-%02d\", \"reading\": \"%.3f\" }"
+  snprintf(dataString, sizeof(dataString),"{ \"date\": \"%04d-%02d-%02d\", \"reading\": \"%.3f\" }"
                                                           , year(t)
                                                           , month(t)
                                                           , day(t)
@@ -365,7 +365,7 @@ void writePostToFile()
   minderGasFile.println(dataString);        
 
   minderGasFile.close();
-  sprintf(timeLastResponse, "@%02d|%02d:%02d -> ", day(), hour(), minute());
+  snprintf(timeLastResponse, sizeof(timeLastResponse), "@%02d|%02d:%02d -> ", day(), hour(), minute());
   strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "Mindergas.post aangemaakt");
 
   //--- start countdown

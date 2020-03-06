@@ -107,7 +107,7 @@ void readSettings(bool show)
   
   DebugTf(" %s ..\r\n", SETTINGS_FILE);
 
-  sprintf(settingHostname, "%s", _DEFAULT_HOSTNAME);
+  snprintf(settingHostname, sizeof(settingHostname), "%s", _DEFAULT_HOSTNAME);
   settingEDT1               = 0.1;
   settingEDT2               = 0.2;
   settingERT1               = 0.3;
@@ -123,7 +123,7 @@ void readSettings(bool show)
   settingMQTTuser[0]       = '\0';
   settingMQTTpasswd[0]     = '\0';
   settingMQTTinterval      =  0;
-  sprintf(settingMQTTtopTopic, "%s", settingHostname);
+  snprintf(settingMQTTtopTopic, sizeof(settingMQTTtopTopic), "%s", settingHostname);
 
 #ifdef USE_MINDERGAS
   settingMindergasToken[0] = '\0';

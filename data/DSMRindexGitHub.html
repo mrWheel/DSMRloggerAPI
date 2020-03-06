@@ -1,7 +1,7 @@
 <!--
 ***************************************************************************  
 **  Program  : DSMRindexGitHub.html, part of DSMRloggerAPI
-**  Version  : v0.3.4
+**  Version  : v0.3.5
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -13,7 +13,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">  
-  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/mrWheel/DSMRloggerAPI@master/data/DSMRindex.css">
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/mrWheel/DSMRloggerAPI@master/data/DSMRindex.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
 
   <title>ESP-DSMR Slimme Meter Logger</title>
@@ -66,7 +66,7 @@
         <input type="radio" id="aGRAPH" onchange="setPresentationType('GRAPH')"/>
         &nbsp;&nbsp;
     </div>
-    <div id='actual' style="margin-left: 50px; margin-right: 500px; background: lightblue;">
+    <div id='actual' style="margin-left: 50px; width: 200px; background: lightblue;">
       <table id="actualTable">
       <thead>
         <tr>
@@ -100,7 +100,7 @@
       <input type="radio" id="hGRAPH" onchange="setPresentationType('GRAPH')"/>
       &nbsp;&nbsp;
     </div>
-    <div id='lastHours' style="margin-left: 50px; margin-right: 650px; background: lightblue;">
+    <div id='lastHours' style="margin-left: 50px; width: 150px; background: lightblue;">
       <table id="lastHoursTable">
         <thead>
           <tr>
@@ -131,7 +131,7 @@
       <input type="radio" id="dGRAPH" onchange="setPresentationType('GRAPH')"/>
       &nbsp;&nbsp;
     </div>
-    <div id='lastDays' style="margin-left: 50px; margin-right: 450px; background: lightblue;">
+    <div id='lastDays' style="margin-left: 50px; width: 250px; background: lightblue;">
       <table id="lastDaysTable">
       <thead>
         <tr>
@@ -157,12 +157,15 @@
       Tabel
       <input type="radio" id="mTAB" onchange="setPresentationType('TAB')" checked/>
       &nbsp;&nbsp;
+      Kosten
+      <input type="checkbox" id="mCOST" onchange="setMonthTableType()"/>
+      &nbsp;&nbsp;
       Grafisch
       <input type="radio" id="mGRAPH" onchange="setPresentationType('GRAPH')"/>
       &nbsp;&nbsp;
     </div>
-    <div id='lastMonths' style="margin-left: 50px; margin-right: 250px; background: lightblue;">
-      <table id="lastMonthsTable">
+    <div id='lastMonths' style="margin-left: 50px; width: 1050px; background: lightblue;">
+      <table id="lastMonthsTable" style="display:block">
       <thead>
         <tr>
             <th align='center'></th>
@@ -186,6 +189,27 @@
             <th style="text-align: right;  border-bottom: 2px solid #ddd;" width='70px'>(m3)</th>
             <th style="text-align: center; border-bottom: 2px solid #ddd;" width='50px'>Jaar</th>
             <th style="text-align: right;  border-bottom: 2px solid #ddd;" width='70px'>(m3)</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+      </table>
+      
+      <table id="lastMonthsTableCosts" style="display:none">
+      <thead>
+        <tr>
+            <th style="text-align: right;  border-bottom: 2px solid #ddd;" width='80px'>Maand</th>
+            <th style="text-align: center; border-bottom: 2px solid #ddd;" width='50px'>Jaar</th>
+            <th style="text-align: right;  border-bottom: 2px solid #ddd;" width='70px'>Electra</th>
+            <th style="text-align: center; border-bottom: 2px solid #ddd;" width='50px'>Gas</th>
+            <th style="text-align: center; border-bottom: 2px solid #ddd;" width='50px'>Netw.</th>
+            <th style="text-align: right;  border-bottom: 2px solid #ddd;" width='70px'>Totaal</th>
+
+            <th style="text-align: center; border-bottom: 2px solid #ddd;" width='50px'>Jaar</th>
+            <th style="text-align: right;  border-bottom: 2px solid #ddd;" width='70px'>Electra</th>
+            <th style="text-align: center; border-bottom: 2px solid #ddd;" width='50px'>Gas</th>
+            <th style="text-align: center; border-bottom: 2px solid #ddd;" width='50px'>Netw.</th>
+            <th style="text-align: right;  border-bottom: 2px solid #ddd;" width='70px'>Totaal</th>
         </tr>
       </thead>
       <tbody>
@@ -273,8 +297,8 @@
     <span>2020 &copy; Willem Aandewiel &nbsp; &nbsp;</span>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/gh/mrWheel/DSMRloggerAPI@master/data/DSMRindex.js"></script>
-  <script src="https://cdn.jsdelivr.net/gh/mrWheel/DSMRloggerAPI@master/data/DSMRgraphics.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/mrWheel/DSMRloggerAPI@master/data/DSMRindex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/mrWheel/DSMRloggerAPI@master/data/DSMRgraphics.min.js"></script>
 
   </body>
 

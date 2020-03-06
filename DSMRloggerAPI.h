@@ -35,6 +35,8 @@
 #define LED_OFF          HIGH
 #define FLASH_BUTTON        0
 #define MAXCOLORNAME       15
+#define JSON_BUFF_MAX     255
+#define MQTT_BUFF_MAX     200
 
 //-------------------------.........1....1....2....2....3....3....4....4....5....5....6....6....7....7
 //-------------------------1...5....0....5....0....5....0....5....0....5....0....5....0....5....0....5
@@ -216,7 +218,7 @@ DECLARE_TIMER_SEC(updateSeconds,       1, CATCH_UP_MISSED_TICKS);
 DECLARE_TIMER_SEC(updateDisplay,       5);
 DECLARE_TIMER_SEC(synchrNTP,          30);
 DECLARE_TIMER_SEC(nextTelegram,       10);
-DECLARE_TIMER_MIN(reconnectMQTTtimer, 10); // try reconnecting cyclus timer
+DECLARE_TIMER_MIN(reconnectMQTTtimer,  2); // try reconnecting cyclus timer
 DECLARE_TIMER_SEC(publishMQTTtimer,   60, SKIP_MISSED_TICKS); // interval time between MQTT messages  
 DECLARE_TIMER_MIN(minderGasTimer,     10, CATCH_UP_MISSED_TICKS); 
 DECLARE_TIMER_SEC(antiWearTimer,      61);
