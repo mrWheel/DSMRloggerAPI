@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : settingsStuff, part of DSMRloggerAPI
-**  Version  : v0.3.4
+**  Version  : v1.0.1
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -24,7 +24,7 @@ void writeSettings()
   yield();
 
   if (strlen(settingIndexPage) < 7) strCopy(settingIndexPage, (sizeof(settingIndexPage) -1), "DSMRindex.html");
-  if (settingTelegramInterval < 3)  settingTelegramInterval = 10;
+  if (settingTelegramInterval < 2)  settingTelegramInterval = 10;
   if (settingMQTTbrokerPort < 1)    settingMQTTbrokerPort = 1883;
     
   DebugT(F("Start writing setting data "));

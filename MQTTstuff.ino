@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : MQTTstuff, part of DSMRloggerAPI
-**  Version  : v0.3.4
+**  Version  : v1.0.1
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -221,12 +221,12 @@ void sendMQTTData()
 
   if (settingMQTTinterval == 0) return;
 
-  if (Verbose1) DebugTf("connected()       [%d]\r\n", MQTTclient.connected());
-  if (Verbose1) DebugTf("mqttIsConnected() [%d]\r\n", mqttIsConnected);
-  
-  DebugTf("MQTTclient.connected(%d), mqttIsConnected[%d], stateMQTT [%d]\r\n"
+  if (!MQTTclient.connected() || ! mqttIsConnected)
+  {
+    DebugTf("MQTTclient.connected(%d), mqttIsConnected[%d], stateMQTT [%d]\r\n"
                                               , MQTTclient.connected()
                                               , mqttIsConnected, stateMQTT);
+  }
   if (!MQTTclient.connected())  
   {
     if ( DUE( reconnectMQTTtimer) || mqttIsConnected)

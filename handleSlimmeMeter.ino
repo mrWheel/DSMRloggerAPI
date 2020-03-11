@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : handleSlimmeMeter - part of DSMRloggerAPI
-**  Version  : v0.3.4
+**  Version  : v1.0.1
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
