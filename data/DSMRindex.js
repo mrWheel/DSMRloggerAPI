@@ -767,7 +767,9 @@
   function showMonthsCosts(data)
   { 
     console.log("now in showMonthsCosts() ..");
-    var showRows = 0;
+    var totalCost   = 0;
+    var totalCost_1 = 0;
+    var showRows    = 0;
     if (data.length > 24) showRows = 12;
     else                  showRows = data.length / 2;
     //console.log("showRows is ["+showRows+"]");
@@ -822,6 +824,11 @@
       tableCells[5].style.textAlign = "right";
       tableCells[5].style.fontWeight = 'bold';
       tableCells[5].innerHTML = "€ " + (data[i].costs_tt).toFixed(2);       // kosten totaal
+      //--- omdat de actuele maand net begonnen kan zijn tellen we deze
+      //--- niet mee, maar tellen we de laatste maand van de voorgaand periode
+      if (i > 0)
+            totalCost += data[i].costs_tt;
+      else  totalCost += data[i+12].costs_tt;
 
       tableCells[6].style.textAlign = "center";
       tableCells[6].innerHTML = "20"+data[i+12].recid.substring(0,2);       // jaar
@@ -834,8 +841,39 @@
       tableCells[10].style.textAlign = "right";
       tableCells[10].style.fontWeight = 'bold';
       tableCells[10].innerHTML = "€ " + (data[i+12].costs_tt).toFixed(2);   // kosten totaal
+      totalCost_1 += data[i+12].costs_tt;
 
     };
+
+    if( ( document.getElementById("periodicCosts")) == null )
+    {
+      var newRow   = tableRef.insertRow();                                // voorschot regel
+      newRow.setAttribute("id", "periodicCosts", 0);
+      // Insert a cell in the row at index 0
+      var newCell  = newRow.insertCell(0);                                // maand
+      var newText  = document.createTextNode('-');
+      newCell.appendChild(newText);
+      newCell  = newRow.insertCell(1);              // description
+      newCell.setAttribute("colSpan", "4");
+      newCell.appendChild(newText);
+      newCell  = newRow.insertCell(2);              // voorschot
+      newCell.appendChild(newText);
+      newCell  = newRow.insertCell(3);              // description
+      newCell.setAttribute("colSpan", "4");
+      newCell.appendChild(newText);
+      newCell  = newRow.insertCell(4);              // voorschot
+      newCell.appendChild(newText);
+    }
+    tableCells = document.getElementById("periodicCosts").cells;
+    tableCells[1].style.textAlign = "right";
+    tableCells[1].innerHTML = "Voorschot Bedrag"
+    tableCells[2].style.textAlign = "right";
+    tableCells[2].innerHTML = "€ " + (totalCost / 12).toFixed(2);
+    tableCells[3].style.textAlign = "right";
+    tableCells[3].innerHTML = "Voorschot Bedrag"
+    tableCells[4].style.textAlign = "right";
+    tableCells[4].innerHTML = "€ " + (totalCost_1 / 12).toFixed(2);
+
     
     //--- hide canvas
     document.getElementById("dataChart").style.display  = "none";
