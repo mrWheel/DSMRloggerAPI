@@ -209,15 +209,41 @@ input {
 }
 
 .footer {
-   position: fixed;
-   left: 0;
-   bottom: 0;
-   width: 100%;
-   color: gray;
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  color: gray;
 /*   background: white; */
-   font-size: small;
-   text-align: right;
+  font-size: small;
+  text-align: right;
 }
+
+//--- next 4 are for the API doc page --------
+.div1 { 
+  float: left;  
+  margin-left: 20px; 
+  margin-top: 10px;
+}
+.div1 a:link, a:visited { 
+  background-color: deepSkyBlue; 
+  color: white; 
+  padding: 5px 15px; 
+  width: 210px; 
+  text-align: right; 
+  text-decoration: none; 
+  display: inline-block;
+}
+.div1 a:hover, a:active { 
+  background-color: deepSkyBlue;
+  color: black;
+}
+
+.div2 { 
+  margin-left: 280px; 
+  margin-top: -52px;
+}
+
 
 /* define tag selectors () -------------------------------------------------- */
 
