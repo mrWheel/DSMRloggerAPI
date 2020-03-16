@@ -93,8 +93,8 @@ void processSlimmemeter()
   slimmeMeter.loop();
   if (slimmeMeter.available()) 
   {
-    DebugTf("processSlimmerMeter telegramCount=[%d] telegramErrors=[%d]\r\n", telegramCount, telegramErrors);
-    DebugTln(F("\r\n[Time----][FreeHeap/mBlck][Function----(line):\r"));
+    DebugTf("telegramCount=[%d] telegramErrors=[%d]\r\n", telegramCount, telegramErrors);
+    Debugln(F("\r\n[Time----][FreeHeap/mBlck][Function----(line):\r"));
     // Voorbeeld: [21:00:11][   9880/  8960] loop        ( 997): read telegram [28] => [140307210001S]
     telegramCount++;
         
@@ -161,9 +161,17 @@ void processSlimmemeter()
       DebugTf("Parse error\r\n%s\r\n\r\n", DSMRerror.c_str());
       slimmeMeter.enable(true);
     }
+
+    if ((telegramCount > 25) && (telegramCount % 100) == 0)
+    {
+      DebugTf("Processed [%d] telegrams ([%d] errors)\r\n", telegramCount, telegramErrors);
+      #ifdef USE_SYSLOGGER
+        writeToSysLog("Processed [%d] telegrams ([%d] errors)", telegramCount, telegramErrors);
+      #endif
+    }
         
   } // if (slimmeMeter.available()) 
-      
+  
 } // handleSlimmeMeter()
 
 #endif

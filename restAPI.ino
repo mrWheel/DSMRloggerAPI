@@ -125,11 +125,18 @@ void handleDevApi(const char *URI, const char *word4, const char *word5, const c
       //DebugTf("--> field[%s] => newValue[%s]\r\n", field, newValue);
       updateSetting(field, newValue);
       httpServer.send(200, "application/json", httpServer.arg(0));
+      #ifdef USE_SYSLOGGER
+        writeToSysLog("Field[%s] changed to [%s]", field, newValue);
+      #endif
     }
     else
     {
       sendDeviceSettings();
     }
+  }
+  else if (strcmp(word4, "debug") == 0)
+  {
+    sendDeviceDebug(word5);
   }
   else sendApiInfo();
   
@@ -283,8 +290,8 @@ void sendDeviceInfo()
 {
   char compileOptions[200] = "";
 
-#ifdef IS_ESP12
-    strConcat(compileOptions, sizeof(compileOptions), "[IS_ESP12]");
+#ifdef USE_REQUEST_PIN
+    strConcat(compileOptions, sizeof(compileOptions), "[USE_REQUEST_PIN]");
 #endif
 #if defined( USE_PRE40_PROTOCOL )
     strConcat(compileOptions, sizeof(compileOptions), "[USE_PRE40_PROTOCOL]");
@@ -438,6 +445,41 @@ void sendDeviceSettings()
   sendEndJsonObj();
 
 } // sendDeviceSettings()
+
+
+//=======================================================================
+void sendDeviceDebug(String tail) 
+{
+#ifdef USE_SYSLOGGER
+  String lLine = "";
+  int lineNr = 0;
+  int tailLines = tail.toInt();
+
+//sendStartJsonObj("debug");
+
+  DebugTf("list [%d] debug lines\r\n", tailLines);
+  sysLog.status();
+  sysLog.setDebugLvl(0);
+  httpServer.sendHeader("Access-Control-Allow-Origin", "*");
+  httpServer.setContentLength(CONTENT_LENGTH_UNKNOWN);
+  if (tailLines > 0)
+        sysLog.startReading((tailLines * -1));  
+  else  sysLog.startReading(0, 0);  
+  while( (lLine = sysLog.readNextLine()) && !(lLine == "EOF")) 
+  {
+    lineNr++;
+    snprintf(cMsg, sizeof(cMsg), "%s\r\n", lLine.c_str());
+    //sendNestedJsonObj(cMsg, lLine);
+    //httpServer.send(200, "text/plain", lLine.c_str());
+    httpServer.sendContent(cMsg);
+
+  }
+  sysLog.setDebugLvl(1);
+
+  //sendEndJsonObj();
+#endif
+
+} // sendDeviceDebug()
 
 
 //=======================================================================

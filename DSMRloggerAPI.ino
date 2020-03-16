@@ -2,7 +2,7 @@
 ***************************************************************************  
 **  Program  : DSMRloggerAPI (restAPI)
 */
-#define _FW_VERSION "v1.0.1 (11-03-2020)"
+#define _FW_VERSION "v1.0.1 (15-03-2020)"
 /*
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -29,17 +29,18 @@
 */
 
 /******************** compiler options  ********************************************/
-#define IS_ESP12                  // define if it's a 'bare' ESP-12 (no reset/flash functionality on board)
+#define USE_REQUEST_PIN           // define if it's a esp8266 with GPIO 12 connected to SM DTR pin
 #define USE_UPDATE_SERVER         // define if there is enough memory and updateServer to be used
-//#define HAS_OLED_SSD1306          // define if a 0.96" OLED display is present
-  #define HAS_OLED_SH1106           // define if a 1.3" OLED display is present
+#define HAS_OLED_SSD1306          // define if a 0.96" OLED display is present
+//  #define HAS_OLED_SH1106           // define if a 1.3" OLED display is present
 //  #define USE_BELGIUM_PROTOCOL      // define if Slimme Meter is a Belgium Smart Meter
 //  #define USE_PRE40_PROTOCOL        // define if Slimme Meter is pre DSMR 4.0 (2.2 .. 3.0)
 //  #define USE_NTP_TIME              // define to generate Timestamp from NTP (Only Winter Time for now)
 //  #define SM_HAS_NO_FASE_INFO       // if your SM does not give fase info use total delevered/returned
 //  #define HAS_NO_SLIMMEMETER        // define for testing only!
-#define USE_MQTT                  // define if you want to use MQTT
-#define USE_MINDERGAS             // define if you want to update mindergas
+#define USE_MQTT                  // define if you want to use MQTT (configure through webinterface)
+#define USE_MINDERGAS             // define if you want to update mindergas (configure through webinterface)
+  #define USE_SYSLOGGER             // define if you want to use the sysLog library for debugging
 //#define SHOW_PASSWRDS             // well .. show the PSK key and MQTT password, what else?
 /******************** don't change anything below this comment **********************/
 
@@ -87,6 +88,45 @@ void displayStatus()
 } // displayStatus()
 
 
+#ifdef USE_SYSLOGGER
+//===========================================================================================
+void openSysLog(bool empty)
+{
+  if (sysLog.begin(500, 100, empty))  // 500 lines use existing sysLog file
+  {   
+    DebugTln("Succes opening sysLog!");
+#if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
+    oled_Print_Msg(0, "<DSMRloggerAPI>", 0);
+    oled_Print_Msg(3, "Syslog OK!", 500);
+#endif  // has_oled_ssd1306
+  }
+  else
+  {
+    DebugTln("Error opening sysLog!");
+#if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
+    oled_Print_Msg(0, "<DSMRloggerAPI>", 0);
+    oled_Print_Msg(3, "Error Syslog", 1500);
+#endif  // has_oled_ssd1306
+  }
+
+  sysLog.setDebugLvl(1);
+  sysLog.setOutput(&TelnetStream);
+  sysLog.status();
+  sysLog.write("\r\n");
+  for (int q=0;q<3;q++)
+  {
+    sysLog.write("******************************************************************************************************");
+  }
+  writeToSysLog("Last Reset Reason [%s]", ESP.getResetReason().c_str());
+  writeToSysLog("actTimestamp[%s], nrReboots[%u], Errors[%u]", actTimestamp
+                                                             , nrReboots
+                                                             , slotErrors);
+
+  sysLog.write(" ");
+
+} // openSysLog()
+#endif
+
 //===========================================================================================
 void setup() 
 {
@@ -114,7 +154,7 @@ void setup()
   oled_Clear();  // clear the screen so we can paint the menu.
   oled_Print_Msg(0, "<DSMRloggerAPI>", 0);
   int8_t sPos = String(_FW_VERSION).indexOf(' ');
-  snprintf(cMsg, sizeof(cMsg), "(c)2019 [%s]", String(_FW_VERSION).substring(0,sPos).c_str());
+  snprintf(cMsg, sizeof(cMsg), "(c)2020 [%s]", String(_FW_VERSION).substring(0,sPos).c_str());
   oled_Print_Msg(1, cMsg, 0);
   oled_Print_Msg(2, " Willem Aandewiel", 0);
   oled_Print_Msg(3, " >> Have fun!! <<", 1000);
@@ -123,7 +163,7 @@ void setup()
   for(int I=0; I<8; I++) 
   {
     digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
-    delay(2000);
+    delay(500);
   }
 #endif
   digitalWrite(LED_BUILTIN, LED_OFF);  // HIGH is OFF
@@ -136,20 +176,21 @@ void setup()
 #endif  // has_oled_ssd1306
 
 //================ SPIFFS ===========================================
-  if (!SPIFFS.begin()) {
-    DebugTln(F("SPIFFS Mount failed\r"));   // Serious problem with SPIFFS 
-    SPIFFSmounted = false;
-#if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
-    oled_Print_Msg(0, "<DSMRloggerAPI>", 0);
-    oled_Print_Msg(3, "SPIFFS FAILED!", 2000);
-#endif  // has_oled_ssd1306
-    
-  } else { 
+  if (SPIFFS.begin()) 
+  {
     DebugTln(F("SPIFFS Mount succesfull\r"));
     SPIFFSmounted = true;
 #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
     oled_Print_Msg(0, "<DSMRloggerAPI>", 0);
     oled_Print_Msg(3, "SPIFFS mounted", 1500);
+#endif  // has_oled_ssd1306
+    
+  } else { 
+    DebugTln(F("SPIFFS Mount failed\r"));   // Serious problem with SPIFFS 
+    SPIFFSmounted = false;
+#if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
+    oled_Print_Msg(0, "<DSMRloggerAPI>", 0);
+    oled_Print_Msg(3, "SPIFFS FAILED!", 2000);
 #endif  // has_oled_ssd1306
   }
 
@@ -163,8 +204,7 @@ void setup()
   actT = epoch(actTimestamp, strlen(actTimestamp), true);
   DebugTf("===> actTimestamp[%s]-> nrReboots[%u] - Errors[%u]\r\n\n", actTimestamp
                                                                     , nrReboots++
-                                                                    , slotErrors);
-                                                                    
+                                                                    , slotErrors);                                                                    
   readSettings(true);
 
 //=============start Networkstuff==================================
@@ -195,6 +235,11 @@ void setup()
     delay(200);
   }
   digitalWrite(LED_BUILTIN, LED_OFF);
+
+//-----------------------------------------------------------------
+#ifdef USE_SYSLOGGER
+  openSysLog(false);
+#endif
 
   startMDNS(settingHostname);
 #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
@@ -274,7 +319,12 @@ void setup()
     spiffsNotPopulated = true;
   }
 //=============end SPIFFS =========================================
-
+#ifdef USE_SYSLOGGER
+  if (spiffsNotPopulated)
+  {
+    sysLog.write("SPIFFS is not correct populated (files are missing)");
+  }
+#endif
   
 //=============now test if "convertPRD" file exists================
 
@@ -302,13 +352,13 @@ void setup()
 
 //================ Start MQTT  ======================================
 
-#ifdef USE_MQTT                                               //USE_MQTT
-  connectMQTT();
-  #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )    //USE_MQTT
-    oled_Print_Msg(0, "<DSMRloggerAPI>", 0);               //USE_MQTT
-    oled_Print_Msg(3, "MQTT server set!", 1500);              //USE_MQTT
-  #endif  // has_oled_ssd1306                                 //USE_MQTT
-#endif                                                        //USE_MQTT
+#ifdef USE_MQTT                                                 //USE_MQTT
+  connectMQTT();                                                //USE_MQTT
+  #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 ) //USE_MQTT
+    oled_Print_Msg(0, "<DSMRloggerAPI>", 0);                    //USE_MQTT
+    oled_Print_Msg(3, "MQTT server set!", 1500);                //USE_MQTT
+  #endif  // has_oled_ssd1306                                   //USE_MQTT
+#endif                                                          //USE_MQTT
 
 //================ End of Start MQTT  ===============================
 
@@ -380,12 +430,6 @@ void setup()
   }
 //================ Start HTTP Server ================================
 
-//================ Start Slimme Meter ===============================
-
-  DebugTln(F("Enable slimmeMeter..\r"));
-  delay(100);
-  slimmeMeter.enable(true);
-
   //test(); monthTabel
   
 #ifdef USE_MINDERGAS
@@ -393,11 +437,9 @@ void setup()
 #endif
 
   DebugTf("Startup complete! actTimestamp[%s]\r\n", actTimestamp);  
-
-#if defined( IS_ESP12 ) && !defined( HAS_NO_SLIMMEMETER )
-    Serial.swap();
-#endif // is_esp12
-
+#ifdef USE_SYSLOGGER
+  writeToSysLog("Startup complete! actTimestamp[%s]", actTimestamp);  
+#endif
 
 //================ End of Slimmer Meter ============================
 
@@ -413,6 +455,19 @@ void setup()
     oled_Print_Msg(2, "Wait for first", 0);
     oled_Print_Msg(3, "telegram .....", 500);
 #endif  // has_oled_ssd1306
+
+//================ Start Slimme Meter ===============================
+
+  DebugTln(F("Enable slimmeMeter..\r"));
+
+#if defined( USE_REQUEST_PIN ) && !defined( HAS_NO_SLIMMEMETER )
+    DebugTf("Swapping serial port to Smart Meter, debug output will continue on telnet\r\n");
+    DebugFlush();
+    Serial.swap();
+#endif // is_esp12
+
+  delay(100);
+  slimmeMeter.enable(true);
 
 } // setup()
 
@@ -469,7 +524,7 @@ void doSystemTasks()
   #ifndef HAS_NO_SLIMMEMETER
     handleSlimmemeter();
   #endif
-  #ifndef USE_MQTT
+  #ifdef USE_MQTT
     MQTTclient.loop();
   #endif
   httpServer.handleClient();

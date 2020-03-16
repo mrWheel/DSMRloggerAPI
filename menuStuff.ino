@@ -49,8 +49,8 @@ void displayBoardInfo()
   Debug(F("]\r\n         compiled with [dsmr.h"));
 #endif
   Debug(F("]\r\n              #defines "));
-#ifdef IS_ESP12
-  Debug(F("[IS_ESP12]"));
+#ifdef USE_REQUEST_PIN
+  Debug(F("[USE_REQUEST_PIN]"));
 #endif
 #ifdef USE_UPDATE_SERVER
   Debug(F("[USE_UPDATE_SERVER]"));
@@ -209,7 +209,7 @@ void handleKeyInput()
 #endif
       case 'p':
       case 'P':     showRaw = !showRaw;
-                 #ifdef IS_ESP12
+                 #ifdef USE_REQUEST_PIN
                     if (showRaw)  digitalWrite(DTR_ENABLE, HIGH);
                     else          digitalWrite(DTR_ENABLE, LOW);
                  #endif
@@ -244,12 +244,22 @@ void handleKeyInput()
                       Verbose2 = false;
                     }
                     break;
-//    case 'X':     convertPRD2RING();
-//                  break;
+#ifdef USE_SYSLOGGER
+      case 'q':
+      case 'Q':     sysLog.setDebugLvl(0);
+                    sysLog.dumpLogFile();
+                    sysLog.setDebugLvl(1);
+                    break;
+#endif
       case 'Z':     slotErrors      = 0;
                     nrReboots       = 0;
                     telegramCount   = 0;
                     telegramErrors  = 0;
+                    writeLastStatus();
+                    #ifdef USE_SYSLOGGER
+                      sysLog = {};
+                      openSysLog(true);
+                    #endif
                     break;
       default:      Debugln(F("\r\nCommands are:\r\n"));
                     Debugln(F("   B - Board Info\r"));
@@ -272,6 +282,9 @@ void handleKeyInput()
                       showRawCount = 0;
                     }
                     Debugln(F("  *W - Force Re-Config WiFi\r"));
+#ifdef USE_SYSLOGGER
+                    Debugln(F("   Q - dump sysLog file\r"));
+#endif
                     Debugln(F("  *R - Reboot\r"));
                     Debugln(F("   S - File info on SPIFFS\r"));
                     Debugln(F("  *U - Update SPIFFS (save Data-files)\r"));

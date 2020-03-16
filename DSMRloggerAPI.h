@@ -13,6 +13,16 @@
 #include <TelnetStream.h>       // Version 0.0.1 - https://github.com/jandrassy/TelnetStream
 #include "safeTimers.h"
 
+#ifdef USE_SYSLOGGER
+  #include "ESP_SysLogger.h"      // https://github.com/mrWheel/ESP_SysLogger
+  ESPSL sysLog;                   // Create instance of the ESPSL object
+  #define writeToSysLog(...) ({ sysLog.writeDbg( sysLog.buildD("[%02d:%02d:%02d][%7d][%-12.12s] " \
+                                                               , hour(), minute(), second()     \
+                                                               , ESP.getFreeHeap()              \
+                                                               , __FUNCTION__)                  \
+                                                               ,__VA_ARGS__); })
+#endif
+
 #if defined( USE_PRE40_PROTOCOL )                               //PRE40
   //  https://github.com/mrWheel/arduino-dsmr30.git             //PRE40
   #include <dsmr30.h>                                           //PRE40
@@ -24,8 +34,8 @@
   #include <dsmr.h>               // Version 0.1 - Commit f79c906 on 18 Sep 2018
 #endif
 
-#define _DEFAULT_HOSTNAME     "DSMR-API"  
-#ifdef IS_ESP12
+#define _DEFAULT_HOSTNAME  "DSMR-API"  
+#ifdef USE_REQUEST_PIN
     #define DTR_ENABLE  12
 #endif  // is_esp12
 
@@ -185,6 +195,12 @@ void delayms(unsigned long);
   bool        showRaw = false;
   int8_t      showRawCount = 0;
 
+
+#ifdef USE_MQTT
+  #include <PubSubClient.h>           // MQTT client publish and subscribe functionality
+  
+  static PubSubClient MQTTclient(wifiClient);
+#endif
 
 #ifdef USE_MINDERGAS
   static char      settingMindergasToken[21] = "";

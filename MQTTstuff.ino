@@ -17,12 +17,12 @@
   static char       MQTTbrokerIPchar[20];
 
 #ifdef USE_MQTT
-  #include <PubSubClient.h>           // MQTT client publish and subscribe functionality
+//  #include <PubSubClient.h>           // MQTT client publish and subscribe functionality
   
-  static            PubSubClient MQTTclient(wifiClient);
-  int8_t            reconnectAttempts = 0;
-  char              lastMQTTtimestamp[15] = "-";
-  char              mqttBuff[100];
+//  static PubSubClient MQTTclient(wifiClient);
+  int8_t              reconnectAttempts = 0;
+  char                lastMQTTtimestamp[15] = "-";
+  char                mqttBuff[100];
 
 
   enum states_of_MQTT { MQTT_STATE_INIT, MQTT_STATE_TRY_TO_CONNECT, MQTT_STATE_IS_CONNECTED, MQTT_STATE_ERROR };
@@ -92,7 +92,7 @@ bool connectMQTT_FSM()
           DebugTf("[%s] => setServer(%s, %d) \r\n", settingMQTTbroker, MQTTbrokerIPchar, settingMQTTbrokerPort);
           MQTTclient.setServer(MQTTbrokerIPchar, settingMQTTbrokerPort);
           DebugTf("setServer  -> MQTT status, rc=%d \r\n", MQTTclient.state());
-          MQTTclientId  = String(settingHostname) + WiFi.macAddress();
+          MQTTclientId  = String(settingHostname) + "." + WiFi.macAddress();
           stateMQTT = MQTT_STATE_TRY_TO_CONNECT;
           DebugTln(F("Next State: MQTT_STATE_TRY_TO_CONNECT"));
           reconnectAttempts = 0;
