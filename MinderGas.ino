@@ -48,9 +48,7 @@ void forceMindergasUpdate()
 
   if (SPIFFS.exists(MG_FILENAME))
   {
-    #ifdef USE_SYSLOGGER
-      writeToSysLog("found [%s] at day#[%d]", MG_FILENAME, day());
-    #endif
+    writeToSysLog("found [%s] at day#[%d]", MG_FILENAME, day());
     MG_Day = day();   // make it thisDay...
     strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "force Mindergas countdown");
     DebugTln(F("Force send data to mindergas.nl in ~1 minute"));
@@ -63,9 +61,7 @@ void forceMindergasUpdate()
   {
     strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "Force Write Mindergas.post");
     DebugTln(F("Force Write data to post file now!"));
-    #ifdef USE_SYSLOGGER
-      writeToSysLog("Force Write Data to [%s]", MG_FILENAME);
-    #endif
+    writeToSysLog("Force Write Data to [%s]", MG_FILENAME);
     CHANGE_INTERVAL_MIN(minderGasTimer, 1);
     stateMindergas = MG_WRITE_TO_FILE;  // write file is next state
     processMindergas_FSM();
@@ -84,9 +80,7 @@ void processMindergas_FSM()
   if (handleMindergasSemaphore) // if already running ? then return...
   {
     DebugTln(F("already running .. bailing out!"));
-    #ifdef USE_SYSLOGGER
-      writeToSysLog("already running .. bailing out!");
-    #endif
+    writeToSysLog("already running .. bailing out!");
     return; //--- you may only enter this once
   } 
   //signal that we are busy...
@@ -98,9 +92,7 @@ void processMindergas_FSM()
   {
     case MG_INIT: //--- only after reboot
           DebugTln(F("Mindergas State: MG_INIT"));
-          #ifdef USE_SYSLOGGER
-            writeToSysLog("Mindergas State: MG_INIT");
-          #endif
+          writeToSysLog("Mindergas State: MG_INIT");
           snprintf(timeLastResponse, sizeof(timeLastResponse), "@%02d|%02d:%02d -> ", day() , hour(), minute());
           if (intStatuscodeMindergas == 0)
           {
@@ -109,9 +101,7 @@ void processMindergas_FSM()
           if (SPIFFS.exists(MG_FILENAME))
           {
             strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "found Mindergas.post");
-            #ifdef USE_SYSLOGGER
-              writeToSysLog(txtResponseMindergas);
-            #endif
+            writeToSysLog(txtResponseMindergas);
             validToken     = true;
             stateMindergas = MG_SEND_MINDERGAS;
             CHANGE_INTERVAL_MIN(minderGasTimer, 1);
@@ -130,9 +120,7 @@ void processMindergas_FSM()
           {
             //--- No AuthToken
             DebugTln(F("MinderGas Authtoken is not set, no update can be done."));
-            #ifdef USE_SYSLOGGER
-              writeToSysLog("MinderGas Authtoken is not set, no update can be done.");
-            #endif
+            writeToSysLog("MinderGas Authtoken is not set, no update can be done.");
             strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "NO_AUTHTOKEN");
             stateMindergas = MG_NO_AUTHTOKEN; // no token, no mindergas
           } // end-if 
@@ -140,9 +128,7 @@ void processMindergas_FSM()
       
     case MG_WAIT_FOR_FIRST_TELEGRAM: 
           DebugTln(F("Mindergas State: MG_WAIT_FOR_FIRST_TELEGRAM"));
-          #ifdef USE_SYSLOGGER
-            writeToSysLog("Mindergas State: MG_WAIT_FOR_FIRST_TELEGRAM");
-          #endif
+          writeToSysLog("Mindergas State: MG_WAIT_FOR_FIRST_TELEGRAM");
           //--- if you received at least one telegram, then wait for midnight
           if ((telegramCount - telegramErrors) > 1) 
           {
@@ -154,9 +140,7 @@ void processMindergas_FSM()
       
     case MG_WAIT_FOR_NEXT_DAY: 
           DebugTln(F("Mindergas State: MG_WAIT_FOR_NEXT_DAY"));
-          #ifdef USE_SYSLOGGER
-            writeToSysLog("Mindergas State: MG_WAIT_FOR_NEXT_DAY");
-          #endif
+          writeToSysLog("Mindergas State: MG_WAIT_FOR_NEXT_DAY");
           if (intStatuscodeMindergas == 0)
           {
             snprintf(timeLastResponse, sizeof(timeLastResponse), "@%02d|%02d:%02d -> ", day(), hour(), minute());
@@ -167,9 +151,7 @@ void processMindergas_FSM()
           if (MG_Day != day())                  // It is no longer the same day, so it must be past midnight
           {
             MG_Day = day();                     // make it thisDay...
-            #ifdef USE_SYSLOGGER
-              writeToSysLog("a new day has become .. next: Write to file");
-            #endif
+            writeToSysLog("a new day has become .. next: Write to file");
             snprintf(timeLastResponse, sizeof(timeLastResponse), "@%02d|%02d:%02d -> ", day(), hour(), minute());
             strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "WRITE_TO_FILE");
             CHANGE_INTERVAL_MIN(minderGasTimer, 1);
@@ -179,18 +161,14 @@ void processMindergas_FSM()
       
     case MG_WRITE_TO_FILE: 
           DebugTln(F("Mindergas State: MG_WRITE_TO_FILE"));
-          #ifdef USE_SYSLOGGER
-            writeToSysLog("Mindergas State: MG_WRITE_TO_FILE");
-          #endif
+          writeToSysLog("Mindergas State: MG_WRITE_TO_FILE");
           writePostToFile();
           CHANGE_INTERVAL_MIN(minderGasTimer, 1);
           break; 
       
     case MG_DO_COUNTDOWN: 
           DebugTf("Mindergas State: MG_DO_COUNTDOWN (%d minuten te gaan)\r\n", MGminuten);
-          #ifdef USE_SYSLOGGER
-            writeToSysLog("Mindergas State: MG_DO_COUNTDOWN (%d minuten te gaan)", MGminuten);
-          #endif
+          writeToSysLog("Mindergas State: MG_DO_COUNTDOWN (%d minuten te gaan)", MGminuten);
           snprintf(timeLastResponse, sizeof(timeLastResponse), "@%02d|%02d:%02d -> ", day(), hour(), minute());
           snprintf(txtResponseMindergas, sizeof(txtResponseMindergas), "Send DATA in %d minutes", MGminuten );
           DebugTf("MinderGas update in less than [%d] minutes\r\n", MGminuten );
@@ -207,9 +185,7 @@ void processMindergas_FSM()
       
     case MG_SEND_MINDERGAS: 
           DebugTln(F("Mindergas State: MG_SEND_MINDERGAS"));
-          #ifdef USE_SYSLOGGER
-            writeToSysLog("Mindergas State: MG_SEND_MINDERGAS");
-          #endif
+          writeToSysLog("Mindergas State: MG_SEND_MINDERGAS");
         
           snprintf(timeLastResponse, sizeof(timeLastResponse), "@%02d|%02d:%02d -> ", day(), hour(), minute());
           strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "SEND_MINDERGAS");
@@ -223,18 +199,14 @@ void processMindergas_FSM()
             if (SPIFFS.remove(MG_FILENAME)) 
             {
               DebugTln(F("POST Mindergas file succesfully deleted!"));
-              #ifdef USE_SYSLOGGER
-                writeToSysLog("Deleted Mindergas.post !");
-              #endif
+              writeToSysLog("Deleted Mindergas.post !");
             } 
             else 
             {
               //--- help, this should just not happen, but if it does, it 
               //--- will not influence behaviour in a negative way
               DebugTln(F("Failed to delete POST Mindergas file"));
-              #ifdef USE_SYSLOGGER
-                writeToSysLog("Failed to delete Mindergas.post");
-              #endif
+              writeToSysLog("Failed to delete Mindergas.post");
             } 
 //          bDoneResponse = true; 
           }   
@@ -252,17 +224,13 @@ void processMindergas_FSM()
       
     case MG_ERROR: 
           DebugTln(F("Mindergas State: MG_ERROR"));
-          #ifdef USE_SYSLOGGER
-            writeToSysLog("Mindergas State: MG_ERROR");
-          #endif
+          writeToSysLog("Mindergas State: MG_ERROR");
           CHANGE_INTERVAL_MIN(minderGasTimer, 30); 
           break;
       
     default: 
           DebugTln(F("Mindergas State: Impossible, default state!")); 
-          #ifdef USE_SYSLOGGER
-            writeToSysLog("Mindergas State: Impossible, default state!"); 
-          #endif
+          writeToSysLog("Mindergas State: Impossible, default state!"); 
           CHANGE_INTERVAL_MIN(minderGasTimer, 10);
           stateMindergas = MG_INIT; 
           break;  
@@ -321,9 +289,7 @@ void sendMindergasPostFile()
         {
           intStatuscodeMindergas = MGclient.parseInt(); // parse status code
           //Debugln();
-          #ifdef USE_SYSLOGGER
-            writeToSysLog("Mindergas response: [%d]", intStatuscodeMindergas);
-          #endif
+          writeToSysLog("Mindergas response: [%d]", intStatuscodeMindergas);
           Debugf("Statuscode: [%d]\r\n", intStatuscodeMindergas);
           switch (intStatuscodeMindergas) {
             case 201:  
@@ -331,9 +297,7 @@ void sendMindergasPostFile()
                 //--- report error back to see in settings page
                 strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "Created entry");
                 Debugln(F("Succes, the gas delivered has been added to your mindergas.nl account"));
-                #ifdef USE_SYSLOGGER
-                  sysLog.write("Succes, the gas delivered has been added to your mindergas.nl account");
-                #endif
+                writeToSysLog("Succes, the gas delivered has been added to your mindergas.nl account");
                 DebugTln(F("Next State: MG_WAIT_FOR_NEXT_DAY"));
                 stateMindergas = MG_WAIT_FOR_NEXT_DAY;               
                 break;
@@ -343,9 +307,7 @@ void sendMindergasPostFile()
                 strCopy(settingMindergasToken, sizeof(settingMindergasToken), "Invalid token"); 
                 strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "Unauthorized, token invalid!"); // report error back to see in settings page
                 Debugln(F("Invalid Mindergas Authenication Token"));
-                #ifdef USE_SYSLOGGER
-                  sysLog.write("Invalid Mindergas Authenication Token");
-                #endif
+                writeToSysLog("Invalid Mindergas Authenication Token");
                 stateMindergas = MG_NO_AUTHTOKEN;
                 break;
           
@@ -354,9 +316,7 @@ void sendMindergasPostFile()
                 //--- report error back to see in settings page
                 strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "Unprocessed entity");
                 Debugln(F("Unprocessed entity, goto website mindergas for more information")); 
-                #ifdef USE_SYSLOGGER
-                  sysLog.write("Unprocessed entity, goto website mindergas for more information");
-                #endif
+                writeToSysLog("Unprocessed entity, goto website mindergas for more information");
                 stateMindergas = MG_WAIT_FOR_NEXT_DAY; 
                 break;
           
@@ -373,9 +333,7 @@ void sendMindergasPostFile()
         //--- close HTTP connection
         MGclient.stop();
         DebugTln(F("Disconnected from mindergas.nl"));
-        #ifdef USE_SYSLOGGER
-          writeToSysLog("Disconnected from mindergas.nl");
-        #endif
+        writeToSysLog("Disconnected from mindergas.nl");
         bDoneResponse = true; 
     
       } // end-if client.available() 
@@ -398,9 +356,7 @@ void writePostToFile()
 {
   //--- create POST and write to file, so it will survive a reset within the countdown period
   DebugTf("Writing to [%s] ..\r\n", MG_FILENAME);
-  #ifdef USE_SYSLOGGER
-    writeToSysLog("Writing to [%s] ..", MG_FILENAME);
-  #endif
+  writeToSysLog("Writing to [%s] ..", MG_FILENAME);
   File minderGasFile = SPIFFS.open(MG_FILENAME, "a"); //  create File
   if (!minderGasFile) 
   {
@@ -409,9 +365,7 @@ void writePostToFile()
     //--- now in failure mode
     //DebugTln(F("Next State: MG_ERROR"));
     strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "ERROR CREATE FILE");
-    #ifdef USE_SYSLOGGER
-      writeToSysLog(txtResponseMindergas);
-    #endif
+    writeToSysLog(txtResponseMindergas);
     stateMindergas = MG_ERROR;
     return;
   } 
@@ -440,16 +394,12 @@ void writePostToFile()
   minderGasFile.close();
   snprintf(timeLastResponse, sizeof(timeLastResponse), "@%02d|%02d:%02d -> ", day(), hour(), minute());
   strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "Mindergas.post aangemaakt");
-  #ifdef USE_SYSLOGGER
-    writeToSysLog(txtResponseMindergas);
-  #endif
+  writeToSysLog(txtResponseMindergas);
 
   //--- start countdown
   MGminuten = random(10,120);
   DebugTf("MinderGas update in [%d] minute(s)\r\n", MGminuten);
-  #ifdef USE_SYSLOGGER
-    writeToSysLog("MinderGas update in [%d] minute(s)", MGminuten);
-  #endif
+  writeToSysLog("MinderGas update in [%d] minute(s)", MGminuten);
   //--- Lets'do the countdown
   strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "DO_COUNTDOWN");
   stateMindergas = MG_DO_COUNTDOWN;

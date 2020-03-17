@@ -60,9 +60,16 @@ void processAPI()
     Debugln(" ");
   }
 
-  if (words[1] != "api" || words[2] != "v1")
+  if (words[1] != "api")
   {
-    sendApiInfo();
+    sendApiNotFound(URI);
+    return;
+  }
+
+  if (words[2] != "v1")
+  {
+    sendApiNotFound(URI);
+    return;
   }
 
   if (words[3] == "dev")
@@ -71,13 +78,13 @@ void processAPI()
   }
   else if (words[3] == "hist")
   {
-    handleHistApi(words[4].c_str(), words[5].c_str(), words[6].c_str());
+    handleHistApi(URI, words[4].c_str(), words[5].c_str(), words[6].c_str());
   }
   else if (words[3] == "sm")
   {
-    handleSmApi(words[4].c_str(), words[5].c_str(), words[6].c_str());
+    handleSmApi(URI, words[4].c_str(), words[5].c_str(), words[6].c_str());
   }
-  else sendApiInfo();
+  else sendApiNotFound(URI);
   
 } // processAPI()
 
@@ -125,9 +132,7 @@ void handleDevApi(const char *URI, const char *word4, const char *word5, const c
       //DebugTf("--> field[%s] => newValue[%s]\r\n", field, newValue);
       updateSetting(field, newValue);
       httpServer.send(200, "application/json", httpServer.arg(0));
-      #ifdef USE_SYSLOGGER
-        writeToSysLog("Field[%s] changed to [%s]", field, newValue);
-      #endif
+      writeToSysLog("DSMReditor: Field[%s] changed to [%s]", field, newValue);
     }
     else
     {
@@ -136,15 +141,15 @@ void handleDevApi(const char *URI, const char *word4, const char *word5, const c
   }
   else if (strcmp(word4, "debug") == 0)
   {
-    sendDeviceDebug(word5);
+    sendDeviceDebug(URI, word5);
   }
-  else sendApiInfo();
+  else sendApiNotFound(URI);
   
 } // handleDevApi()
 
 
 //====================================================
-void handleHistApi(const char *word4, const char *word5, const char *word6)
+void handleHistApi(const char *URI, const char *word4, const char *word5, const char *word6)
 {
   int8_t  fileType     = 0;
   char    fileName[20] = "";
@@ -193,7 +198,7 @@ void handleHistApi(const char *word4, const char *word5, const char *word6)
   }
   else 
   {
-    sendApiInfo();
+    sendApiNotFound(URI);
     return;
   }
   if (strcmp(word5, "desc") == 0)
@@ -204,7 +209,7 @@ void handleHistApi(const char *word4, const char *word5, const char *word6)
 
 
 //====================================================
-void handleSmApi(const char *word4, const char *word5, const char *word6)
+void handleSmApi(const char *URI, const char *word4, const char *word5, const char *word6)
 {
   char    tlgrm[1200] = "";
   uint8_t p=0;  
@@ -280,7 +285,7 @@ void handleSmApi(const char *word4, const char *word5, const char *word6)
     httpServer.send(200, "application/plain", tlgrm);
 
   }
-  else sendApiInfo();
+  else sendApiNotFound(URI);
   
 } // handleSmApi()
 
@@ -308,6 +313,9 @@ void sendDeviceInfo()
 #endif
 #ifdef USE_MINDERGAS
     strConcat(compileOptions, sizeof(compileOptions), "[USE_MINDERGAS]");
+#endif
+#ifdef USE_SYSLOGGER
+    strConcat(compileOptions, sizeof(compileOptions), "[USE_SYSLOGGER]");
 #endif
 #ifdef USE_NTP_TIME
     strConcat(compileOptions, sizeof(compileOptions), "[USE_NTP_TIME]");
@@ -448,14 +456,12 @@ void sendDeviceSettings()
 
 
 //=======================================================================
-void sendDeviceDebug(String tail) 
+void sendDeviceDebug(const char *URI, String tail) 
 {
 #ifdef USE_SYSLOGGER
   String lLine = "";
   int lineNr = 0;
   int tailLines = tail.toInt();
-
-//sendStartJsonObj("debug");
 
   DebugTf("list [%d] debug lines\r\n", tailLines);
   sysLog.status();
@@ -469,14 +475,13 @@ void sendDeviceDebug(String tail)
   {
     lineNr++;
     snprintf(cMsg, sizeof(cMsg), "%s\r\n", lLine.c_str());
-    //sendNestedJsonObj(cMsg, lLine);
-    //httpServer.send(200, "text/plain", lLine.c_str());
     httpServer.sendContent(cMsg);
 
   }
   sysLog.setDebugLvl(1);
 
-  //sendEndJsonObj();
+#else
+  sendApiNotFound(URI);
 #endif
 
 } // sendDeviceDebug()
@@ -623,12 +628,35 @@ bool listFieldsArray(char inArray[][35])
 
 
 //====================================================
-void sendApiInfo()
+void sendApiNotFound(const char *URI)
 {
-  httpServer.sendHeader("Location", String("/DSMRrestAPI.html"), true);
-  httpServer.send ( 302, "text/plain", "");
+  httpServer.sendHeader("Access-Control-Allow-Origin", "*");
+  httpServer.setContentLength(CONTENT_LENGTH_UNKNOWN);
+  httpServer.send ( 404, "text/html", "<!DOCTYPE HTML><html><head>");
+
+  strCopy(cMsg,   sizeof(cMsg), "<style>body { background-color: lightgray; font-size: 15pt;}");
+  strConcat(cMsg, sizeof(cMsg), "</style></head><body>");
+  httpServer.sendContent(cMsg);
+
+  strCopy(cMsg,   sizeof(cMsg), "<h1>DSMR-logger</h1><b1>");
+  httpServer.sendContent(cMsg);
+
+  strCopy(cMsg,   sizeof(cMsg), "<br>[<b>");
+  strConcat(cMsg, sizeof(cMsg), URI);
+  strConcat(cMsg, sizeof(cMsg), "</b>] is not a valid ");
+  httpServer.sendContent(cMsg);
   
-} // sendApiInfo()
+  strCopy(cMsg,   sizeof(cMsg), "<a href=");
+  strConcat(cMsg, sizeof(cMsg), "\"https://mrwheel-docs.gitbook.io/dsmrloggerapi/beschrijving-restapis\">");
+  strConcat(cMsg, sizeof(cMsg), "restAPI</a> call.");
+  httpServer.sendContent(cMsg);
+  
+  strCopy(cMsg, sizeof(cMsg), "</body></html>\r\n");
+  httpServer.sendContent(cMsg);
+
+  writeToSysLog("[%s] is not a valid restAPI call!!", URI);
+  
+} // sendApiNotFound()
 
 
 

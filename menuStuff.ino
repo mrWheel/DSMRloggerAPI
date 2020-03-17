@@ -61,6 +61,9 @@ void displayBoardInfo()
 #ifdef USE_MINDERGAS
   Debug(F("[USE_MINDERGAS]"));
 #endif
+#ifdef USE_SYSLOGGER
+  Debug(F("[USE_SYSLOGGER]"));
+#endif
 #ifdef USE_NTP_TIME
   Debug(F("[USE_NTP_TIME]"));
 #endif

@@ -21,6 +21,8 @@
                                                                , ESP.getFreeHeap()              \
                                                                , __FUNCTION__)                  \
                                                                ,__VA_ARGS__); })
+#else
+  #define writeToSysLog(...)  // nothing
 #endif
 
 #if defined( USE_PRE40_PROTOCOL )                               //PRE40

@@ -2,7 +2,7 @@
 ***************************************************************************  
 **  Program  : DSMRloggerAPI (restAPI)
 */
-#define _FW_VERSION "v1.0.1 (15-03-2020)"
+#define _FW_VERSION "v1.0.1 (16-03-2020)"
 /*
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -27,7 +27,12 @@
     - Erase Flash: "Only Sketch"
     - Port: <select correct port>
 */
-
+/*
+**  You can find more info in the following links (all in Dutch): 
+**   https://willem.aandewiel.nl/index.php/2020/02/28/restapis-zijn-hip-nieuwe-firmware-voor-de-dsmr-logger/
+**   https://mrwheel-docs.gitbook.io/dsmrloggerapi/
+**   https://mrwheel.github.io/DSMRloggerWS/
+*/
 /******************** compiler options  ********************************************/
 #define USE_REQUEST_PIN           // define if it's a esp8266 with GPIO 12 connected to SM DTR pin
 #define USE_UPDATE_SERVER         // define if there is enough memory and updateServer to be used
@@ -40,8 +45,8 @@
 //  #define HAS_NO_SLIMMEMETER        // define for testing only!
 #define USE_MQTT                  // define if you want to use MQTT (configure through webinterface)
 #define USE_MINDERGAS             // define if you want to update mindergas (configure through webinterface)
-  #define USE_SYSLOGGER             // define if you want to use the sysLog library for debugging
-//#define SHOW_PASSWRDS             // well .. show the PSK key and MQTT password, what else?
+//  #define USE_SYSLOGGER             // define if you want to use the sysLog library for debugging
+//  #define SHOW_PASSWRDS             // well .. show the PSK key and MQTT password, what else?
 /******************** don't change anything below this comment **********************/
 
 #include "DSMRloggerAPI.h"
@@ -437,9 +442,7 @@ void setup()
 #endif
 
   DebugTf("Startup complete! actTimestamp[%s]\r\n", actTimestamp);  
-#ifdef USE_SYSLOGGER
   writeToSysLog("Startup complete! actTimestamp[%s]", actTimestamp);  
-#endif
 
 //================ End of Slimmer Meter ============================
 

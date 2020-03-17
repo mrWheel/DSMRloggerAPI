@@ -51,9 +51,7 @@ void writeLastStatus()
 {
   char buffer[50] = "";
   DebugTf("writeLastStatus() => %s; %u; %u;\r\n", actTimestamp, nrReboots, slotErrors);
-  #ifdef USE_SYSLOGGER
-    writeToSysLog("writeLastStatus() => %s; %u; %u;", actTimestamp, nrReboots, slotErrors);
-  #endif
+  writeToSysLog("writeLastStatus() => %s; %u; %u;", actTimestamp, nrReboots, slotErrors);
   File _file = SPIFFS.open("/DSMRstatus.csv", "w");
   if (!_file)
   {
@@ -181,9 +179,7 @@ void writeDataToFile(const char *fileName, const char *record, uint16_t slot, in
   if (bytesWritten != DATA_RECLEN) 
   {
     DebugTf("ERROR! slot[%02d]: written [%d] bytes but should have been [%d]\r\n", slot, bytesWritten, DATA_RECLEN);
-    #ifdef USE_SYSLOGGER
-      writeToSysLog("ERROR! slot[%02d]: written [%d] bytes but should have been [%d]", slot, bytesWritten, DATA_RECLEN);
-    #endif
+    writeToSysLog("ERROR! slot[%02d]: written [%d] bytes but should have been [%d]", slot, bytesWritten, DATA_RECLEN);
   }
   dataFile.close();
 
@@ -261,9 +257,7 @@ void readOneSlot(int8_t fileType, const char *fileName, uint8_t recNr
       {
         {
           Debugf("slot[%02d]==>timeStamp [%-13.13s] not valid!!\r\n", slot, buffer);
-          #ifdef USE_SYSLOGGER
-            writeToSysLog("slot[%02d]==>timeStamp [%-13.13s] not valid!!", slot, buffer);
-          #endif
+          writeToSysLog("slot[%02d]==>timeStamp [%-13.13s] not valid!!", slot, buffer);
         }
       }
       else
@@ -615,9 +609,7 @@ bool DSMRfileExist(const char* fileName, bool doDisplay)
       #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
         oled_Print_Msg(3, "Nee! FOUT!", 6000);
       #endif
-      #ifdef USE_SYSLOGGER
-        writeToSysLog("Error! File [%s] not found!", fName);
-      #endif
+      writeToSysLog("Error! File [%s] not found!", fName);
       return false;
     }
     else
@@ -626,9 +618,7 @@ bool DSMRfileExist(const char* fileName, bool doDisplay)
       #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
         oled_Print_Msg(3, "Nee! ", 6000);
       #endif
-      #ifdef USE_SYSLOGGER
-        writeToSysLog("File [%s] not found!", fName);
-      #endif
+      writeToSysLog("File [%s] not found!", fName);
       return false;
     }
   } 

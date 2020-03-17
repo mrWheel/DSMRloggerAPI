@@ -48,9 +48,7 @@ void processTelegram()
        ||   (day(actT) != day(newT)   ) 
        || (month(actT) != month(newT) ) )
   {
-    #ifdef USE_SYSLOGGER
-      writeToSysLog("Update RING-files");
-    #endif
+    writeToSysLog("Update RING-files");
     writeDataToFiles();
     writeLastStatus();
   }
