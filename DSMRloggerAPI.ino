@@ -515,8 +515,10 @@ void doTaskTelegram()
   #if defined(HAS_NO_SLIMMEMETER)
     handleTestdata();
   #else
-    //-- handle slimmemeter telegrams in normal mode
-    slimmeMeter.enable(true); // enable a telegram processing from slimme meter
+    //-- enable DTR to read a telegram from the Slimme Meter
+    slimmeMeter.enable(true); 
+    slimmeMeter.loop();
+    handleSlimmemeter();
   #endif
   blinkLEDnow();
 }
@@ -525,7 +527,7 @@ void doTaskTelegram()
 void doSystemTasks()
 {
   #ifndef HAS_NO_SLIMMEMETER
-    handleSlimmemeter();
+    slimmeMeter.loop();
   #endif
   #ifdef USE_MQTT
     MQTTclient.loop();
@@ -543,7 +545,8 @@ void doSystemTasks()
   
 void loop () 
 {  
-  // do the background tasks
+  //--- do the tasks that has to be done 
+  //--- as often as possible
   doSystemTasks();
 
   loopCount++;

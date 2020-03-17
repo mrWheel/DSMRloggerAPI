@@ -213,8 +213,8 @@ void readSettings(bool show)
 
 
   if (strlen(settingIndexPage) < 7) strCopy(settingIndexPage, (sizeof(settingIndexPage) -1), "DSMRindex.html");
-  if (settingTelegramInterval < 3)  settingTelegramInterval = 10;
-  if (settingMQTTbrokerPort < 1)    settingMQTTbrokerPort = 1883;
+  if (settingTelegramInterval  < 2) settingTelegramInterval = 10;
+  if (settingMQTTbrokerPort    < 1) settingMQTTbrokerPort   = 1883;
 
   if (!show) return;
   

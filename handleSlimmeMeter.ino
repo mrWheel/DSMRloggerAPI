@@ -158,8 +158,13 @@ void processSlimmemeter()
     else                  // Parser error, print error
     {
       telegramErrors++;
+      #ifdef USE_SYSLOGGER
+        sysLog.writef("Parse error\r\n%s\r\n\r\n", DSMRerror.c_str());
+      #endif
       DebugTf("Parse error\r\n%s\r\n\r\n", DSMRerror.c_str());
+      //--- set DTR to get a new telegram as soon as possible
       slimmeMeter.enable(true);
+      slimmeMeter.loop();
     }
 
     if ( (telegramCount > 25) && (telegramCount % (1000 / (settingTelegramInterval + 1)) == 0) )
