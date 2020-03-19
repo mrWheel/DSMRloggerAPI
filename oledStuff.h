@@ -27,6 +27,7 @@ static uint8_t msgMode = 0;
 static bool boolDisplay = true; 
 
 uint8_t     lineHeight, charHeight;
+
 DECLARE_TIMER_MIN(oledSleepTimer, 10);  // sleep the display in 10 minutes
 
 //===========================================================================================

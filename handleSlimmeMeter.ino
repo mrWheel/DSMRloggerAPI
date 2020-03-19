@@ -167,7 +167,7 @@ void processSlimmemeter()
       slimmeMeter.loop();
     }
 
-    if ( (telegramCount > 25) && (telegramCount % (1000 / (settingTelegramInterval + 1)) == 0) )
+    if ( (telegramCount > 25) && (telegramCount % (2100 / (settingTelegramInterval + 1)) == 0) )
     {
       DebugTf("Processed [%d] telegrams ([%d] errors)\r\n", telegramCount, telegramErrors);
       writeToSysLog("Processed [%d] telegrams ([%d] errors)", telegramCount, telegramErrors);

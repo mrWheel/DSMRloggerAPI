@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRloggerAPI.h - definitions for DSMRloggerAPI
-**  Version  : v1.0.1
+**  Version  : v1.0.2
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -10,7 +10,7 @@
 */  
 
 #include <TimeLib.h>            // https://github.com/PaulStoffregen/Time
-#include <TelnetStream.h>       // Version 0.0.1 - https://github.com/jandrassy/TelnetStream
+#include <TelnetStream.h>       // https://github.com/jandrassy/TelnetStream/commit/1294a9ee5cc9b1f7e51005091e351d60c8cddecf
 #include "safeTimers.h"
 
 #ifdef USE_SYSLOGGER
@@ -234,6 +234,7 @@ String    pTimestamp;
 // setup timers 
 DECLARE_TIMER_SEC(updateSeconds,       1, CATCH_UP_MISSED_TICKS);
 DECLARE_TIMER_SEC(updateDisplay,       5);
+DECLARE_TIMER_MIN(reconnectWiFi,      30);
 DECLARE_TIMER_SEC(synchrNTP,          30);
 DECLARE_TIMER_SEC(nextTelegram,       10);
 DECLARE_TIMER_MIN(reconnectMQTTtimer,  2); // try reconnecting cyclus timer

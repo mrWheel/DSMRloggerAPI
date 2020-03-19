@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : networkStuff.h, part of DSMRloggerAPI
-**  Version  : v1.0.1
+**  Version  : v1.0.2
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -56,25 +56,28 @@ void configModeCallback (WiFiManager *myWiFiManager)
 
 
 //===========================================================================================
-void startWiFi(const char* hostname) 
+void startWiFi(const char* hostname, int timeOut) 
 {
   WiFiManager manageWiFi;
-
+  uint32_t lTime = millis();
   String thisAP = String(hostname) + "-" + WiFi.macAddress();
+
+  DebugT("start ...");
   
   manageWiFi.setDebugOutput(true);
   
-  //set callback that gets called when connecting to previous WiFi fails, and enters Access Point mode
+  //--- set callback that gets called when connecting to previous WiFi fails, and enters Access Point mode
   manageWiFi.setAPCallback(configModeCallback);
 
-  //sets timeout until configuration portal gets turned off
-  //useful to make it all retry or go to sleep in seconds
-  manageWiFi.setTimeout(240);  // 4 minuten
+  //--- sets timeout until configuration portal gets turned off
+  //--- useful to make it all retry or go to sleep in seconds
+  //manageWiFi.setTimeout(240);  // 4 minuten
+  manageWiFi.setTimeout(timeOut);  // in seconden ...
   
-  //fetches ssid and pass and tries to connect
-  //if it does not connect it starts an access point with the specified name
-  //here  "DSMR-WS-<MAC>"
-  //and goes into a blocking loop awaiting configuration
+  //--- fetches ssid and pass and tries to connect
+  //--- if it does not connect it starts an access point with the specified name
+  //--- here  "DSMR-WS-<MAC>"
+  //--- and goes into a blocking loop awaiting configuration
   if (!manageWiFi.autoConnect(thisAP.c_str())) 
   {
     DebugTln(F("failed to connect and hit timeout"));
@@ -83,26 +86,28 @@ void startWiFi(const char* hostname)
     oled_Print_Msg(0, "<DSMRloggerAPI>", 0);
     oled_Print_Msg(1, "Failed to connect", 0);
     oled_Print_Msg(2, "and hit TimeOut", 0);
-    oled_Print_Msg(3, "***** RESET *****", 0);
+    oled_Print_Msg(3, "**** NO WIFI ****", 0);
 #endif
 
     //reset and try again, or maybe put it to deep sleep
-    delay(3000);
-    ESP.reset();
-    delay(2000);
+    //delay(3000);
+    //ESP.reset();
+    //delay(2000);
+    DebugTf(" took [%d] seconds ==> ERROR!\r\n", (millis() - lTime) / 1000);
+    return;
   }
-
+  
   DebugTf("Connected with IP-address [%s]\r\n\r\n", WiFi.localIP().toString().c_str());
-#if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
+  #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
     oled_Clear();
-#endif
-
+  #endif
 
 #ifdef USE_UPDATE_SERVER
   httpUpdater.setup(&httpServer);
   httpUpdater.setIndexPage(UpdateServerIndex);
   httpUpdater.setSuccessPage(UpdateServerSuccess);
 #endif
+  DebugTf(" took [%d] seconds => OK!\r\n", (millis() - lTime) / 1000);
   
 } // startWiFi()
 

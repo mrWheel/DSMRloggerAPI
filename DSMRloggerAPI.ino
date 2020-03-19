@@ -2,7 +2,7 @@
 ***************************************************************************  
 **  Program  : DSMRloggerAPI (restAPI)
 */
-#define _FW_VERSION "v1.0.1 (16-03-2020)"
+#define _FW_VERSION "v1.0.2 (19-03-2020)"
 /*
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -41,7 +41,7 @@
 //  #define USE_BELGIUM_PROTOCOL      // define if Slimme Meter is a Belgium Smart Meter
 //  #define USE_PRE40_PROTOCOL        // define if Slimme Meter is pre DSMR 4.0 (2.2 .. 3.0)
 //  #define USE_NTP_TIME              // define to generate Timestamp from NTP (Only Winter Time for now)
-//  #define SM_HAS_NO_FASE_INFO       // if your SM does not give fase info use total delevered/returned
+//  #define SM_HAS_NO_FASE_INFO       // if your SM does not give fase info use total delivered/returned
 //  #define HAS_NO_SLIMMEMETER        // define for testing only!
 #define USE_MQTT                  // define if you want to use MQTT (configure through webinterface)
 #define USE_MINDERGAS             // define if you want to update mindergas (configure through webinterface)
@@ -81,7 +81,9 @@ void displayStatus()
               break;
     case 3:   snprintf(cMsg, sizeof(cMsg), "Heap:%7d Bytes", ESP.getFreeHeap());
               break;
-    case 4:   snprintf(cMsg, sizeof(cMsg), "IP %s", WiFi.localIP().toString().c_str());
+    case 4:   if (WiFi.status() != WL_CONNECTED)
+                    snprintf(cMsg, sizeof(cMsg), "**** NO  WIFI ****");
+              else  snprintf(cMsg, sizeof(cMsg), "IP %s", WiFi.localIP().toString().c_str());
               break;
     default:  snprintf(cMsg, sizeof(cMsg), "Telgrms:%6d/%3d", telegramCount, telegramErrors);
               break;
@@ -220,7 +222,7 @@ void setup()
 #endif  // has_oled_ssd1306
 
   digitalWrite(LED_BUILTIN, LED_ON);
-  startWiFi(settingHostname);
+  startWiFi(settingHostname, 240);  // timeout 4 minuten
 
 #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
   oled_Print_Msg(0, "<DSMRloggerAPI>", 0);
@@ -233,6 +235,7 @@ void setup()
   Debugln();
   Debug (F("Connected to " )); Debugln (WiFi.SSID());
   Debug (F("IP address: " ));  Debugln (WiFi.localIP());
+  Debug (F("IP gateway: " ));  Debugln (WiFi.gatewayIP());
   Debugln();
 
   for (int L=0; L < 10; L++) {
@@ -244,6 +247,11 @@ void setup()
 //-----------------------------------------------------------------
 #ifdef USE_SYSLOGGER
   openSysLog(false);
+  snprintf(cMsg, sizeof(cMsg), "SSID:[%s],  IP:[%s], Gateway:[%s]", WiFi.SSID().c_str()
+                                                                  , WiFi.localIP().toString().c_str()
+                                                                  , WiFi.gatewayIP().toString().c_str());
+  writeToSysLog("%s", cMsg);
+
 #endif
 
   startMDNS(settingHostname);
@@ -475,24 +483,6 @@ void setup()
 } // setup()
 
 
-//===[ blink status led in ms ]===========================================================
-DECLARE_TIMER_MS(timerBlink, 1);
-void blinkLEDms(uint32_t iDelay)
-{
-  //blink the statusled, when time passed... #non-blocking blink
-  CHANGE_INTERVAL_MS(timerBlink, iDelay);
-  if (DUE(timerBlink))
-    blinkLEDnow();
-}
-
-//===[ blink status now ]=================================================================
-void blinkLEDnow()
-{
-    pinMode(LED_BUILTIN, OUTPUT);
-    digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
-    
-} // blinkLEDnow()
-
 //===[ no-blocking delay with running background tasks in ms ]============================
 DECLARE_TIMER_MS(timer_delay_ms, 1);
 void delayms(unsigned long delay_ms)
@@ -520,7 +510,11 @@ void doTaskTelegram()
     slimmeMeter.loop();
     handleSlimmemeter();
   #endif
-  blinkLEDnow();
+  if (WiFi.status() != WL_CONNECTED)
+  {
+    for(int b=0; b<10; b++) { digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN)); delay(75);}
+  }
+  digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
 }
 
 //===[ Do System tasks ]=============================================================
@@ -538,6 +532,7 @@ void doSystemTasks()
 #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
   checkFlashButton();
 #endif
+
   yield();
 
 } // doSystemTasks()
@@ -551,16 +546,19 @@ void loop ()
 
   loopCount++;
 
+  //--- verwerk volgend telegram
   if DUE(nextTelegram)
   {
     doTaskTelegram();
   }
-  
+
+  //--- update upTime counter
   if DUE(updateSeconds)
   {
     upTimeSeconds++;
   }
 
+//--- if an OLED screen attached, display the status
 #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
   if DUE(updateDisplay)
   {
@@ -568,6 +566,7 @@ void loop ()
   }
 #endif
 
+//--- if mindergas then check
 #ifdef USE_MINDERGAS
   if ( DUE(minderGasTimer) )
   {
@@ -575,6 +574,21 @@ void loop ()
   }
 #endif
 
+  //--- if connection lost, try to reconnect to WiFi
+  if ( DUE(reconnectWiFi) && (WiFi.status() != WL_CONNECTED) )
+  {
+    writeToSysLog("Restart wifi with [%s]...", settingHostname);
+    startWiFi(settingHostname, 10);
+    if (WiFi.status() != WL_CONNECTED)
+          writeToSysLog("%s", "Wifi still not connected!");
+    else {
+          snprintf(cMsg, sizeof(cMsg), "IP:[%s], Gateway:[%s]", WiFi.localIP().toString().c_str()
+                                                              , WiFi.gatewayIP().toString().c_str());
+          writeToSysLog("%s", cMsg);
+    }
+  }
+
+//--- if NTP set, see if it needs synchronizing
 #if defined(USE_NTP_TIME)                                           //USE_NTP
   if DUE(synchrNTP)                                                 //USE_NTP
   {

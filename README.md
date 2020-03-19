@@ -10,6 +10,15 @@ Documentation can be found [here](https://mrwheel-docs.gitbook.io/dsmrloggerapi/
 <table>
 <tr><th>Versie</th><th>Opmerking</th></tr>
 <tr>
+   <td valign="top">1.1.0 Beta</td>
+   <td>Beta Release
+      <br>Introduction ESP_SysLogger
+      <br>Better coping with WiFi losses
+      <br>Restructure slimmemeter.loop() etc.
+      <br>You can find pré compiled binaries at <b>code</b> -> <b><i>releases</i></b>
+   </td>
+</tr>
+<tr>
    <td valign="top">1.0.1</td>
    <td>First official release
       <br>You can find pré compiled binaries at <b>code</b> -> <b><i>releases</i></b>
