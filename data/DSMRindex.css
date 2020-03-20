@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRindex.css, part of DSMRfirmwareAPI
-**  Version  : v0.3.5
+**  Version  : v1.1.0
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -160,7 +160,7 @@ input {
 
 .nav-container a:hover {
   color: black;
-  background: black; /* only for FSexplorer - Rest does not work */
+  background: skyblue; /* only for FSexplorer - Rest does not work */
 }
 
 .nav-clock {
@@ -193,11 +193,11 @@ input {
 }
 ***/
 
-.editButton {
+.tabButton {
   background-color: white;
 }
 
-.editButton a:hover {
+.tabButton a:hover {
   background-color: gray;
 }
 
@@ -208,17 +208,15 @@ input {
   left: 10px;
 }
 
-.footer {
+.bottom { 
   position: fixed;
-  left: 0;
-  bottom: 0;
-  width: 100%;
-  color: gray;
-/*   background: white; */
   font-size: small;
-  text-align: right;
-}
-
+  color: gray;
+  bottom:0;
+} 
+.right-0  {right: 0; padding-right: 10px; }
+.left-0   {left:  0; padding-left:  10px; }
+            
 //--- next 4 are for the API doc page --------
 .div1 { 
   float: left;  

@@ -1,7 +1,7 @@
 <!--
 ***************************************************************************  
 **  Program  : DSMRindexGitHub.html, part of DSMRloggerAPI
-**  Version  : v0.3.5
+**  Version  : v1.1.0
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -31,7 +31,9 @@
    </div>
 <!--  <div style="clear:both"></div> -->
   </font>
-
+  
+  <span id="mainPage" style="display:block">
+  
   <!-- <div class="clock" id="theTime">1234567890</div> -->
   <!-- START Tabbladen -->
   <div class="nav-container">
@@ -46,6 +48,8 @@
       <a id='bAPIdocTab'    class='nav-item tabButton'>API Docs</a>
       <a id='FSexplorer'    class='nav-img'>
                       <img src='/FSexplorer.png' alt='FSexplorer'></a>
+      <a id='Settings'      class='nav-img'>
+                      <img src='/settings.png' alt='Settings'></a>
     </div>
   </div>
   <!-- END Tabbladen -->
@@ -300,11 +304,63 @@
     <canvas id="dataChart" style="display: none;" width="900" height="300"></canvas>
     <canvas id="gasChart"  style="display: none;" width="900" height="125"></canvas>
   </div>
+  </span>
+<!--------------------------------------------------------------------------------------->
+<!--------------------------------------------------------------------------------------->
+<!--------------------------------------------------------------------------------------->
+<!--------------------------------------------------------------------------------------->
+  <span id="settingsPage" style="display:none">
+
+  <div class="nav-container">
+    <div class='nav-left'>
+      <a id='bTerug'        class='nav-item tabButton'>Terug</a>
+      <a id='bEditMonths'   class='nav-item tabButton'>Meterstanden</a>
+      <a id='bEditSettings' class='nav-item tabButton'>Settings</a>
+      <a id='bUndo'         class='nav-item tabButton'>Herstel</a>
+      <a id='bSave'         class='nav-item tabButton'>Opslaan</a>
+    </div>
+  </div>  <!-- END nav-container -->
+
+  <!-- START Tabbladen -->
+  <div id="tabMonths" class="tabName" style="display:none">
+    <label for="Period"><b>Meterstand: </b></label>
+      Energy Delivered
+      <input type="radio" name="editType" id="MED" onchange="setEditType('ED')" checked/>
+      &nbsp;&nbsp;
+      Energy Returned
+      <input type="radio" name="editType" id="MER" onchange="setEditType('ER')"/>
+      &nbsp;&nbsp;
+      Gas Delivered
+      <input type="radio" name="editType" id="MGD" onchange="setEditType('GD')"/>
+      &nbsp;&nbsp;
   
-  <div class="footer">
-    <span id="devIPaddress"></span>
-    <span>2020 &copy; Willem Aandewiel &nbsp; &nbsp;</span>
-  </div>
+  <div id="tabMaanden" class="tabName outer-div" style="display:none">
+    <!-- START edit tabMonths -->
+    <br>
+      <div id="editMonths" class="inner-div">
+      </div> 
+  </div>  <!-- END tabMonthss -->
+
+  </div> <!-- tabMonths -->
+  
+  
+  <div id="tabSettings" class="tabName outer-div" style="display:none">
+    <!-- START settingsTab Settings -->
+    <br>
+      <div id="settings" class="inner-div" style="width: 500px;">
+      </div> 
+  </div>  <!-- END tabSettings -->
+  
+  <!-- END Tabbladen -->
+
+  </span> <!-- end Settings Page -->
+  
+
+  <!-- Pin to bottom right corner -->
+  <div class="bottom right-0">2020 &copy; Willem Aandewiel</div>
+
+  <!-- Pin to bottom left corner -->
+  <div id="message" class="bottom left-0">-</div>
 
   <script src="https://cdn.jsdelivr.net/gh/mrWheel/DSMRloggerAPI@master/data/DSMRindex.min.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/mrWheel/DSMRloggerAPI@master/data/DSMRgraphics.min.js"></script>

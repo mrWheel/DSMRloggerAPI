@@ -1,3 +1,13 @@
+<!--
+***************************************************************************  
+**  Program  : FSexplorer.html, part of DSMRloggerAPI
+**  Version  : v1.1.0
+**
+**  Copyright (c) 2020 Willem Aandewiel
+**
+**  TERMS OF USE: MIT License. See bottom of file.                                                            
+***************************************************************************      
+-->
 <!DOCTYPE HTML>
 <html lang="en">
    <head>
@@ -28,9 +38,8 @@
                  //else {
                  if (     json[i].name != 'FSexplorer.html' && json[i].name != 'FSexplorer.css' && json[i].name != 'FSexplorer.png'
                  	 	&& json[i].name != 'DSMRindex.html'  && json[i].name != 'DSMRindex.js'   && json[i].name != 'DSMRindex.css'
-                 	  	&& json[i].name != 'DSMReditor.html' && json[i].name != 'DSMReditor.js'
-                 	  	&& json[i].name != 'DSMRindexGitHub.html' && json[i].name != 'DSMReditorGitHub.html'
-                 	    && json[i].name != 'DSMRgraphics.js'
+                 	  	&& json[i].name != 'DSMRgraphics.js' && json[i].name != 'settings.png'
+                 	  	&& json[i].name != 'DSMRindexGitHub.html' 
                  	  ) {
                    dir += `<td width=10% nowrap><a href ="${json[i].name}?delete=/${json[i].name}"> Delete </a></td>`;
                    if (json[i].name == '!format') 
@@ -94,11 +103,11 @@
         <form style='float: left;' action='/update' method='GET'>
           <input type='submit' class='button' name='SUBMIT' value='Update Firmware' ENABLED/>
         </form>
-    
-        <form style='float: right;' action='/DSMReditor.html'>
-          <input type='submit' class='button' name='SUBMIT' value='Edit Settings'/>
+        <form style='float: right;' action='/'>
+          <input type='submit' class='button' name='SUBMIT' value='Exit FSexplorer'>
         </form>
         </span>
+    
       </div>
       <div style='width: 40%'>
         <span>
@@ -106,10 +115,6 @@
           <input type='submit' class='button' name='SUBMIT' value='ReBoot'>
         </form>
 
-        <form style='float: right;' action='/'>
-          <input type='submit' class='button' name='SUBMIT' value='Exit FSexplorer'>
-        </form>
-        </span>
       </div>
       <div style='width: 40%'>
         <span>
