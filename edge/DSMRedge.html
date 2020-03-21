@@ -1,24 +1,13 @@
 <!--
 ***************************************************************************  
-**  Program  : DSMRindexGitHub.html, part of DSMRloggerAPI
-**  Version  : v1.1.0
+**  Program  : DSMRedge.html, part of DSMRloggerAPI
+**  Version  : v1.1.1
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
 -->
-<!DOCTYPE html>
-<html charset="UTF-8">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">  
-  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/mrWheel/DSMRloggerAPI@master/data/DSMRindex.min.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
-
-  <title>ESP-DSMR Slimme Meter Logger</title>
-</head>
-<body>
   <font face="Arial">
     <!-- <div class="dev-header"> -->
     <div class="header">
@@ -26,6 +15,7 @@
         <span id="sysName">DSMR-logger(API)</span> &nbsp; &nbsp; &nbsp;
         <span id="devName" style='font-size: small;'>-</span> &nbsp;
         <span id="devVersion" style='font-size: small;'>[version]</span>
+        <span style='font-size: small;'> &nbsp; &nbsp; [edge]</span>
         <span id='theTime' class='nav-item nav-clock'>00:00</span>
       </h1>
    </div>
@@ -355,19 +345,11 @@
 
   </span> <!-- end Settings Page -->
   
+  
+  <script src="https://cdn.jsdelivr.net/gh/mrWheel/DSMRloggerAPI@master/edge/DSMRedge.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/mrWheel/DSMRloggerAPI@master/edge/DSMRgraphics.min.js"></script>
 
-  <!-- Pin to bottom right corner -->
-  <div class="bottom right-0">2020 &copy; Willem Aandewiel</div>
 
-  <!-- Pin to bottom left corner -->
-  <div id="message" class="bottom left-0">-</div>
-
-  <script src="https://cdn.jsdelivr.net/gh/mrWheel/DSMRloggerAPI@master/data/DSMRindex.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/gh/mrWheel/DSMRloggerAPI@master/data/DSMRgraphics.min.js"></script>
-
-  </body>
-
-</html>
 <!--
 ***************************************************************************
 *
