@@ -48,7 +48,7 @@ static const char UpdateServerSuccess[] PROGMEM =
      <body>
      <h1>DSMR-logger Flash utility</h1>
      <br/>
-     <h2>Update successfull!</h2>
+     <h2>Update successful!</h2>
      <br/>
      <br/>Wait for the DSMR-logger to reboot and start the HTTP server
      <br/>
