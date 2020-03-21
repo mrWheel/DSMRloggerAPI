@@ -45,8 +45,8 @@ void processAPI()
 
   //strToLower(URI);
   if (httpServer.method() == HTTP_GET)
-        DebugTf("incomming URI is [%s] method[GET] \r\n", URI); 
-  else  DebugTf("incomming URI is [%s] method[PUT] \r\n", URI); 
+        DebugTf("incoming URI is [%s] method[GET] \r\n", URI); 
+  else  DebugTf("incoming URI is [%s] method[PUT] \r\n", URI); 
 
   int8_t wc = splitString(URI, '/', words, 10);
   
