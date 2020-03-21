@@ -10,6 +10,14 @@ Documentation can be found [here](https://mrwheel-docs.gitbook.io/dsmrloggerapi/
 <table>
 <tr><th>Versie</th><th>Opmerking</th></tr>
 <tr>
+   <td valign="top">1.1.1 (dev)</td>
+   <td>Development release
+      <br>The Leading Edge type GUI now completely from github. Set
+      'index page' to "DSMRindex.EDGE.html" to make use of
+      the latest development (but be aware, there might be bugs)
+   </td>
+</tr>
+<tr>
    <td valign="top">1.1.0</td>
    <td>Second Official Release
       <br>Introduction ESP_SysLogger

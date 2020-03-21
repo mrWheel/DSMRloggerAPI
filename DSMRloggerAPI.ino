@@ -2,7 +2,7 @@
 ***************************************************************************  
 **  Program  : DSMRloggerAPI (restAPI)
 */
-#define _FW_VERSION "v1.1.0 (20-03-2020)"
+#define _FW_VERSION "v1.1.1 (21-03-2020)"
 /*
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -392,11 +392,6 @@ void setup()
       httpServer.serveStatic("/index",            SPIFFS, settingIndexPage);
       httpServer.serveStatic("/index.html",       SPIFFS, settingIndexPage);
       httpServer.serveStatic("/DSMRindex.html",   SPIFFS, settingIndexPage);
-      if (strcmp(settingIndexPage, "GitHub") != 0)
-      {
-        DebugTln(F("set [/DSMReditor.html] to [/DSMReditorGitHub.html]"));
-        httpServer.serveStatic("/DSMReditor.html",  SPIFFS, "/DSMReditorGitHub.html");
-      }
     }
     else
     {
@@ -406,8 +401,6 @@ void setup()
       httpServer.serveStatic("/index.html",       SPIFFS, "/DSMRindex.html");
       httpServer.serveStatic("/DSMRindex.css",    SPIFFS, "/DSMRindex.css");
       httpServer.serveStatic("/DSMRindex.js",     SPIFFS, "/DSMRindex.js");
-      httpServer.serveStatic("/DSMReditor.html",  SPIFFS, "/DSMReditor.html");
-      httpServer.serveStatic("/DSMReditor.js",    SPIFFS, "/DSMReditor.js");
       httpServer.serveStatic("/DSMRgraphics.js",  SPIFFS, "/DSMRgraphics.js");
     }
   } else {
