@@ -60,7 +60,7 @@
                   ];
                     
   var humanFieldsMain = [ "Slimme Meter ID","P1 Versie","timestamp","Equipment ID"
-                    ,"Energie Gebruikt tarief 1","Energy Gebruikt tarief 2"
+                    ,"Energie Gebruikt tarief 1","Energie Gebruikt tarief 2"
                     ,"Energie Opgewekt tarief 1","Energie Opgewekt tarief 2","Electriciteit tarief"
                     ,"Vermogen Gebruikt","Vermogen Opgewekt"
                     ,"electricity_threshold","electricity_switch_position"
