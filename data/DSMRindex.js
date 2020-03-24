@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRindex.js, part of DSMRfirmwareAPI
-**  Version  : v1.1.1
+**  Version  : v1.1.2
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -1149,27 +1149,27 @@
     
   //============================================================================  
   function showAPIdoc() {
-    console.log("Show API doc ..");
+    console.log("Show API doc ..@["+location.host+"]");
     document.getElementById("APIdocTab").style.display = "block";
-    addAPIdoc("/api/v1/dev/info", "Device info in JSON format", true);
-    addAPIdoc("/api/v1/dev/time", "Device time (epoch) in JSON format", true);
-    addAPIdoc("/api/v1/dev/settings", "Device settings in JSON format", true);
-    addAPIdoc("/api/v1/dev/settings{jsonObj}", "[POST] update Device settings in JSON format\
+    addAPIdoc("v1/dev/info",      "Device info in JSON format", true);
+    addAPIdoc("v1/dev/time",      "Device time (epoch) in JSON format", true);
+    addAPIdoc("v1/dev/settings",  "Device settings in JSON format", true);
+    addAPIdoc("v1/dev/settings{jsonObj}", "[POST] update Device settings in JSON format\
         <br>test with:\
         <pre>curl -X POST -H \"Content-Type: application/json\" --data '{\"name\":\"mqtt_broker\",\"value\":\"hassio.local\"}' \
 http://DSMR-API.local/api/v1/dev/settings</pre>", false);
     
-    addAPIdoc("/api/v1/sm/info", "Smart Meter info in JSON format", true);
-    addAPIdoc("/api/v1/sm/actual", "Smart Meter Actual data in JSON format", true);
-    addAPIdoc("/api/v1/sm/fields", "Smart Meter all fields data in JSON format\
+    addAPIdoc("v1/sm/info",       "Smart Meter info in JSON format", true);
+    addAPIdoc("v1/sm/actual",     "Smart Meter Actual data in JSON format", true);
+    addAPIdoc("v1/sm/fields",     "Smart Meter all fields data in JSON format\
         <br>JSON format: {\"fields\":[{\"name\":\"&lt;fieldName&gt;\",\"value\":&lt;value&gt;,\"unit\":\"&lt;unit&gt;\"}]} ", true);
-    addAPIdoc("/api/v1/sm/fields/{fieldName}", "Smart Meter one field data in JSON format", false);
+    addAPIdoc("v1/sm/fields/{fieldName}", "Smart Meter one field data in JSON format", false);
 
-    addAPIdoc("/api/v1/sm/telegram", "raw telegram as send by the Smart Meter including all \"\\r\\n\" line endings", false);
+    addAPIdoc("v1/sm/telegram",   "raw telegram as send by the Smart Meter including all \"\\r\\n\" line endings", false);
 
-    addAPIdoc("/api/v1/hist/hours", "History data per hour in JSON format", true);
-    addAPIdoc("/api/v1/hist/days", "History data per day in JSON format", true);
-    addAPIdoc("/api/v1/hist/months", "History data per month in JSON format", true);
+    addAPIdoc("v1/hist/hours",    "History data per hour in JSON format", true);
+    addAPIdoc("v1/hist/days",     "History data per day in JSON format", true);
+    addAPIdoc("v1/hist/months",   "History data per month in JSON format", true);
 
   } // showAPIdoc()
 
@@ -1183,20 +1183,19 @@ http://DSMR-API.local/api/v1/dev/settings</pre>", false);
       br.setAttribute("id", restAPI, 0);
       br.setAttribute("style", "clear: left;");
       
-      // <div class='div1'><a href="http://dsmr-api.local/api/v1/dev/time" target="_blank">/api/v1/dev/time</a></div>
       var div1 = document.createElement("DIV"); 
       div1.setAttribute("class", "div1", 0);
       var aTag = document.createElement('a');
       if (linkURL)
       {
-        aTag.setAttribute('href',"http://" +hostName +".local" +restAPI);
+        aTag.setAttribute('href',APIGW +restAPI);
         aTag.target = '_blank';
       }
       else
       {
         aTag.setAttribute('href',"#");
       }
-      aTag.innerText = restAPI;
+      aTag.innerText = "/api/"+restAPI;
       aTag.style.fontWeight = 'bold';
       div1.appendChild(aTag);
 

@@ -1,7 +1,7 @@
 <!--
 ***************************************************************************  
-**  Program  : DSMRedge.html, part of DSMRloggerAPI
-**  Version  : v1.1.1
+**  Program  : DSMRindex.html.inc, part of DSMRloggerAPI
+**  Version  : v1.1.2
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -13,9 +13,9 @@
     <div class="header">
       <h1>
         <span id="sysName">DSMR-logger(API)</span> &nbsp; &nbsp; &nbsp;
-        <span id="devName" style='font-size: small;'>-</span> &nbsp;
+        <span id="devName"    style='font-size: small;'>-</span> &nbsp;
         <span id="devVersion" style='font-size: small;'>[version]</span>
-        <span style='font-size: small;'> &nbsp; &nbsp; [edge]</span>
+        <span id="source"     style='font-size: small;'> &nbsp; &nbsp; [-]</span>
         <span id='theTime' class='nav-item nav-clock'>00:00</span>
       </h1>
    </div>
@@ -345,10 +345,10 @@
 
   </span> <!-- end Settings Page -->
   
-  
+  <!--
   <script src="https://cdn.jsdelivr.net/gh/mrWheel/DSMRloggerAPI@master/edge/DSMRedge.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/mrWheel/DSMRloggerAPI@master/edge/DSMRgraphics.min.js"></script>
-
+  -->
 
 <!--
 ***************************************************************************

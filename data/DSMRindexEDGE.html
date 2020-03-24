@@ -1,7 +1,7 @@
 <!--
 ***************************************************************************  
 **  Program  : DSMRindexEDGE.html, part of DSMRloggerAPI
-**  Version  : v1.1.1
+**  Version  : v1.1.2
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -44,7 +44,7 @@
   function readPageBody()
   {
     console.log("readPageBody() ..");
-    fetch("https://cdn.jsdelivr.net/gh/mrWheel/DSMRloggerAPI@master/edge/DSMRedge.html")
+    fetch("https://cdn.jsdelivr.net/gh/mrWheel/DSMRloggerAPI@master/edge/DSMRindex.html.inc")
       .then(response => {
         if (response.ok) {
           return response.text();
@@ -56,6 +56,7 @@
       .then(text => {
         document.body.innerHTML = text + document.body.innerHTML;
         bootsTrapMain();
+        document.getElementById("source").innerHTML = "[edge]";
       })
       .catch(function(error) {
         console.log("readPageBody: "+error);
