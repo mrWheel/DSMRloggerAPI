@@ -112,7 +112,7 @@
                   ];
                     
   var monthNames = [ "indxNul","Januari","Februari","Maart","April","Mei","Juni"
-                    ,"Juli","Augustus","September","Oktober","November","december"
+                    ,"Juli","Augustus","September","Oktober","November","December"
                     ,"\0"
                    ];
   
