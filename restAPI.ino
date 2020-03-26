@@ -339,6 +339,7 @@ void sendDeviceInfo()
   sendNestedJsonObj("compiled", cMsg);
   sendNestedJsonObj("hostname", settingHostname);
   sendNestedJsonObj("ipaddress", WiFi.localIP().toString().c_str());
+  sendNestedJsonObj("mac", WiFi.macAddress().c_str());
   sendNestedJsonObj("indexfile", settingIndexPage);
   sendNestedJsonObj("freeheap", ESP.getFreeHeap(), "bytes");
   sendNestedJsonObj("maxfreeblock", ESP.getMaxFreeBlockSize(), "bytes");
