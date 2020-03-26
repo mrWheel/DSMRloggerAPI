@@ -187,7 +187,7 @@
     refreshDevTime();
     refreshDevInfo();
     
-    timeTimer = setInterval(refreshDevTime, 10 * 1000); // repeat every 10s
+    //timeTimer = setInterval(refreshDevTime, 10 * 1000); // repeat every 10s
     
     openPage("settingsPage");
 
@@ -257,15 +257,6 @@
       console.log("newTab: DaysTab");
       refreshDays();
       tabTimer = setInterval(refreshDays, 58 * 1000); // repeat every 58s
-      /***
-      console.log("ed_tariff1["+ed_tariff1+"]");
-      console.log("ed_tariff2["+ed_tariff2+"]");
-      console.log("er_tariff1["+er_tariff1+"]");
-      console.log("er_tariff2["+er_tariff2+"]");
-      console.log(" gd_tariff["+gd_tariff+"]");
-      console.log("electr_netw_costs["+electr_netw_costs+"]");
-      console.log("   gas_netw_costs["+gas_netw_costs+"]");    
-      ***/
 
     } else if (tabName == "MonthsTab") {
       console.log("newTab: MonthsTab");
@@ -412,6 +403,7 @@
   //============================================================================  
   function refreshDevTime()
   {
+    //console.log("Refresh api/v1/dev/time ..");
     fetch(APIGW+"v1/dev/time")
       .then(response => response.json())
       .then(json => {
