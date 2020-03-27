@@ -49,6 +49,12 @@ void readLastStatus()
 //====================================================================
 void writeLastStatus()
 {
+  if (ESP.getFreeHeap() < 8500) // to prevent firmware from crashing!
+  {
+    DebugTf("writeLastStatus() SKIP due to low heap (%d)", ESP.getFreeHeap());
+    writeToSysLog("writeLastStatus() SKIP (heap[%d])", ESP.getFreeHeap());
+    return;
+  }
   char buffer[50] = "";
   DebugTf("writeLastStatus() => %s; %u; %u;\r\n", actTimestamp, nrReboots, slotErrors);
   writeToSysLog("writeLastStatus() => %s; %u; %u;", actTimestamp, nrReboots, slotErrors);

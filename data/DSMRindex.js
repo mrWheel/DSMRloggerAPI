@@ -1077,6 +1077,7 @@
       presentationType = pType;
       document.getElementById('aGRAPH').checked = true;
       document.getElementById('aTAB').checked   = false;
+      initActualGraph();
       document.getElementById('hGRAPH').checked = true;
       document.getElementById('hTAB').checked   = false;
       document.getElementById('dGRAPH').checked = true;
@@ -1101,7 +1102,7 @@
       document.getElementById('mCOST').checked  = false;
 
     } else {
-      console.log("setPresentationType to ["+pType+"] is quit shitty! Set to TAB");
+      console.log("setPresentationType to ["+pType+"] is quite shitty! Set to TAB");
       presentationType = "TAB";
     }
 
