@@ -159,6 +159,7 @@
     getDevSettings();
     refreshDevInfo();
     
+    clearInterval(timeTimer);  
     timeTimer = setInterval(refreshDevTime, 10 * 1000); // repeat every 10s
 
     openPage("mainPage");
@@ -186,8 +187,6 @@
                                                 {saveData();});
     refreshDevTime();
     refreshDevInfo();
-    
-    //timeTimer = setInterval(refreshDevTime, 10 * 1000); // repeat every 10s
     
     openPage("settingsPage");
 
@@ -238,12 +237,14 @@
     //document.getElementById(bID).style.background='lightgray';
     document.getElementById(tabName).style.display = "block";  
     if (tabName != "ActualTab") {
+      clearInterval(actualTimer);
       actualTimer = setInterval(refreshSmActual, 60 * 1000);                  // repeat every 60s
     }
     
     if (tabName == "ActualTab") {
       console.log("newTab: ActualTab");
       refreshSmActual();
+      clearInterval(actualTimer);
       if (tlgrmInterval < 10)
             actualTimer = setInterval(refreshSmActual, 10 * 1000);            // repeat every 10s
       else  actualTimer = setInterval(refreshSmActual, tlgrmInterval * 1000); // repeat every tlgrmInterval seconds
@@ -251,32 +252,37 @@
     } else if (tabName == "HoursTab") {
       console.log("newTab: HoursTab");
       refreshHours();
+      clearInterval(tabTimer);
       tabTimer = setInterval(refreshHours, 58 * 1000); // repeat every 58s
 
     } else if (tabName == "DaysTab") {
       console.log("newTab: DaysTab");
       refreshDays();
+      clearInterval(tabTimer);
       tabTimer = setInterval(refreshDays, 58 * 1000); // repeat every 58s
 
     } else if (tabName == "MonthsTab") {
       console.log("newTab: MonthsTab");
       refreshMonths();
+      clearInterval(tabTimer);
       tabTimer = setInterval(refreshMonths, 118 * 1000); // repeat every 118s
     
     } else if (tabName == "SysInfoTab") {
       console.log("newTab: SysInfoTab");
       refreshDevInfo();
+      clearInterval(tabTimer);
       tabTimer = setInterval(refreshDevInfo, 58 * 1000); // repeat every 58s
 
     } else if (tabName == "FieldsTab") {
       console.log("newTab: FieldsTab");
       refreshSmFields();
+      clearInterval(tabTimer);
       tabTimer = setInterval(refreshSmFields, 58 * 1000); // repeat every 58s
 
     } else if (tabName == "TelegramTab") {
       console.log("newTab: TelegramTab");
       refreshSmTelegram();
-      //tabTimer = setInterval(refreshSmTelegram, 60 * 1000); // do not repeat!
+      clearInterval(tabTimer); // do not repeat!
 
     } else if (tabName == "APIdocTab") {
       console.log("newTab: APIdocTab");

@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : SPIFFSstuff, part of DSMRloggerAPI
-**  Version  : v1.1.0
+**  Version  : v1.1.2
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -51,8 +51,8 @@ void writeLastStatus()
 {
   if (ESP.getFreeHeap() < 8500) // to prevent firmware from crashing!
   {
-    DebugTf("writeLastStatus() SKIP due to low heap (%d)", ESP.getFreeHeap());
-    writeToSysLog("writeLastStatus() SKIP (heap[%d])", ESP.getFreeHeap());
+    DebugTf("Bailout due to low heap (%d bytes)\r\n", ESP.getFreeHeap());
+    writeToSysLog("Bailout low heap (%d bytes)", ESP.getFreeHeap());
     return;
   }
   char buffer[50] = "";

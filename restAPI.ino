@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : restAPI, part of DSMRloggerAPI
-**  Version  : v1.1.0
+**  Version  : v1.1.2
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -43,10 +43,24 @@ void processAPI()
 
   char *URI = (char*)httpServer.uri().c_str();
 
-  //strToLower(URI);
   if (httpServer.method() == HTTP_GET)
-        DebugTf("incoming URI is [%s] method[GET] \r\n", URI); 
-  else  DebugTf("incoming URI is [%s] method[PUT] \r\n", URI); 
+        DebugTf("incoming URI from[%s] is [%s] method[GET] \r\n"
+                                  , httpServer.client().remoteIP().toString().c_str()
+                                        , URI); 
+  else  DebugTf("incoming URI from[%s] is [%s] method[PUT] \r\n" 
+                                  , httpServer.client().remoteIP().toString().c_str()
+                                        , URI); 
+                                        
+  if (ESP.getFreeHeap() < 9000) // to prevent firmware from crashing!
+  {
+    DebugTf("==> Bailout due to low heap (%d bytes))\r\n", ESP.getFreeHeap() );
+    writeToSysLog("from[%s][%s] Bailout low heap (%d bytes)"
+                                  , httpServer.client().remoteIP().toString().c_str()
+                                  , URI
+                                  , ESP.getFreeHeap() );
+    httpServer.send(500, "text/plain", "500: internal server error (low heap)\r\n"); 
+    return;
+  }
 
   int8_t wc = splitString(URI, '/', words, 10);
   

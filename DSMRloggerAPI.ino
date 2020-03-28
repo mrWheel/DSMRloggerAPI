@@ -2,7 +2,7 @@
 ***************************************************************************  
 **  Program  : DSMRloggerAPI (restAPI)
 */
-#define _FW_VERSION "v1.1.1 (26-03-2020)"
+#define _FW_VERSION "v1.1.2 (27-03-2020)"
 /*
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -320,8 +320,6 @@ void setup()
     DSMRfileExist("/DSMRindex.js",    false);
     DSMRfileExist("/DSMRindex.css",   false);
     DSMRfileExist("/DSMRgraphics.js", false);
-    DSMRfileExist("/DSMReditor.html", false);
-    DSMRfileExist("/DSMReditor.js",   false);
   }
   if (!DSMRfileExist("/FSexplorer.html", true))
   {
