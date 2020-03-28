@@ -13,7 +13,7 @@ Documentation can be found [here](https://mrwheel-docs.gitbook.io/dsmrloggerapi/
    <td valign="top">1.1.1 (dev)</td>
    <td>Development release
       <br>The Leading Edge type GUI now completely from github. Set
-      'index page' to "DSMRindex.EDGE.html" to make use of
+      'index page' to "DSMRindexEDGE.html" to make use of
       the latest development (but be aware, there might be bugs)
    </td>
 </tr>
