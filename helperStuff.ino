@@ -143,7 +143,7 @@ String upTime()
 {
   char    calcUptime[20];
 
-  snprintf(calcUptime, sizeof(calcUptime), "%d(d):%02d(h):%02d"
+  snprintf(calcUptime, sizeof(calcUptime), "%d(d):%02d(h):%02d(m)"
                                           , int((upTimeSeconds / (60 * 60 * 24)) % 365)
                                           , int((upTimeSeconds / (60 * 60)) % 24)
                                           , int((upTimeSeconds / (60)) % 60));
