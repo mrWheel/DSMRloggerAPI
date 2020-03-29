@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRloggerAPI.h - definitions for DSMRloggerAPI
-**  Version  : v1.1.0
+**  Version  : v1.1.2
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -68,7 +68,10 @@
 enum    { PERIOD_UNKNOWN, HOURS, DAYS, MONTHS, YEARS };
 
 #include "Debug.h"
-uint16_t  settingSleepTime; // needs to be declared before the oledStuff.h include
+
+uint16_t  settingOledSleep; // needs to be declared before the oledStuff.h include
+uint8_t   settingOledFlip;  // olse needs to be declared before oledStuff.h
+
 #if defined( HAS_OLED_SSD1306 ) && defined( HAS_OLED_SH1106 )
   #error Only one OLED display can be defined
 #endif

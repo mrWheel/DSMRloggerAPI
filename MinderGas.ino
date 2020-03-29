@@ -1,7 +1,7 @@
 /*
 **************************************************************************
 **  Program  : MinderGas.ino
-**  Version  : v1.1.0
+**  Version  : v1.1.2
 **
 **  Copyright (c) 2020 Robert van den Breemen
 **
@@ -272,9 +272,8 @@ void sendMindergasPostFile()
     DebugTln(F("Send to Mindergas.nl..."));
     #ifdef USE_SYSLOGGER
       writeToSysLog("Send to Mindergas.nl...");
-      sysLog.write(sBuffer.c_str());
     #endif
-    MGclient.println(sBuffer);
+    //MGclient.println(sBuffer);
     //--- read response from mindergas.nl
     snprintf(timeLastResponse, sizeof(timeLastResponse), "@%02d|%02d:%02d >> ", day() , hour(), minute());
     DebugTf("[%s] Mindergas response: ", timeLastResponse);

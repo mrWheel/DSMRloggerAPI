@@ -44,14 +44,14 @@ void processAPI()
   char *URI = (char*)httpServer.uri().c_str();
 
   if (httpServer.method() == HTTP_GET)
-        DebugTf("incoming URI from[%s] is [%s] method[GET] \r\n"
+        DebugTf("from[%s] URI[%s] method[GET] \r\n"
                                   , httpServer.client().remoteIP().toString().c_str()
                                         , URI); 
-  else  DebugTf("incoming URI from[%s] is [%s] method[PUT] \r\n" 
+  else  DebugTf("from[%s] URI[%s] method[PUT] \r\n" 
                                   , httpServer.client().remoteIP().toString().c_str()
                                         , URI); 
                                         
-  if (ESP.getFreeHeap() < 9000) // to prevent firmware from crashing!
+  if (ESP.getFreeHeap() < 7500) // to prevent firmware from crashing!
   {
     DebugTf("==> Bailout due to low heap (%d bytes))\r\n", ESP.getFreeHeap() );
     writeToSysLog("from[%s][%s] Bailout low heap (%d bytes)"
@@ -353,7 +353,7 @@ void sendDeviceInfo()
   sendNestedJsonObj("compiled", cMsg);
   sendNestedJsonObj("hostname", settingHostname);
   sendNestedJsonObj("ipaddress", WiFi.localIP().toString().c_str());
-  sendNestedJsonObj("mac", WiFi.macAddress().c_str());
+  sendNestedJsonObj("macaddress", WiFi.macAddress().c_str());
   sendNestedJsonObj("indexfile", settingIndexPage);
   sendNestedJsonObj("freeheap", ESP.getFreeHeap(), "bytes");
   sendNestedJsonObj("maxfreeblock", ESP.getMaxFreeBlockSize(), "bytes");
@@ -429,6 +429,7 @@ void sendDeviceInfo()
 void sendDeviceTime() 
 {
   sendStartJsonObj("devtime");
+  sendNestedJsonObj("timestamp", actTimestamp); 
   sendNestedJsonObj("time", buildDateTimeString(actTimestamp, sizeof(actTimestamp)).c_str()); 
   sendNestedJsonObj("epoch", (int)now());
 
@@ -453,7 +454,8 @@ void sendDeviceSettings()
   sendJsonSettingObj("electr_netw_costs", settingENBK,            "f", 0, 100, 2);
   sendJsonSettingObj("gas_netw_costs",    settingGNBK,            "f", 0, 100, 2);
   sendJsonSettingObj("tlgrm_interval",    settingTelegramInterval,"i", 2, 60);
-  sendJsonSettingObj("oled_screen_time",  settingSleepTime,       "i", 1, 300);
+  sendJsonSettingObj("oled_screen_time",  settingOledSleep,       "i", 1, 300);
+  sendJsonSettingObj("oled_flip_screen",  settingOledFlip,        "i", 0, 1);
   sendJsonSettingObj("index_page",        settingIndexPage,       "s", sizeof(settingIndexPage) -1);
   sendJsonSettingObj("mqtt_broker",       settingMQTTbroker,      "s", sizeof(settingMQTTbroker) -1);
   sendJsonSettingObj("mqtt_broker_port",  settingMQTTbrokerPort,  "i", 1, 9999);

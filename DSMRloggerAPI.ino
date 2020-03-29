@@ -2,7 +2,7 @@
 ***************************************************************************  
 **  Program  : DSMRloggerAPI (restAPI)
 */
-#define _FW_VERSION "v1.1.2 (27-03-2020)"
+#define _FW_VERSION "v1.1.2 (29-03-2020)"
 /*
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -213,10 +213,11 @@ void setup()
                                                                     , nrReboots++
                                                                     , slotErrors);                                                                    
   readSettings(true);
-
+  
 //=============start Networkstuff==================================
 #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
-  oled_Clear();  // clear the screen 
+  if (settingOledFlip)  oled_Init();  // only if true restart(init) oled screen
+  oled_Clear();                       // clear the screen 
   oled_Print_Msg(0, "<DSMRloggerAPI>", 0);
   oled_Print_Msg(1, "Verbinden met WiFi", 500);
 #endif  // has_oled_ssd1306

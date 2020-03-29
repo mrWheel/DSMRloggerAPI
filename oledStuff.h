@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : oledStuff.h, part of DSMRloggerAPI
-**  Version  : v1.1.0
+**  Version  : v1.1.2
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -33,10 +33,10 @@ DECLARE_TIMER_MIN(oledSleepTimer, 10);  // sleep the display in 10 minutes
 //===========================================================================================
 void checkFlashButton() 
 {
-  //if (settingSleepTime == 0) return;  // if the display timer is turned off, then don't check flashbutton
+  //if (settingOledSleep == 0) return;  // if the display timer is turned off, then don't check flashbutton
     
   //check if the displaytimer is due... 
-  if ( (settingSleepTime > 0) && boolDisplay && DUE(oledSleepTimer) ) 
+  if ( (settingOledSleep > 0) && boolDisplay && DUE(oledSleepTimer) ) 
   {
     DebugTln("Switching display off..");
     oled.clear();
@@ -86,6 +86,7 @@ void oled_Init()
                                                         , oled.displayHeight()
                                                         , charHeight, lineHeight, 4);
     boolDisplay = true;
+    if (settingOledFlip)  oled.displayRemap(true);
     RESTART_TIMER(oledSleepTimer);
     
 }   // oled_Init()
