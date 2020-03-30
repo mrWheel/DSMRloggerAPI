@@ -10,8 +10,16 @@ Documentation can be found [here](https://mrwheel-docs.gitbook.io/dsmrloggerapi/
 <table>
 <tr><th>Versie</th><th>Opmerking</th></tr>
 <tr>
-   <td valign="top">1.1.1 (dev)</td>
+   <td valign="top">1.1.2 (dev)</td>
    <td>Development release
+      <br>Mogelijkheid om het oled scherm 180* te flippen via settings
+      <br>Check op volgordelijkheid Uren (in de GUI)
+      <br>macaddress in /api/v1/dev/info (Phyxion)
+      <br>Bailout some functions on low heap
+      <br>Simplification and better tab restAPIs
+      <br>Editer Maanden tabel verbetert  (maar nog steeds lastig te gebruiken)
+      <br>Betere test of er op github nieuwe firmware beschikbaar is
+      <br>bugfix prevent GUI firering multiple restAPI call's
       <br>The Leading Edge type GUI now completely from github. Set
       'index page' to "DSMRindexEDGE.html" to make use of
       the latest development (but be aware, there might be bugs)

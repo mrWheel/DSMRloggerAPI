@@ -627,9 +627,23 @@
   //============================================================================  
   function expandData(data)
   {
-     //console.log("now in expandData() ..");
-     for (let i=0; i<data.length; i++)
-     {
+    //--- first check op volgordelijkheid ------    
+    if (activeTab == "HoursTab") {  
+    for (let i=0; i<(data.length -1); i++)
+    {
+      if (data[i].edt1 < data[i+1].edt1 || data[i].edt2 < data[i+1].edt2)
+      {
+        console.log("["+(i)+"] ["+data[i].recid+"] := ["+(i+1)+"]["+data[i+1].recid+"]"); 
+        data[i].edt1 = data[i+1].edt1 * 1.0;
+        data[i].edt2 = data[i+1].edt2 * 1.0;
+        data[i].ert1 = data[i+1].ert1 * 1.0;
+        data[i].ert2 = data[i+1].ert2 * 1.0;
+        data[i].gdt  = data[i+1].gdt  * 1.0;
+      }
+    } // for ...
+    }
+    for (let i=0; i<data.length; i++)
+    {
       var     costs     = 0;
       data[i].p_ed      = {};
       data[i].p_edw     = {};
@@ -648,7 +662,6 @@
         data[i].p_er  = ((data[i].ert1 +data[i].ert2)-(data[i+1].ert1 +data[i+1].ert2)).toFixed(3);
         data[i].p_erw = (data[i].p_er * 1000).toFixed(0);
         data[i].p_gd  = (data[i].gdt  -data[i+1].gdt).toFixed(3);
-        //var  day = data[i].recid.substring(4,6) * 1;
         //-- calculate Energy Delivered costs
         costs = ( (data[i].edt1 - data[i+1].edt1) * ed_tariff1 );
         costs = costs + ( (data[i].edt2 - data[i+1].edt2) * ed_tariff2 );
@@ -660,9 +673,7 @@
         data[i].costs_g = ( (data[i].gdt  - data[i+1].gdt)  * gd_tariff );
         //-- compute network costs
         data[i].costs_nw = (electr_netw_costs + gas_netw_costs);
-        //costs = (data[i].costs_e + data[i].costs_g + data[i].costs_nw);
         //-- compute total costs
-      //data[i].costs_tt = ( (data[i].costs_e + data[i].costs_g + data[i].costs_nw) * 1.0).toFixed(2);
         data[i].costs_tt = ( (data[i].costs_e + data[i].costs_g + data[i].costs_nw) * 1.0);
       }
       else
@@ -736,6 +747,7 @@
     for (let i=0; i<(data.length -1); i++)
     {
       //console.log("showHistTable("+type+"): data["+i+"] => data["+i+"]name["+data[i].recid+"]");
+
       var tableRef = document.getElementById('last'+type+'Table').getElementsByTagName('tbody')[0];
       if( ( document.getElementById(type +"Table_"+type+"_R"+i)) == null )
       {
