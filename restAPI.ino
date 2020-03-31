@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : restAPI, part of DSMRloggerAPI
-**  Version  : v1.1.3
+**  Version  : v1.2.1
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -334,12 +334,6 @@ void sendDeviceInfo()
 #ifdef USE_NTP_TIME
     strConcat(compileOptions, sizeof(compileOptions), "[USE_NTP_TIME]");
 #endif
-#if defined( HAS_OLED_SSD1306 )
-    strConcat(compileOptions, sizeof(compileOptions), "[HAS_OLED_SSD1306]");
-#endif
-#if defined( HAS_OLED_SH1106 )
-    strConcat(compileOptions, sizeof(compileOptions), "[HAS_OLED_SH1106]");
-#endif
 
   sendStartJsonObj("devinfo");
 
@@ -396,6 +390,8 @@ void sendDeviceInfo()
 #endif
   sendNestedJsonObj("wifirssi", WiFi.RSSI());
   sendNestedJsonObj("uptime", upTime());
+  sendNestedJsonObj("oled_type",        (int)settingOledType);
+  sendNestedJsonObj("oled_flip_screen", (int)settingOledFlip);
   sendNestedJsonObj("smhasfaseinfo",    (int)settingSmHasFaseInfo);
   sendNestedJsonObj("telegraminterval", (int)settingTelegramInterval);
   sendNestedJsonObj("telegramcount",    (int)telegramCount);
@@ -453,6 +449,7 @@ void sendDeviceSettings()
   sendJsonSettingObj("gas_netw_costs",    settingGNBK,            "f", 0, 100, 2);
   sendJsonSettingObj("sm_has_fase_info",  settingSmHasFaseInfo,   "i", 0, 1);
   sendJsonSettingObj("tlgrm_interval",    settingTelegramInterval,"i", 2, 60);
+  sendJsonSettingObj("oled_type",         settingOledType,        "i", 0, 2);
   sendJsonSettingObj("oled_screen_time",  settingOledSleep,       "i", 1, 300);
   sendJsonSettingObj("oled_flip_screen",  settingOledFlip,        "i", 0, 1);
   sendJsonSettingObj("index_page",        settingIndexPage,       "s", sizeof(settingIndexPage) -1);

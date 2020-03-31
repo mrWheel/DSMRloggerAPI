@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRindex.js, part of DSMRfirmwareAPI
-**  Version  : v1.1.3
+**  Version  : v1.2.1
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -24,6 +24,7 @@
   var GitHubVersion_dspl    = "-";
   var firmwareVersion       = 0;
   var firmwareVersion_dspl  = "-";
+  var newVersionMsg         = "";
   
   var tlgrmInterval         = 10;
   var ed_tariff1            = 0;
@@ -62,6 +63,7 @@
                     ,"gd_tariff","electr_netw_costs"
                     ,"gas_netw_costs"
                     ,"smhasfaseinfo", "sm_has_fase_info"
+                    ,"oled_type"
                     ,"oled_flip_screen"
                     ,"tlgrm_interval","telegraminterval"
                     ,"index_page"
@@ -98,6 +100,7 @@
                     ,"Gas Verbruik Tarief/m3","Netwerkkosten Energie/maand"
                     ,"Netwerkkosten Gas/maand"
                     ,"SM Has Fase Info (0=No, 1=Yes)","SM Has Fase Info (0=No, 1=Yes)"
+                    ,"OLED type (0=None, 1=SDD1306, 2=SH1106)"
                     ,"Flip OLED scherm (0=No, 1=Yes)"
                     ,"Telegram Lees Interval (Sec.)"
                     ,"Telegram Lees Interval (Sec.)"
@@ -115,34 +118,6 @@
   let monthType        = "ED";
   let settingBgColor   = 'deepskyblue';
   let settingFontColor = 'white'
-
-  var longFieldsSettings = [ "ed_tariff1","ed_tariff2"
-                    ,"er_tariff1","er_tariff2"
-                    ,"gd_tariff","electr_netw_costs"
-                    ,"gas_netw_costs","smhasfaseinfo"
-                    ,"tlgrm_interval"
-                    ,"index_page"
-                    ,"oled_screen_time"
-                    ,"mqtt_broker","mqtt_broker_port"
-                    ,"mqtt_user","mqtt_passwd","mqtt_toptopic"
-                    ,"mqtt_interval","mindergas_token"
-                    ,"\0"
-                  ];
-                    
-  var humanFieldsSettings = [ "Energy Verbruik Tarief-1/kWh","Energy Verbruik Tarief-2/kWh"
-                    ,"Energy Opgewekt Tarief-1/kWh","Energy Opgewekt Tarief-2/kWh"
-                    ,"Gas Verbruik Tarief/m3","Netwerkkosten Energie/maand"
-                    ,"Netwerkkosten Gas/maand","SM Has Fase Info (1=Yes, 0=No)"
-                    ,"Telegram Lees Interval (Sec.)"
-                    ,"Te Gebruiken index.html Pagina"
-                    ,"Oled Screen Time (Min., 0=infinite)"
-                    ,"MQTT Broker IP/URL","MQTT Broker Poort"
-                    ,"MQTT Gebruiker","Password MQTT Gebruiker"
-                    ,"MQTT Top Topic"
-                    ,"Verzend MQTT Berichten (Sec.)"
-                    ,"Mindergas Token"
-                    ,"\0"
-                  ];
                     
   var monthNames = [ "indxNul","Januari","Februari","Maart","April","Mei","Juni"
                     ,"Juli","Augustus","September","Oktober","November","December"
@@ -401,15 +376,16 @@
             {
               document.getElementById('devVersion').innerHTML = json.devinfo[i].value;
               var tmpFW = json.devinfo[i].value;
+              firmwareVersion_dspl = tmpFW;
               tmpX = tmpFW.substring(1, tmpFW.indexOf(' '));
               tmpN = tmpX.split(".");
               firmwareVersion = tmpN[0]*10000 + tmpN[1]*1;
               console.log("firmwareVersion["+firmwareVersion+"] >= GitHubVersion["+GitHubVersion+"]");
               if (GitHubVersion == 0 || firmwareVersion >= GitHubVersion)
-                    firmwareVersion_dspl = "";
-              else  firmwareVersion_dspl = tmpFW + " nieuwere versie ("+GitHubVersion_dspl+") beschikbaar";
-              document.getElementById('message').innerHTML = firmwareVersion_dspl;
-              console.log(firmwareVersion_dspl);
+                    newVersionMsg = "";
+              else  newVersionMsg = firmwareVersion_dspl + " nieuwere versie ("+GitHubVersion_dspl+") beschikbaar";
+              document.getElementById('message').innerHTML = newVersionMsg;
+              console.log(newVersionMsg);
 
             } else if (data[i].name == 'hostname')
             {
@@ -464,7 +440,7 @@
         );
       });     
       
-    document.getElementById('message').innerHTML = firmwareVersion_dspl;
+    document.getElementById('message').innerHTML = newVersionMsg;
 
   } // refreshDevTime()
   
@@ -1345,7 +1321,7 @@ http://DSMR-API.local/api/v1/dev/settings</pre>", false);
         );
       });     
 
-      document.getElementById('message').innerHTML = firmwareVersion_dspl;
+      document.getElementById('message').innerHTML = newVersionMsg;
 
   } // refreshSettings()
   
@@ -1369,7 +1345,7 @@ http://DSMR-API.local/api/v1/dev/settings</pre>", false);
         );
       });
 
-      document.getElementById('message').innerHTML = firmwareVersion_dspl;
+      document.getElementById('message').innerHTML = newVersionMsg;
       
   } // getMonths()
 
@@ -1845,18 +1821,19 @@ http://DSMR-API.local/api/v1/dev/settings</pre>", false);
         }
       })
       .then(text => {
-        var tmpFW     = text.replace(/(\r\n|\n|\r)/gm, "");;
-        console.log("parsed: GitHubVersion is ["+tmpFW+"]");
-        tmpX = tmpFW.substring(1, tmpFW.indexOf(' '));
+        var tmpGHF     = text.replace(/(\r\n|\n|\r)/gm, "");
+        GitHubVersion_dspl = tmpGHF;
+        console.log("parsed: GitHubVersion is ["+GitHubVersion_dspl+"]");
+        tmpX = tmpGHF.substring(1, tmpGHF.indexOf(' '));
         tmpN = tmpX.split(".");
         GitHubVersion = tmpN[0]*10000 + tmpN[1]*1;
         
         console.log("firmwareVersion["+firmwareVersion+"] >= GitHubVersion["+GitHubVersion+"]");
         if (firmwareVersion == 0 || firmwareVersion >= GitHubVersion)
-              firmwareVersion_dspl = "";
-        else  firmwareVersion_dspl = tmpFW + " nieuwere versie ("+GitHubVersion_dspl+") beschikbaar!";
-        document.getElementById('message').innerHTML = firmwareVersion_dspl;
-        console.log(firmwareVersion_dspl);
+              newVersionMsg = "";
+        else  newVersionMsg = firmwareVersion_dspl + " nieuwere versie ("+GitHubVersion_dspl+") beschikbaar";
+        document.getElementById('message').innerHTML = newVersionMsg;
+        console.log(newVersionMsg);
 
       })
       .catch(function(error) {

@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : oledStuff.h, part of DSMRloggerAPI
-**  Version  : v1.1.2
+**  Version  : v1.2.1
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -22,9 +22,12 @@ SSD1306AsciiWire oled;
 
 void oled_Print_Msg(uint8_t, String, uint16_t);
 
-static bool buttonState = LOW;
-static uint8_t msgMode = 0;
-static bool boolDisplay = true; 
+static bool     buttonState = LOW;
+static uint8_t  msgMode = 0;
+static bool     boolDisplay = true; 
+static uint8_t  settingOledType = 1;  // 0=none, 1=SSD1306, 2=SH1106
+static uint16_t settingOledSleep; 
+static uint8_t  settingOledFlip;  
 
 uint8_t     lineHeight, charHeight;
 
@@ -74,11 +77,10 @@ void checkFlashButton()
 void oled_Init() 
 {
     Wire.begin();
-#if defined (HAS_OLED_SH1106 )
-    oled.begin(&SH1106_128x64, I2C_ADDRESS);
-#else
-    oled.begin(&Adafruit128x64, I2C_ADDRESS);
-#endif
+    if (settingOledType == 2)
+          oled.begin(&SH1106_128x64, I2C_ADDRESS);
+    else  oled.begin(&Adafruit128x64, I2C_ADDRESS);
+
     oled.setFont(X11fixed7x14B);  // this gives us 4 rows by 18 chars
     charHeight  = oled.fontHeight();
     lineHeight  = oled.displayHeight() / 4;

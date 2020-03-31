@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : processTelegram, part of DSMRloggerAPI
-**  Version  : v1.1.0
+**  Version  : v1.2.1
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -15,7 +15,8 @@ void processTelegram()
                                                     , DSMRdata.timestamp.c_str());
 
 //----- update OLED display ---------
-#if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
+  if (settingOledType > 0)
+  {
     String DT   = buildDateTimeString(DSMRdata.timestamp.c_str(), sizeof(DSMRdata.timestamp));
 
     snprintf(cMsg, sizeof(cMsg), "%s - %s", DT.substring(0, 10).c_str(), DT.substring(11, 16).c_str());
@@ -24,7 +25,7 @@ void processTelegram()
     oled_Print_Msg(1, cMsg, 0);
     snprintf(cMsg, sizeof(cMsg), "+Power%7d Watt", (int)(DSMRdata.power_returned *1000));
     oled_Print_Msg(2, cMsg, 0);
-#endif  // has_oled_ssd1206
+  }
                                                     
   strcpy(newTimestamp, DSMRdata.timestamp.c_str()); 
 

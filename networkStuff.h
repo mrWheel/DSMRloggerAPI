@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : networkStuff.h, part of DSMRloggerAPI
-**  Version  : v1.1.0
+**  Version  : v1.2.1
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -44,13 +44,14 @@ void configModeCallback (WiFiManager *myWiFiManager)
   DebugTln(WiFi.softAPIP().toString());
   //if you used auto generated SSID, print it
   DebugTln(myWiFiManager->getConfigPortalSSID());
-#if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
+  if (settingOledType > 0)
+  {
     oled_Clear();
     oled_Print_Msg(0, "<DSMRloggerAPI>", 0);
     oled_Print_Msg(1, "AP mode active", 0);
     oled_Print_Msg(2, "Connect to:", 0);
     oled_Print_Msg(3, myWiFiManager->getConfigPortalSSID(), 0);
-#endif
+  }
 
 } // configModeCallback()
 
@@ -81,13 +82,14 @@ void startWiFi(const char* hostname, int timeOut)
   if (!manageWiFi.autoConnect(thisAP.c_str())) 
   {
     DebugTln(F("failed to connect and hit timeout"));
-#if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
-    oled_Clear();
-    oled_Print_Msg(0, "<DSMRloggerAPI>", 0);
-    oled_Print_Msg(1, "Failed to connect", 0);
-    oled_Print_Msg(2, "and hit TimeOut", 0);
-    oled_Print_Msg(3, "**** NO WIFI ****", 0);
-#endif
+    if (settingOledType > 0)
+    {
+      oled_Clear();
+      oled_Print_Msg(0, "<DSMRloggerAPI>", 0);
+      oled_Print_Msg(1, "Failed to connect", 0);
+      oled_Print_Msg(2, "and hit TimeOut", 0);
+      oled_Print_Msg(3, "**** NO WIFI ****", 0);
+    }
 
     //reset and try again, or maybe put it to deep sleep
     //delay(3000);
@@ -98,9 +100,10 @@ void startWiFi(const char* hostname, int timeOut)
   }
   
   DebugTf("Connected with IP-address [%s]\r\n\r\n", WiFi.localIP().toString().c_str());
-  #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
+  if (settingOledType > 0)
+  {
     oled_Clear();
-  #endif
+  }
 
 #ifdef USE_UPDATE_SERVER
   httpUpdater.setup(&httpServer);
