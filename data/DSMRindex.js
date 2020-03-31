@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRindex.js, part of DSMRfirmwareAPI
-**  Version  : v1.1.2
+**  Version  : v1.1.3
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -37,7 +37,7 @@
   
   var data       = [];
   
-  var longFieldsMain = [ "identification","p1_version","timestamp","equipment_id"
+  var longFields = [ "identification","p1_version","timestamp","equipment_id"
                     ,"energy_delivered_tariff1","energy_delivered_tariff2"
                     ,"energy_returned_tariff1","energy_returned_tariff2","electricity_tariff"
                     ,"power_delivered","power_returned"
@@ -57,10 +57,23 @@
                     ,"water_valve_position","water_delivered"
                     ,"slave_device_type","slave_equipment_id"
                     ,"slave_valve_position","slave_delivered"
+                    ,"ed_tariff1","ed_tariff2"
+                    ,"er_tariff1","er_tariff2"
+                    ,"gd_tariff","electr_netw_costs"
+                    ,"gas_netw_costs"
+                    ,"smhasfaseinfo", "sm_has_fase_info"
+                    ,"oled_flip_screen"
+                    ,"tlgrm_interval","telegraminterval"
+                    ,"index_page"
+                    ,"oled_screen_time"
+                    ,"mqttbroker","mqttbrokerport"
+                    ,"mqttuser","mqttpasswd","mqtttoptopic"
+                    ,"mqttinterval","mqttbroker_connected"
+                    ,"mindergas_token"
                     ,"\0"
-                  ];
-                    
-  var humanFieldsMain = [ "Slimme Meter ID","P1 Versie","timestamp","Equipment ID"
+                  ];                    
+                  
+  var humanFields = [ "Slimme Meter ID","P1 Versie","timestamp","Equipment ID"
                     ,"Energie Gebruikt tarief 1","Energie Gebruikt tarief 2"
                     ,"Energie Opgewekt tarief 1","Energie Opgewekt tarief 2","Electriciteit tarief"
                     ,"Vermogen Gebruikt","Vermogen Opgewekt"
@@ -80,8 +93,25 @@
                     ,"water_valve_position","water_delivered"
                     ,"slave_device_type","slave_equipment_id"
                     ,"slave_valve_position","slave_delivered"
+                    ,"Energy Verbruik Tarief-1/kWh","Energy Verbruik Tarief-2/kWh"
+                    ,"Energy Opgewekt Tarief-1/kWh","Energy Opgewekt Tarief-2/kWh"
+                    ,"Gas Verbruik Tarief/m3","Netwerkkosten Energie/maand"
+                    ,"Netwerkkosten Gas/maand"
+                    ,"SM Has Fase Info (0=No, 1=Yes)","SM Has Fase Info (0=No, 1=Yes)"
+                    ,"Flip OLED scherm (0=No, 1=Yes)"
+                    ,"Telegram Lees Interval (Sec.)"
+                    ,"Telegram Lees Interval (Sec.)"
+                    ,"Te Gebruiken index.html Pagina"
+                    ,"Oled Screen Time (Min., 0=infinite)"
+                    ,"MQTT Broker IP/URL","MQTT Broker Poort"
+                    ,"MQTT Gebruiker","Password MQTT Gebruiker"
+                    ,"MQTT Top Topic"
+                    ,"Verzend MQTT Berichten (Sec.)"
+                    ,"MQTT broker connected"
+                    ,"Mindergas Token"
                     ,"\0"
-                    ];
+                  ];
+                  
   let monthType        = "ED";
   let settingBgColor   = 'deepskyblue';
   let settingFontColor = 'white'
@@ -89,7 +119,9 @@
   var longFieldsSettings = [ "ed_tariff1","ed_tariff2"
                     ,"er_tariff1","er_tariff2"
                     ,"gd_tariff","electr_netw_costs"
-                    ,"gas_netw_costs","tlgrm_interval","index_page"
+                    ,"gas_netw_costs","smhasfaseinfo"
+                    ,"tlgrm_interval"
+                    ,"index_page"
                     ,"oled_screen_time"
                     ,"mqtt_broker","mqtt_broker_port"
                     ,"mqtt_user","mqtt_passwd","mqtt_toptopic"
@@ -100,7 +132,8 @@
   var humanFieldsSettings = [ "Energy Verbruik Tarief-1/kWh","Energy Verbruik Tarief-2/kWh"
                     ,"Energy Opgewekt Tarief-1/kWh","Energy Opgewekt Tarief-2/kWh"
                     ,"Gas Verbruik Tarief/m3","Netwerkkosten Energie/maand"
-                    ,"Netwerkkosten Gas/maand","Telegram Lees Interval (Sec.)"
+                    ,"Netwerkkosten Gas/maand","SM Has Fase Info (1=Yes, 0=No)"
+                    ,"Telegram Lees Interval (Sec.)"
                     ,"Te Gebruiken index.html Pagina"
                     ,"Oled Screen Time (Min., 0=infinite)"
                     ,"MQTT Broker IP/URL","MQTT Broker Poort"
@@ -338,7 +371,8 @@
         for( let i in data )
         {
             var tableRef = document.getElementById('devInfoTable').getElementsByTagName('tbody')[0];
-            
+            data[i].shortName = longToHuman(data[i].name);
+
             if( ( document.getElementById("devInfoTable_"+data[i].name)) == null )
             {
               //console.log("data["+i+"] => name["+data[i].name+"]");
@@ -354,7 +388,8 @@
               newCell.appendChild(newText);
             }
             tableCells = document.getElementById("devInfoTable_"+data[i].name).cells;
-            tableCells[0].innerHTML = data[i].name;
+            //tableCells[0].innerHTML = data[i].name;
+            tableCells[0].innerHTML = data[i].shortName;
             tableCells[1].innerHTML = data[i].value;
             if (data[i].hasOwnProperty('unit'))
             {
@@ -467,7 +502,7 @@
           data = json.fields;
           for (var i in data) 
           {
-            data[i].shortName = smToHuman(data[i].name);
+            data[i].shortName = longToHuman(data[i].name);
             var tableRef = document.getElementById('fieldsTable').getElementsByTagName('tbody')[0];
             if( ( document.getElementById("fieldsTable_"+data[i].name)) == null )
             {
@@ -704,7 +739,7 @@
 
     for (var i in data) 
     {
-      data[i].shortName = smToHuman(data[i].name);
+      data[i].shortName = longToHuman(data[i].name);
       var tableRef = document.getElementById('actualTable').getElementsByTagName('tbody')[0];
       if( ( document.getElementById("actualTable_"+data[i].name)) == null )
       {
@@ -1256,7 +1291,7 @@ http://DSMR-API.local/api/v1/dev/settings</pre>", false);
                   fldDiv.setAttribute("style", "margin-right: 10px;");
                   fldDiv.style.width = "250px";
                   fldDiv.style.float = 'left';
-                  fldDiv.textContent = smToHuman(data[i].name);
+                  fldDiv.textContent = longToHuman(data[i].name);
                   rowDiv.appendChild(fldDiv);
             //--- input ---
               var inputDiv = document.createElement("div");
@@ -1914,33 +1949,17 @@ http://DSMR-API.local/api/v1/dev/settings</pre>", false);
 
   
   //============================================================================  
-  function smToHuman(longName) {
-    //console.log("smToHuman("+longName+") for ["+longFieldsSettings.length+"] elements");
-    for(var index = 0; index < (longFieldsSettings.length -1); index++) 
+  function longToHuman(longName) {
+    for(var index = 0; index < (longFields.length -1); index++) 
     {
-        if (longFieldsSettings[index] == longName)
+        if (longFields[index] == longName)
         {
-          return humanFieldsSettings[index];
+          return humanFields[index];
         }
     };
     return longName;
     
-  } // smToHuman()
-
-  
-  //============================================================================  
-  function smToHuman(longName) {
-    //console.log("smToHuman("+longName+") for ["+longFieldsMain.length+"] elements");
-    for(var index = 0; index < (longFieldsMain.length -1); index++) 
-    {
-        if (longFieldsMain[index] == longName)
-        {
-          return humanFieldsMain[index];
-        }
-    };
-    return longName;
-    
-  } // smToHuman()
+  } // longToHuman()
 
   
   //============================================================================  

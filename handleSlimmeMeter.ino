@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : handleSlimmeMeter - part of DSMRloggerAPI
-**  Version  : v1.1.0
+**  Version  : v1.1.3
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -120,22 +120,23 @@ void processSlimmemeter()
           yield();
         }
       }
-#ifdef SM_HAS_NO_FASE_INFO
-      if (DSMRdata.power_delivered_present && !DSMRdata.power_delivered_l1_present)
+      if (!settingSmHasFaseInfo)
       {
-        DSMRdata.power_delivered_l1 = DSMRdata.power_delivered;
-        DSMRdata.power_delivered_l1_present = true;
-        DSMRdata.power_delivered_l2_present = true;
-        DSMRdata.power_delivered_l3_present = true;
-      }
-      if (DSMRdata.power_returned_present && !DSMRdata.power_returned_l1_present)
-      {
-        DSMRdata.power_returned_l1 = DSMRdata.power_returned;
-        DSMRdata.power_returned_l1_present = true;
-        DSMRdata.power_returned_l2_present = true;
-        DSMRdata.power_returned_l3_present = true;
-      }
-#endif
+        if (DSMRdata.power_delivered_present && !DSMRdata.power_delivered_l1_present)
+        {
+          DSMRdata.power_delivered_l1 = DSMRdata.power_delivered;
+          DSMRdata.power_delivered_l1_present = true;
+          DSMRdata.power_delivered_l2_present = true;
+          DSMRdata.power_delivered_l3_present = true;
+        }
+        if (DSMRdata.power_returned_present && !DSMRdata.power_returned_l1_present)
+        {
+          DSMRdata.power_returned_l1 = DSMRdata.power_returned;
+          DSMRdata.power_returned_l1_present = true;
+          DSMRdata.power_returned_l2_present = true;
+          DSMRdata.power_returned_l3_present = true;
+        }
+      } // No Fase Info
 
 #ifdef USE_NTP_TIME
       if (!DSMRdata.timestamp_present)                        //USE_NTP

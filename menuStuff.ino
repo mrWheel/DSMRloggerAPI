@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : menuStuff, part of DSMRloggerAPI
-**  Version  : v1.1.0
+**  Version  : v1.1.3
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -75,9 +75,6 @@ void displayBoardInfo()
 #endif
 #ifdef USE_BELGIUM_PROTOCOL
   Debug(F("[USE_BELGIUM_PROTOCOL]"));
-#endif
-#ifdef SM_HAS_NO_FASE_INFO
-  Debug(F("[SM_HAS_NO_FASE_INFO]"));
 #endif
 #ifdef SHOW_PASSWRDS
   Debug(F("[SHOW_PASSWRDS]"));
