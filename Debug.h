@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : Debug.h, part of DSMRloggerAPI
-**  Version  : v1.1.0
+**  Version  : v1.2.1
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **  Met dank aan Erik

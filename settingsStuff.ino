@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : settingsStuff, part of DSMRloggerAPI
-**  Version  : v1.1.3
+**  Version  : v1.2.1
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -37,10 +37,9 @@ void writeSettings()
   file.print("GASDeliveredT = ");     file.println(String(settingGDT,  5));     Debug(F("."));
   file.print("EnergyVasteKosten = "); file.println(String(settingENBK, 2));     Debug(F("."));
   file.print("GasVasteKosten = ");    file.println(String(settingGNBK, 2));     Debug(F("."));
+  file.print("OledType = ");          file.println(settingOledType);            Debug(F("."));
   file.print("OledSleep = ");         file.println(settingOledSleep);           Debug(F("."));
-#if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
   file.print("OledFlip = ");          file.println(settingOledFlip);            Debug(F("."));
-#endif
   file.print("SmHasFaseInfo = ");     file.println(settingSmHasFaseInfo);       Debug(F("."));
 
   file.print("TelegramInterval = ");  file.println(settingTelegramInterval);    Debug(F("."));
@@ -73,14 +72,18 @@ file.close();
     DebugT(F("GASDeliveredT = "));     Debugln(String(settingGDT,  5));     
     DebugT(F("EnergyVasteKosten = ")); Debugln(String(settingENBK, 2));    
     DebugT(F("GasVasteKosten = "));    Debugln(String(settingGNBK, 2));    
+    DebugT(F("OledType = "));
+    if (settingOledType == 1)          Debugln("SDD1306");
+    else if (settingOledType == 2)     Debugln("SH1306");
+    else                               Debugln("None");
     DebugT(F("OledSleep = "));         Debugln(settingOledSleep);           
-#if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
     DebugT(F("OledFlip = "));
     if (settingOledFlip)  Debugln(F("Yes"));
     else                  Debugln(F("No"));
-#endif
 
-    DebugT(F("SmHasFaseInfo"));        Debugln(settingSmHasFaseInfo);
+    DebugT(F("SmHasFaseInfo")); 
+    if (settingSmHasFaseInfo == 1)     Debugln("Yes");
+    else                               Debugln("No");
     DebugT(F("TelegramInterval = "));  Debugln(settingTelegramInterval);            
     DebugT(F("IndexPage = "));         Debugln(settingIndexPage);             
 
@@ -129,6 +132,7 @@ void readSettings(bool show)
   settingGNBK               = 11.11;
   settingSmHasFaseInfo      =  1; // default: it does
   settingTelegramInterval   = 10; // seconds
+  settingOledType           =  1; // 0=None, 1=SDD1306, 2=SH1106
   settingOledSleep          =  0; // infinite
   settingOledFlip           =  0; // Don't flip
   strCopy(settingIndexPage, sizeof(settingIndexPage), "DSMRindex.html");
@@ -185,18 +189,19 @@ void readSettings(bool show)
       else                            settingSmHasFaseInfo = 0;
     }
     
+    if (words[0].equalsIgnoreCase("OledType"))           
+    {
+      settingOledType = words[1].toInt();
+      if (settingOledType > 2) settingOledType = 1;
+    }
     if (words[0].equalsIgnoreCase("OledSleep"))           
     {
       settingOledSleep    = words[1].toInt();    
-      #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
-        CHANGE_INTERVAL_MIN(oledSleepTimer, settingOledSleep);
-      #endif
+      CHANGE_INTERVAL_MIN(oledSleepTimer, settingOledSleep);
     }
-#if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
     if (words[0].equalsIgnoreCase("OledFlip"))    settingOledFlip = words[1].toInt();
     if (settingOledFlip != 0) settingOledFlip = 1;
     else                      settingOledFlip = 0;
-#endif
     
     if (words[0].equalsIgnoreCase("TelegramInterval"))   
     {
@@ -254,10 +259,9 @@ void readSettings(bool show)
   Debugf("        Gas Netbeheer Kosten : %9.2f\r\n",  settingGNBK);
   Debugf("  SM Fase Info (0=No, 1=Yes) : %d\r\n",     settingSmHasFaseInfo);
   Debugf("   Telegram Process Interval : %d\r\n",     settingTelegramInterval);
+  Debugf("         OLED Type (0, 1, 2) : %d\r\n",     settingOledType);
   Debugf("OLED Sleep Min. (0=oneindig) : %d\r\n",     settingOledSleep);
-#if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
   Debugf("     Flip Oled (0=No, 1=Yes) : %d\r\n",     settingOledFlip);
-#endif
   Debugf("                  Index Page : %s\r\n",     settingIndexPage);
 
 #ifdef USE_MQTT
@@ -317,21 +321,23 @@ void updateSetting(const char *field, const char *newValue)
     else                            settingSmHasFaseInfo = 0;  
   }
 
+  if (!stricmp(field, "oled_type"))
+  {
+    settingOledType     = String(newValue).toInt();  
+    if (settingOledType > 2)  settingOledType = 1;
+    oled_Init();
+  }
   if (!stricmp(field, "oled_screen_time")) 
   {
     settingOledSleep    = String(newValue).toInt();  
-    #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
-       CHANGE_INTERVAL_MIN(oledSleepTimer, settingOledSleep)
-    #endif
+    CHANGE_INTERVAL_MIN(oledSleepTimer, settingOledSleep)
   }
   if (!stricmp(field, "oled_flip_screen"))
   {
     settingOledFlip     = String(newValue).toInt();  
     if (settingOledFlip != 0) settingOledFlip = 1;
     else                      settingOledFlip = 0;
-    #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
-      oled_Init();
-    #endif
+    oled_Init();
   }
   
   if (!stricmp(field, "tlgrm_interval"))    

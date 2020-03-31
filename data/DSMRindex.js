@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRindex.js, part of DSMRfirmwareAPI
-**  Version  : v1.1.3
+**  Version  : v1.2.1
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -62,6 +62,7 @@
                     ,"gd_tariff","electr_netw_costs"
                     ,"gas_netw_costs"
                     ,"smhasfaseinfo", "sm_has_fase_info"
+                    ,"oled_type"
                     ,"oled_flip_screen"
                     ,"tlgrm_interval","telegraminterval"
                     ,"index_page"
@@ -98,6 +99,7 @@
                     ,"Gas Verbruik Tarief/m3","Netwerkkosten Energie/maand"
                     ,"Netwerkkosten Gas/maand"
                     ,"SM Has Fase Info (0=No, 1=Yes)","SM Has Fase Info (0=No, 1=Yes)"
+                    ,"OLED type (0=None, 1=SDD1306, 2=SH1106)"
                     ,"Flip OLED scherm (0=No, 1=Yes)"
                     ,"Telegram Lees Interval (Sec.)"
                     ,"Telegram Lees Interval (Sec.)"
@@ -115,34 +117,6 @@
   let monthType        = "ED";
   let settingBgColor   = 'deepskyblue';
   let settingFontColor = 'white'
-
-  var longFieldsSettings = [ "ed_tariff1","ed_tariff2"
-                    ,"er_tariff1","er_tariff2"
-                    ,"gd_tariff","electr_netw_costs"
-                    ,"gas_netw_costs","smhasfaseinfo"
-                    ,"tlgrm_interval"
-                    ,"index_page"
-                    ,"oled_screen_time"
-                    ,"mqtt_broker","mqtt_broker_port"
-                    ,"mqtt_user","mqtt_passwd","mqtt_toptopic"
-                    ,"mqtt_interval","mindergas_token"
-                    ,"\0"
-                  ];
-                    
-  var humanFieldsSettings = [ "Energy Verbruik Tarief-1/kWh","Energy Verbruik Tarief-2/kWh"
-                    ,"Energy Opgewekt Tarief-1/kWh","Energy Opgewekt Tarief-2/kWh"
-                    ,"Gas Verbruik Tarief/m3","Netwerkkosten Energie/maand"
-                    ,"Netwerkkosten Gas/maand","SM Has Fase Info (1=Yes, 0=No)"
-                    ,"Telegram Lees Interval (Sec.)"
-                    ,"Te Gebruiken index.html Pagina"
-                    ,"Oled Screen Time (Min., 0=infinite)"
-                    ,"MQTT Broker IP/URL","MQTT Broker Poort"
-                    ,"MQTT Gebruiker","Password MQTT Gebruiker"
-                    ,"MQTT Top Topic"
-                    ,"Verzend MQTT Berichten (Sec.)"
-                    ,"Mindergas Token"
-                    ,"\0"
-                  ];
                     
   var monthNames = [ "indxNul","Januari","Februari","Maart","April","Mei","Juni"
                     ,"Juli","Augustus","September","Oktober","November","December"

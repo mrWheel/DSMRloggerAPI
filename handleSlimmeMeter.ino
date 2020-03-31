@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : handleSlimmeMeter - part of DSMRloggerAPI
-**  Version  : v1.1.3
+**  Version  : v1.2.1
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -40,13 +40,14 @@ void processSlimmemeterRaw()
     return;
   }
   
-  #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
+  if (settingOledType > 0)
+  {
     oled_Print_Msg(0, "<DSMRloggerAPI>", 0);
     oled_Print_Msg(1, "-------------------------",0);
     oled_Print_Msg(2, "Raw Format",0);
     snprintf(cMsg, sizeof(cMsg), "Raw Count %4d", showRawCount);
     oled_Print_Msg(3, cMsg, 0);
-  #endif
+  }
 
   slimmeMeter.enable(true);
   Serial.setTimeout(5000);  // 5 seconds must be enough ..

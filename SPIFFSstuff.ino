@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : SPIFFSstuff, part of DSMRloggerAPI
-**  Version  : v1.1.2
+**  Version  : v1.2.1
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -601,29 +601,32 @@ bool DSMRfileExist(const char* fileName, bool doDisplay)
   strConcat(fName, 29, fileName);
   
   DebugTf("check if [%s] exists .. ", fName);
-#if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
-  oled_Print_Msg(1, "Bestaat:", 10);
-  oled_Print_Msg(2, fName, 10);
-  oled_Print_Msg(3, "op SPIFFS?", 250);
-#endif
+  if (settingOledType > 0)
+  {
+    oled_Print_Msg(1, "Bestaat:", 10);
+    oled_Print_Msg(2, fName, 10);
+    oled_Print_Msg(3, "op SPIFFS?", 250);
+  }
 
   if (!SPIFFS.exists(fName) )
   {
     if (doDisplay)
     {
       Debugln(F("NO! Error!!"));
-      #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
+      if (settingOledType > 0)
+      {
         oled_Print_Msg(3, "Nee! FOUT!", 6000);
-      #endif
+      }
       writeToSysLog("Error! File [%s] not found!", fName);
       return false;
     }
     else
     {
       Debugln(F("NO! "));
-      #if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
+      if (settingOledType > 0)
+      {
         oled_Print_Msg(3, "Nee! ", 6000);
-      #endif
+      }
       writeToSysLog("File [%s] not found!", fName);
       return false;
     }
@@ -631,9 +634,10 @@ bool DSMRfileExist(const char* fileName, bool doDisplay)
   else 
   {
     Debugln(F("Yes! OK!"));
-#if defined( HAS_OLED_SSD1306 ) || defined( HAS_OLED_SH1106 )
-    oled_Print_Msg(3, "JA! (OK!)", 250);
-#endif
+    if (settingOledType > 0)
+    {
+      oled_Print_Msg(3, "JA! (OK!)", 250);
+    }
   }
   return true;
   

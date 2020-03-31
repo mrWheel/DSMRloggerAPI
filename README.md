@@ -10,8 +10,10 @@ Documentation can be found [here](https://mrwheel-docs.gitbook.io/dsmrloggerapi/
 <table>
 <tr><th>Versie</th><th>Opmerking</th></tr>
 <tr>
-   <td valign="top">1.1.2 (dev)</td>
-   <td>Development release
+   <td valign="top">1.2.1</td>
+   <td>Third Official Release
+      <br>Instelling SM_HAS_NO_FASE_INFO nu via settings
+      <br>Selectie OLED scherm via settings
       <br>Mogelijkheid om het oled scherm 180* te flippen via settings
       <br>Check op volgordelijkheid Uren (in de GUI)
       <br>macaddress in /api/v1/dev/info (Phyxion)
