@@ -50,8 +50,12 @@ void processAPI()
   else  DebugTf("from[%s] URI[%s] method[PUT] \r\n" 
                                   , httpServer.client().remoteIP().toString().c_str()
                                         , URI); 
-                                        
-  if (ESP.getFreeHeap() < 7500) // to prevent firmware from crashing!
+
+#ifdef USE_SYSLOGGER
+  if (ESP.getFreeHeap() < 5000) // to prevent firmware from crashing!
+#else
+  if (ESP.getFreeHeap() < 8500) // to prevent firmware from crashing!
+#endif
   {
     DebugTf("==> Bailout due to low heap (%d bytes))\r\n", ESP.getFreeHeap() );
     writeToSysLog("from[%s][%s] Bailout low heap (%d bytes)"

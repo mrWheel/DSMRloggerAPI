@@ -1,7 +1,7 @@
 <!--
 ***************************************************************************  
 **  Program  : DSMRindex.html.inc, part of DSMRloggerAPI
-**  Version  : v1.1.2
+**  Version  : v1.2.2
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -312,7 +312,7 @@
   </div>  <!-- END nav-container -->
 
   <!-- START Tabbladen -->
-  <div id="tabMonths" class="tabName" style="display:none">
+  <div id="tabEditMonths" class="tabName" style="display:none">
     <label for="Period"><b>Meterstand: </b></label>
       Energy Delivered
       <input type="radio" name="editType" id="MED" onchange="setEditType('ED')" checked/>
@@ -334,7 +334,7 @@
   </div> <!-- tabMonths -->
   
   
-  <div id="tabSettings" class="tabName outer-div" style="display:none">
+  <div id="tabEditSettings" class="tabName outer-div" style="display:none">
     <!-- START settingsTab Settings -->
     <br>
       <div id="settings" class="inner-div" style="width: 500px;">

@@ -109,9 +109,9 @@
     document.getElementById('bTerug').addEventListener('click',function()
                                                 {openPage('mainPage');});
     document.getElementById('bEditMonths').addEventListener('click',function()
-                                                {openTab('tabMonths');});
+                                                {openTab('tabEditMonths');});
     document.getElementById('bEditSettings').addEventListener('click',function()
-                                                {openTab('tabSettings');});
+                                                {openTab('tabEditSettings');});
     document.getElementById('bUndo').addEventListener('click',function() 
                                                 {undoReload();});
     document.getElementById('bSave').addEventListener('click',function() 
@@ -121,7 +121,7 @@
     
     openPage("settingsPage");
 
-    //openTab("tabSettings");
+    //openTab("tabEditSettings");
     
     //---- update buttons in navigation bar ---
     let x = document.getElementsByClassName("editButton");
@@ -219,14 +219,14 @@
       console.log("newTab: APIdocTab");
       showAPIdoc();
       
-    } else if (tabName == "tabMonths") {
-      console.log("newTab: tabMonths");
+    } else if (tabName == "tabEditMonths") {
+      console.log("newTab: tabEditMonths");
       document.getElementById('tabMaanden').style.display = 'block';
       getMonths();
 
-    } else if (tabName == "tabSettings") {
-      console.log("newTab: tabSettings");
-      document.getElementById('tabSettings').style.display = 'block';
+    } else if (tabName == "tabEditSettings") {
+      console.log("newTab: tabEditSettings");
+      document.getElementById('tabEditSettings').style.display = 'block';
       refreshSettings();
     
     }
@@ -250,7 +250,7 @@
       document.getElementById("mainPage").style.display = "none";  
       data = {};
       needBootsTrapMain = true;
-      openTab('tabSettings');
+      openTab('tabEditSettings');
       if (needBootsTrapSettings)   bootsTrapSettings();
     }
     document.getElementById(pageName).style.display = "block";  
@@ -1459,10 +1459,10 @@ http://DSMR-API.local/api/v1/dev/settings</pre>", false);
   //============================================================================  
   function undoReload()
   {
-    if (activeTab == "tabMonths") {
+    if (activeTab == "tabEditMonths") {
       console.log("getMonths");
       getMonths();
-    } else if (activeTab == "tabSettings") {
+    } else if (activeTab == "tabEditSettings") {
       console.log("undoReload(): reload Settings..");
       data = {};
       refreshSettings();
@@ -1479,11 +1479,11 @@ http://DSMR-API.local/api/v1/dev/settings</pre>", false);
   {
     document.getElementById('message').innerHTML = "Gegevens worden opgeslagen ..";
 
-    if (activeTab == "tabSettings")
+    if (activeTab == "tabEditSettings")
     {
       saveSettings();
     } 
-    else if (activeTab == "tabMonths")
+    else if (activeTab == "tabEditMonths")
     {
       saveMeterReadings();
     }
@@ -1518,15 +1518,30 @@ http://DSMR-API.local/api/v1/dev/settings</pre>", false);
     console.log("Saving months-data ..");
     let changes = false;
     
+    /** skip this for now **
     if (!validateReadings(monthType))
     {
       return;
     }
+    **/
     
     //--- has anything changed?
     for (i in data)
     {
+      //console.log("saveMeterReadings["+i+"] ..");
       changes = false;
+
+      if (getBackGround("em_YY_"+i) == "lightgray")
+      {
+        setBackGround("em_YY_"+i, "white");
+        changes = true;
+      }
+      if (getBackGround("em_MM_"+i) == "lightgray")
+      {
+        setBackGround("em_MM_"+i, "white");
+        changes = true;
+      }
+
       if (document.getElementById("em_in1_"+i).style.background == 'lightgray')
       {
         changes = true;
@@ -1685,9 +1700,9 @@ http://DSMR-API.local/api/v1/dev/settings</pre>", false);
       }
       
     }
-    if (withErrors)
-          return false;
-    else  return true;
+    if (withErrors)  return false;
+
+    return true;
     
   } // validateReadings()
   
@@ -1695,9 +1710,10 @@ http://DSMR-API.local/api/v1/dev/settings</pre>", false);
   //============================================================================  
   function sendPostReading(i, row) 
   {
+    console.log("sendPostReadings["+i+"]..");
     let sYY = (row[i].EEYY - 2000).toString();
-    let sMM = "";
-    if (row[i].MM < 1 || row[i].MM > 12)
+    let sMM = "00";
+    if ((row[i].MM *1) < 1 || (row[i].MM *1) > 12)
     {
       console.log("send: ERROR MM["+row[i].MM+"]");
       return;
@@ -1773,14 +1789,17 @@ http://DSMR-API.local/api/v1/dev/settings</pre>", false);
     if (eType == "ED") {
       console.log("Edit Energy Delivered!");
       monthType = eType;
+      getMonths()
       showMonths(data, monthType);
     } else if (eType == "ER") {
       console.log("Edit Energy Returned!");
       monthType = eType;
+      getMonths()
       showMonths(data, monthType);
     } else if (eType == "GD") {
       console.log("Edit Gas Delivered!");
       monthType = eType;
+      getMonths()
       showMonths(data, monthType);
     } else {
       console.log("setEditType to ["+eType+"] is quit shitty!");
