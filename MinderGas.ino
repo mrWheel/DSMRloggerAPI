@@ -1,7 +1,7 @@
 /*
 **************************************************************************
 **  Program  : MinderGas.ino
-**  Version  : v1.2.1
+**  Version  : v1.2.2
 **
 **  Copyright (c) 2020 Robert van den Breemen
 **
@@ -29,13 +29,14 @@ enum states_of_MG { MG_INIT, MG_WAIT_FOR_FIRST_TELEGRAM, MG_WAIT_FOR_NEXT_DAY
                            , MG_SEND_MINDERGAS, MG_NO_AUTHTOKEN, MG_ERROR };
                            
 enum  states_of_MG stateMindergas   = MG_INIT;
-void  sendMindergasPostFile();
+bool  sendMindergasPostFile();
 void  writePostToFile();
 
 int8_t    MG_Day                    = -1;
 bool      validToken                = false;
 bool      handleMindergasSemaphore  = false;
 int8_t    MGminuten                 = 0;
+int8_t    retryCounter = 0;
 bool      bDoneResponse             = false;
 
 //=======================================================================
@@ -74,9 +75,6 @@ void forceMindergasUpdate()
 // handle finite state machine of mindergas
 void processMindergas_FSM()
 {
-//  time_t t;
-//File   minderGasFile;
-
   if (handleMindergasSemaphore) // if already running ? then return...
   {
     DebugTln(F("already running .. bailing out!"));
@@ -193,8 +191,23 @@ void processMindergas_FSM()
           //--- if POST response for Mindergas exists, then send it... btw it should exist by now :)
           if ((validToken) && SPIFFS.exists(MG_FILENAME)) 
           {
-            sendMindergasPostFile();  
-            
+            if (!sendMindergasPostFile())
+            {
+              Debugln();
+              retryCounter++;
+              if (retryCounter < 3)
+              {
+                //--- start countdown -- again
+                MGminuten = random(1,10);
+                DebugTf("Try[%d] MinderGas update in [%d] minute(s)\r\n", retryCounter, MGminuten);
+                writeToSysLog("Try[%d] MinderGas update in [%d] minute(s)", retryCounter, MGminuten);
+                //--- Lets'do the countdown
+                strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "DO_COUNTDOWN");
+                stateMindergas = MG_DO_COUNTDOWN;
+                break;
+              }
+            }
+            Debugln();
             //--- delete POST file from SPIFFS
             if (SPIFFS.remove(MG_FILENAME)) 
             {
@@ -244,44 +257,49 @@ void processMindergas_FSM()
 
 
 //=======================================================================
-void sendMindergasPostFile()
+boolean sendMindergasPostFile()
 {
   WiFiClient  MGclient;   
+  const char *MGhost = "www.mindergas.nl";
   File        minderGasFile;
-
+  boolean     bMgClientReply = false;
+  
   bDoneResponse = false; 
 
+  //--- create a string with the date and the meter value
+  DebugTln(F("Reading POST from file:"));
+  minderGasFile = SPIFFS.open(MG_FILENAME, "r");
+  String sBuffer;
+  sBuffer = "";
+  while(minderGasFile.available()) 
+  { 
+    char ltr = minderGasFile.read();
+    sBuffer += ltr;
+  }
+  minderGasFile.close();
+  Debugln(sBuffer);
+
   //--- try to connect to minderGas
-  DebugTln(F("Connecting to Mindergas..."));
+  DebugTf("Connecting to %s ...\r\n", MGhost);
   //--- connect over http with mindergas
-  if (MGclient.connect((char*)"mindergas.nl",80)) 
+  if (MGclient.connect(MGhost, 80)) 
   {
-    //--- create a string with the date and the meter value
-    minderGasFile = SPIFFS.open(MG_FILENAME, "r");
-    String sBuffer;
-    sBuffer = "";
-    while(minderGasFile.available()) 
-    { 
-      char ltr = minderGasFile.read();
-      sBuffer += ltr;
-    }
-    minderGasFile.close();
     //--- then post to mindergas...
-    DebugTln(F("Reading POST from file:"));
-    Debugln(sBuffer);
     DebugTln(F("Send to Mindergas.nl..."));
-    #ifdef USE_SYSLOGGER
-      writeToSysLog("Send to Mindergas.nl...");
-    #endif
-    //MGclient.println(sBuffer);
+    writeToSysLog("Send to Mindergas.nl...");
+    MGclient.println(sBuffer);
     //--- read response from mindergas.nl
-    snprintf(timeLastResponse, sizeof(timeLastResponse), "@%02d|%02d:%02d >> ", day() , hour(), minute());
+    snprintf(timeLastResponse, sizeof(timeLastResponse), "@%02d|%02d:%02d >> ", day(), hour(), minute());
     DebugTf("[%s] Mindergas response: ", timeLastResponse);
+
+    MGclient.setTimeout(1000);
 
     while (!bDoneResponse && (MGclient.connected() || MGclient.available())) 
     {
+      Debug(".");
       if (MGclient.available()) 
       {
+        Debug(".");
         //--- skip to find HTTP/1.1
         //--- then parse response code
         if (MGclient.find("HTTP/1.1"))
@@ -293,6 +311,7 @@ void sendMindergasPostFile()
           switch (intStatuscodeMindergas) {
             case 201:  
                 validToken = true;
+                bMgClientReply = true;
                 //--- report error back to see in settings page
                 strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "Created entry");
                 Debugln(F("Succes, the gas delivered has been added to your mindergas.nl account"));
@@ -303,6 +322,7 @@ void sendMindergasPostFile()
           
             case 401:
                 validToken = false;
+                bMgClientReply = true;
                 strCopy(settingMindergasToken, sizeof(settingMindergasToken), "Invalid token"); 
                 strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "Unauthorized, token invalid!"); // report error back to see in settings page
                 Debugln(F("Invalid Mindergas Authenication Token"));
@@ -312,6 +332,7 @@ void sendMindergasPostFile()
           
             case 422:
                 validToken = true;
+                bMgClientReply = true;
                 //--- report error back to see in settings page
                 strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "Unprocessed entity");
                 Debugln(F("Unprocessed entity, goto website mindergas for more information")); 
@@ -321,6 +342,7 @@ void sendMindergasPostFile()
           
             default:
                 validToken = true;
+                bMgClientReply = true;
                 //--- report error back to see in settings page
                 strCopy(txtResponseMindergas, sizeof(txtResponseMindergas), "Unknown response code");
                 Debugln(F("Unknown responsecode, goto mindergas for information"));
@@ -345,6 +367,11 @@ void sendMindergasPostFile()
     } // while ..
 
   } //   connect to mindergas.nl
+  else
+  {
+    DebugTln(".. not connected (ERROR!)");
+  }
+  return bMgClientReply;
   
 } // sendMindergasPostFile()
 
@@ -383,7 +410,7 @@ void writePostToFile()
   minderGasFile.println(F("POST /api/gas_meter_readings HTTP/1.1"));
   minderGasFile.print(F("AUTH-TOKEN:")); minderGasFile.println(settingMindergasToken);
   minderGasFile.println(F("Host: mindergas.nl"));
-  minderGasFile.println(F("User-Agent: DSMRWS"));
+  minderGasFile.println(F("User-Agent: DSMRAPI"));
   minderGasFile.println(F("Content-Type: application/json"));
   minderGasFile.println(F("Accept: application/json"));
   minderGasFile.print(F("Content-Length: ")); minderGasFile.println(strlen(dataString));
