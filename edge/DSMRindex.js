@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRindex.js, part of DSMRfirmwareAPI
-**  Version  : v1.2.1
+**  Version  : v1.2.2
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -37,83 +37,6 @@
   var hostName            =  "-";
   
   var data       = [];
-  
-  var longFields = [ "identification","p1_version","timestamp","equipment_id"
-                    ,"energy_delivered_tariff1","energy_delivered_tariff2"
-                    ,"energy_returned_tariff1","energy_returned_tariff2","electricity_tariff"
-                    ,"power_delivered","power_returned"
-                    ,"electricity_threshold","electricity_switch_position"
-                    ,"electricity_failures","electricity_long_failures","electricity_failure_log"
-                    ,"electricity_sags_l1","electricity_sags_l2","electricity_sags_l3"
-                    ,"electricity_swells_l1","electricity_swells_l2","electricity_swells_l3"
-                    ,"message_short","message_long"
-                    ,"voltage_l1","voltage_l2","voltage_l3"
-                    ,"current_l1","current_l2","current_l3"
-                    ,"power_delivered_l1","power_delivered_l2","power_delivered_l3"
-                    ,"power_returned_l1","power_returned_l2","power_returned_l3"
-                    ,"gas_device_type","gas_equipment_id","gas_valve_position","gas_delivered"
-                    ,"thermal_device_type","thermal_equipment_id"
-                    ,"thermal_valve_position","thermal_delivered"
-                    ,"water_device_type","water_equipment_id"
-                    ,"water_valve_position","water_delivered"
-                    ,"slave_device_type","slave_equipment_id"
-                    ,"slave_valve_position","slave_delivered"
-                    ,"ed_tariff1","ed_tariff2"
-                    ,"er_tariff1","er_tariff2"
-                    ,"gd_tariff","electr_netw_costs"
-                    ,"gas_netw_costs"
-                    ,"smhasfaseinfo", "sm_has_fase_info"
-                    ,"oled_type"
-                    ,"oled_flip_screen"
-                    ,"tlgrm_interval","telegraminterval"
-                    ,"index_page"
-                    ,"oled_screen_time"
-                    ,"mqttbroker","mqttbrokerport"
-                    ,"mqttuser","mqttpasswd","mqtttoptopic"
-                    ,"mqttinterval","mqttbroker_connected"
-                    ,"mindergas_token"
-                    ,"\0"
-                  ];                    
-                  
-  var humanFields = [ "Slimme Meter ID","P1 Versie","timestamp","Equipment ID"
-                    ,"Energie Gebruikt tarief 1","Energie Gebruikt tarief 2"
-                    ,"Energie Opgewekt tarief 1","Energie Opgewekt tarief 2","Electriciteit tarief"
-                    ,"Vermogen Gebruikt","Vermogen Opgewekt"
-                    ,"electricity_threshold","electricity_switch_position"
-                    ,"electricity_failures","electricity_long_failures","electricity_failure_log"
-                    ,"electricity_sags_l1","electricity_sags_l2","electricity_sags_l3"
-                    ,"electricity_swells_l1","electricity_swells_l2","electricity_swells_l3"
-                    ,"message_short","message_long"
-                    ,"Voltage l1","Voltage l2","Voltage l3"
-                    ,"Current l1","Current l2","Current l3"
-                    ,"Vermogen Gebruikt l1","Vermogen Gebruikt l2","Vermogen Gebruikt l3"
-                    ,"Vermogen Opgewekt l1","Vermogen Opgewekt l2","Vermogen Opgewekt l3"
-                    ,"Gas Device Type","Gas Equipment ID","Gas Klep Positie","Gas Gebruikt"
-                    ,"thermal_device_type","thermal_equipment_id"
-                    ,"thermal_valve_position","thermal_delivered"
-                    ,"water_device_type","water_equipment_id"
-                    ,"water_valve_position","water_delivered"
-                    ,"slave_device_type","slave_equipment_id"
-                    ,"slave_valve_position","slave_delivered"
-                    ,"Energy Verbruik Tarief-1/kWh","Energy Verbruik Tarief-2/kWh"
-                    ,"Energy Opgewekt Tarief-1/kWh","Energy Opgewekt Tarief-2/kWh"
-                    ,"Gas Verbruik Tarief/m3","Netwerkkosten Energie/maand"
-                    ,"Netwerkkosten Gas/maand"
-                    ,"SM Has Fase Info (0=No, 1=Yes)","SM Has Fase Info (0=No, 1=Yes)"
-                    ,"OLED type (0=None, 1=SDD1306, 2=SH1106)"
-                    ,"Flip OLED scherm (0=No, 1=Yes)"
-                    ,"Telegram Lees Interval (Sec.)"
-                    ,"Telegram Lees Interval (Sec.)"
-                    ,"Te Gebruiken index.html Pagina"
-                    ,"Oled Screen Time (Min., 0=infinite)"
-                    ,"MQTT Broker IP/URL","MQTT Broker Poort"
-                    ,"MQTT Gebruiker","Password MQTT Gebruiker"
-                    ,"MQTT Top Topic"
-                    ,"Verzend MQTT Berichten (Sec.)"
-                    ,"MQTT broker connected"
-                    ,"Mindergas Token"
-                    ,"\0"
-                  ];
                   
   let monthType        = "ED";
   let settingBgColor   = 'deepskyblue';
@@ -346,7 +269,7 @@
         for( let i in data )
         {
             var tableRef = document.getElementById('devInfoTable').getElementsByTagName('tbody')[0];
-            data[i].shortName = longToHuman(data[i].name);
+            data[i].humanName = translateToHuman(data[i].name);
 
             if( ( document.getElementById("devInfoTable_"+data[i].name)) == null )
             {
@@ -364,7 +287,7 @@
             }
             tableCells = document.getElementById("devInfoTable_"+data[i].name).cells;
             //tableCells[0].innerHTML = data[i].name;
-            tableCells[0].innerHTML = data[i].shortName;
+            tableCells[0].innerHTML = data[i].humanName;
             tableCells[1].innerHTML = data[i].value;
             if (data[i].hasOwnProperty('unit'))
             {
@@ -478,7 +401,7 @@
           data = json.fields;
           for (var i in data) 
           {
-            data[i].shortName = longToHuman(data[i].name);
+            data[i].humanName = translateToHuman(data[i].name);
             var tableRef = document.getElementById('fieldsTable').getElementsByTagName('tbody')[0];
             if( ( document.getElementById("fieldsTable_"+data[i].name)) == null )
             {
@@ -488,7 +411,7 @@
               var newCell  = newRow.insertCell(0);                  // name
               var newText  = document.createTextNode('');
               newCell.appendChild(newText);
-              newCell  = newRow.insertCell(1);                      // shortName
+              newCell  = newRow.insertCell(1);                      // humanName
               newCell.appendChild(newText);
               newCell  = newRow.insertCell(2);                      // value
               newCell.appendChild(newText);
@@ -497,7 +420,7 @@
             }
             tableCells = document.getElementById("fieldsTable_"+data[i].name).cells;
             tableCells[0].innerHTML = data[i].name;
-            tableCells[1].innerHTML = data[i].shortName;
+            tableCells[1].innerHTML = data[i].humanName;
             if (data[i].name == "electricity_failure_log" && data[i].value.length > 50) 
             {
               tableCells[2].innerHTML = data[i].value.substring(0,50);
@@ -715,7 +638,7 @@
 
     for (var i in data) 
     {
-      data[i].shortName = longToHuman(data[i].name);
+      data[i].humanName = translateToHuman(data[i].name);
       var tableRef = document.getElementById('actualTable').getElementsByTagName('tbody')[0];
       if( ( document.getElementById("actualTable_"+data[i].name)) == null )
       {
@@ -731,7 +654,7 @@
         newCell.appendChild(newText);
       }
       tableCells = document.getElementById("actualTable_"+data[i].name).cells;
-      tableCells[0].innerHTML = data[i].shortName;
+      tableCells[0].innerHTML = data[i].humanName;
       tableCells[1].innerHTML = data[i].value;
       if (data[i].hasOwnProperty('unit'))
       {
@@ -1267,7 +1190,7 @@ http://DSMR-API.local/api/v1/dev/settings</pre>", false);
                   fldDiv.setAttribute("style", "margin-right: 10px;");
                   fldDiv.style.width = "250px";
                   fldDiv.style.float = 'left';
-                  fldDiv.textContent = longToHuman(data[i].name);
+                  fldDiv.textContent = translateToHuman(data[i].name);
                   rowDiv.appendChild(fldDiv);
             //--- input ---
               var inputDiv = document.createElement("div");
@@ -1926,17 +1849,18 @@ http://DSMR-API.local/api/v1/dev/settings</pre>", false);
 
   
   //============================================================================  
-  function longToHuman(longName) {
-    for(var index = 0; index < (longFields.length -1); index++) 
+  function translateToHuman(longName) {
+    //for(var index = 0; index < (translateFields.length -1); index++) 
+    for(var index = 0; index < translateFields.length; index++) 
     {
-        if (longFields[index] == longName)
+        if (translateFields[index][0] == longName)
         {
-          return humanFields[index];
+          return translateFields[index][1];
         }
     };
     return longName;
     
-  } // longToHuman()
+  } // translateToHuman()
 
   
   //============================================================================  
@@ -1990,7 +1914,124 @@ http://DSMR-API.local/api/v1/dev/settings</pre>", false);
     var multiplier = Math.pow(10, precision || 0);
     return Math.round(value * multiplier) / multiplier;
   }
-  
+    
+  var translateFields = [
+           [ "author",                    "Auteur" ]
+          ,[ "identification",            "Slimme Meter ID" ]
+          ,[ "p1_version",                "P1 Versie" ]
+          ,[ "energy_delivered_tariff1",  "Energie Gebruikt tarief 1" ]
+          ,[ "energy_delivered_tariff2",  "Energie Gebruikt tarief 2" ]
+          ,[ "energy_returned_tariff1",   "Energie Opgewekt tarief 1" ]
+          ,[ "energy_returned_tariff2",   "Energie Opgewekt tarief 2" ]
+          ,[ "electricity_tariff",        "Electriciteit tarief" ]
+          ,[ "power_delivered",           "Vermogen Gebruikt" ]
+          ,[ "power_returned",            "Vermogen Opgewekt" ]
+          ,[ "electricity_threshold",     "Electricity Threshold" ]
+          ,[ "electricity_switch_position","Electricity Switch Position" ]
+          ,[ "electricity_failures",      "Electricity Failures" ]
+          ,[ "electricity_long_failures", "Electricity Long Failures" ]
+          ,[ "electricity_failure_log",   "Electricity Failure log" ]
+          ,[ "electricity_sags_l1",       "Electricity Sags l1" ]
+          ,[ "electricity_sags_l2",       "Electricity Sags l2" ]
+          ,[ "electricity_sags_l3",       "Electricity Sags l3" ]
+          ,[ "electricity_swells_l1",     "Electricity Swells l1" ]
+          ,[ "electricity_swells_l2",     "Electricity Swells l2" ]
+          ,[ "electricity_swells_l3",     "Electricity Swells l3" ]
+          ,[ "message_short",             "Korte Boodschap" ]
+          ,[ "message_long",              "Lange Boodschap" ]
+          ,[ "voltage_l1",                "Voltage l1" ]
+          ,[ "voltage_l2",                "Voltage l2" ]
+          ,[ "voltage_l3",                "Voltage l3" ]
+          ,[ "current_l1",                "Current l1" ]
+          ,[ "current_l2",                "Current l2" ]
+          ,[ "current_l3",                "Current l3" ]
+          ,[ "power_delivered_l1",        "Vermogen Gebruikt l1" ]
+          ,[ "power_delivered_l2",        "Vermogen Gebruikt l2" ]
+          ,[ "power_delivered_l3",        "Vermogen Gebruikt l3" ]
+          ,[ "power_returned_l1",         "Vermogen Opgewekt l1" ]
+          ,[ "power_returned_l2",         "Vermogen Opgewekt l2" ]
+          ,[ "power_returned_l3",         "Vermogen Opgewekt l3" ]
+          ,[ "gas_device_type",           "Gas Device Type" ]
+          ,[ "gas_equipment_id",          "Gas Equipment ID" ]
+          ,[ "gas_valve_position",        "Gas Klep Positie" ]
+          ,[ "gas_delivered",             "Gas Gebruikt" ]
+          ,[ "thermal_device_type",       "Thermal Device Type" ]
+          ,[ "thermal_equipment_id",      "Thermal Equipment ID" ]
+          ,[ "thermal_valve_position",    "Thermal Klep Positie" ]
+          ,[ "thermal_delivered",         "Thermal Gebruikt" ]
+          ,[ "water_device_type" ,        "Water Device Type" ]
+          ,[ "water_equipment_id",        "Water Equipment ID" ]
+          ,[ "water_valve_position",      "Water Klep Positie" ]
+          ,[ "water_delivered",           "Water Gebruikt" ]
+          ,[ "slave_device_type",         "Slave Device Type" ]
+          ,[ "slave_equipment_id",        "Slave Equipment ID" ]
+          ,[ "slave_valve_position",      "Slave Klep Positie" ]
+          ,[ "slave_delivered",           "Slave Gebruikt" ]
+          ,[ "ed_tariff1",                "Energy Verbruik Tarief-1/kWh" ]
+          ,[ "ed_tariff2",                "Energy Verbruik Tarief-2/kWh" ]
+          ,[ "er_tariff1",                "Energy Opgewekt Tarief-1/kWh" ]
+          ,[ "er_tariff2",                "Energy Opgewekt Tarief-2/kWh" ]
+          ,[ "gd_tariff" ,                "Gas Verbruik Tarief/m3" ]
+          ,[ "electr_netw_costs",         "Netwerkkosten Energie/maand" ]
+          ,[ "gas_netw_costs",            "Netwerkkosten Gas/maand" ]
+          
+          ,[ "smhasfaseinfo",             "SM Has Fase Info (0=No, 1=Yes)" ]
+          ,[ "sm_has_fase_info",          "SM Has Fase Info (0=No, 1=Yes)" ]
+          ,[ "oled_type",                 "OLED type (0=None, 1=SDD1306, 2=SH1106)" ]
+          ,[ "oled_flip_screen",          "Flip OLED scherm (0=No, 1=Yes)" ]
+          ,[ "tlgrm_interval",            "Telegram Lees Interval (Sec.)" ]
+          ,[ "telegraminterval",          "Telegram Lees Interval (Sec.)" ]
+          ,[ "index_page",                "Te Gebruiken index.html Pagina" ]
+          ,[ "oled_screen_time",          "Oled Screen Time (Min., 0=infinite)" ]
+          ,[ "mqttbroker",                "MQTT Broker IP/URL" ]
+          ,[ "mqtt_broker",               "MQTT Broker IP/URL" ]
+          ,[ "mqttbrokerport",            "MQTT Broker Poort" ]
+          ,[ "mqtt_broker_port",          "MQTT Broker Poort" ]
+          ,[ "mqttuser",                  "MQTT Gebruiker" ]
+          ,[ "mqtt_user",                 "MQTT Gebruiker" ]
+          ,[ "mqttpasswd",                "Password MQTT Gebruiker" ]
+          ,[ "mqtt_passwd",               "Password MQTT Gebruiker" ]
+          ,[ "mqtttoptopic",              "MQTT Top Topic" ]
+          ,[ "mqtt_toptopic",             "MQTT Top Topic" ]
+          ,[ "mqttinterval",              "Verzend MQTT Berichten (Sec.)" ]
+          ,[ "mqtt_interval",             "Verzend MQTT Berichten (Sec.)" ]
+          ,[ "mqttbroker_connected",      "MQTT broker connected" ]
+          ,[ "mindergas_token",           "Mindergas Token" ]
+          ,[ "mindergas_response",        "Mindergas Terugkoppeling" ]
+          ,[ "mindergas_status",          "Mindergas Status (@dag | tijd)" ]
+
+          ,[ "telegramcount",             "Telegrammen verwerkt" ]
+          ,[ "telegramerrors",            "Telegrammen met fouten" ]          
+          ,[ "fwversion",                 "Firmware Versie" ]
+          ,[ "compiled",                  "Gecompileerd" ]
+          ,[ "hostname",                  "HostName" ]
+          ,[ "ipaddress",                 "IP adres" ]
+          ,[ "macaddress",                "MAC adres" ]
+          ,[ "indexfile",                 "Te Gebruiken index.html Pagina" ]
+          ,[ "freeheap",                  "Free Heap Space" ]
+          ,[ "maxfreeblock",              "Max. Free Heap Blok" ]
+          ,[ "chipid",                    "Chip ID" ]
+          ,[ "coreversion",               "ESP8266 Core Versie" ]
+          ,[ "sdkversion",                "SDK versie" ]
+          ,[ "cpufreq",                   "CPU Frequency" ]
+          ,[ "sketchsize",                "Sketch Size" ]
+          ,[ "freesketchspace",           "Free Sketch Space" ]
+          ,[ "flashchipid",               "Flash Chip ID" ]
+          ,[ "flashchipsize",             "Flash Chip Size" ]
+          ,[ "flashchiprealsize",         "Flash Chip Real Size" ]
+          ,[ "spiffssize",                "SPIFFS Size" ]
+          ,[ "flashchipspeed",            "Flash Chip Speed" ]
+          ,[ "flashchipmode",             "Flash Chip Mode" ]
+          ,[ "boardtype",                 "Board Type" ]
+          ,[ "compileoptions",            "Compiler Opties" ]
+          ,[ "ssid",                      "WiFi SSID" ]
+          ,[ "wifirssi",                  "WiFi RSSI" ]
+          ,[ "uptime",                    "Up Time [dagen] - [hh:mm]" ]
+          ,[ "reboots",                   "Aantal keer opnieuw opgestart" ]
+          ,[ "lastreset",                 "Laatste Reset reden" ]
+          
+                        ];
+
 /*
 ***************************************************************************
 *
