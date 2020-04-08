@@ -87,7 +87,11 @@ bool buildDataRecordFromSM(char *recIn)
                                           , (float)DSMRdata.energy_delivered_tariff2
                                           , (float)DSMRdata.energy_returned_tariff1
                                           , (float)DSMRdata.energy_returned_tariff2
+#ifdef USE_PRE40_PROTOCOL
+                                          , (float)DSMRdata.gas_delivered2);
+#else
                                           , (float)DSMRdata.gas_delivered);
+#endif
   // DATA + \n + \0                                        
   fillRecord(record, DATA_RECLEN);
 
