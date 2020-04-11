@@ -10,6 +10,10 @@ Documentation can be found [here](https://mrwheel-docs.gitbook.io/dsmrloggerapi/
 <table>
 <tr><th>Versie</th><th>Opmerking</th></tr>
 <tr>
+   <td valign="top">1.2.4</td>
+   <td>Bug Fixes
+   </td>
+</tr>
    <td valign="top">1.2.1</td>
    <td>Third Official Release
       <br>Instelling SM_HAS_NO_FASE_INFO nu via settings
