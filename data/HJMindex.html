@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<head>
+    <meta charset=utf-8>
+    <meta http-equiv=X-UA-Compatible content="IE=edge">
+    <meta name=viewport content="width=device-width,initial-scale=1">
+    <link rel=icon href=/favicon.ico> <title>kW trend</title>
+    <link href="https://fonts.googleapis.com/css?family=Dosis:400,700" rel="stylesheet">
+    <link href="hjm.css" rel="stylesheet">
+    <script src="hjm.js"></script>
+</head>
+  
+<body><noscript><strong>Please enable JavaScript to continue.</strong></noscript>
+    <div class=outer>
+        <div class=card id=l1>
+            <h1 id=power_delivered_l1h>Phase 1</h1>
+            <h2 id=power_delivered_l1>0.0</h2>
+            <h3><span id=power_delivered_l1a>0</span><span> Amp</span></h3>
+            <h2 id=power_delivered_l1p>0.0</h2>
+        </div>
+        <div class=card id=l2>
+            <h1 id=power_delivered_l2h>Phase 2</h1>
+            <h2 id=power_delivered_l2>0.0</h2>
+            <h3><span id=power_delivered_l2a>0</span><span> Amp</span></h3>
+            <h2 id=power_delivered_l2p>0.0</h2>
+        </div>
+        <div class=card id=l3>
+            <h1 id=power_delivered_l3h>Phase 3</h1>
+            <h2 id=power_delivered_l3>0.0</h2>
+            <h3><span id=power_delivered_l3a>0</span><span> Amp</span></h3>
+            <h2 id=power_delivered_l3p>0.0</h2>
+        </div>
+    </div>    
+    <script>
+        update() // fill fist-time data
+        var timer = setInterval(update, 10 * 1000) // update every 10 seconds
+    </script>
+</body> 
+</html>

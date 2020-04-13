@@ -1,0 +1,69 @@
+* {
+	box-sizing: border-box
+}
+  
+html {
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	font-family: 'Dosis', sans-serif;
+	line-height: 1.6;
+	color: #666;
+	background: #F6F6F6;
+}
+ 
+.outer {
+	display: flex;
+	flex-wrap: wrap;
+}
+
+@media screen and (min-width: 600px) {
+	.card {
+	  flex: 1 1 calc(50% - 2rem);
+	}
+}
+  
+@media screen and (min-width: 900px) {
+	.card {
+	  flex: 1 1 calc(33% - 2rem);
+	}
+}
+
+.card {
+	margin: 1rem;
+	background: white;
+	box-shadow: 2px 4px 25px rgba(0, 0, 0, .1);
+	border-radius: 12px;
+	overflow: hidden;
+	transition: all .2s linear;
+	max-width: 200px;  
+	min-width: 180px;
+}
+
+.card:hover {
+	box-shadow: 2px 8px 45px rgba(0, 0, 0, .15);
+	transform: translate3D(0, -2px, 0);
+}
+  
+h1 {
+	text-align: center;
+	padding: 0.5rem 1.5rem;
+	background: #314b77;
+	margin: 0 0 0rem 0;
+	font-size: 1.5rem;
+	color: white;
+}
+
+h2 {
+	text-align: center;
+	font-size: 3rem;
+	padding: 0.2rem 0.2rem;	
+	margin: 0;
+}
+
+h3 {
+	text-align: center;
+	font-size: 1.3rem;
+	font-family: 'Heiti TC';
+	padding: 0.2rem 0.2rem;	
+	margin: 0;
+}
