@@ -2,7 +2,7 @@
 ***************************************************************************  
 **  Program  : DSMRloggerAPI (restAPI)
 */
-#define _FW_VERSION "v1.2.4 (11-04-2020)"
+#define _FW_VERSION "v1.2.4 (16-04-2020)"
 /*
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -12,6 +12,7 @@
   Arduino-IDE settings for DSMR-logger Version 4 (ESP-12):
 
     - Board: "Generic ESP8266 Module"
+    - Builtin Led: "2"
     - Flash mode: "DOUT" | "DIO"    // change only after power-off and on again!
     - Flash size: "4MB (FS: 2MB OAT:~1019KB)"  << LET OP! 2MB SPIFFS
     - DebugT port: "Disabled"
@@ -21,7 +22,7 @@
     - Crystal Frequency: "26 MHz" 
     - VTables: "Flash"
     - Flash Frequency: "40MHz"
-    - CPU Frequency: "80 MHz"
+    - CPU Frequency: "80 MHz" (or 160MHz)
     - Buildin Led: "2"  // GPIO02 for Wemos and ESP-12
     - Upload Speed: "115200"                                                                                                                                                                                                                                                 
     - Erase Flash: "Only Sketch"
@@ -604,12 +605,12 @@ void loop ()
 #if defined(USE_NTP_TIME)                                           //USE_NTP
   if DUE(synchrNTP)                                                 //USE_NTP
   {
-    if (timeStatus() == timeNeedsSync || prevNtpHour != hour())     //USE_NTP
-    {
-      prevNtpHour = hour();                                         //USE_NTP
+  //if (timeStatus() == timeNeedsSync || prevNtpHour != hour())     //USE_NTP
+  //{
+      //prevNtpHour = hour();                                         //USE_NTP
       setSyncProvider(getNtpTime);                                  //USE_NTP
       setSyncInterval(600);                                         //USE_NTP
-    }
+  //}
   }
 #endif                                                              //USE_NTP
   

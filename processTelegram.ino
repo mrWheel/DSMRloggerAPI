@@ -29,19 +29,22 @@ void processTelegram()
                                                     
   strcpy(newTimestamp, DSMRdata.timestamp.c_str()); 
 
-  newT = epoch(newTimestamp, strlen(newTimestamp), true); // update system time
+  newT = epoch(newTimestamp, strlen(newTimestamp), false); // do NOT update system time
   actT = epoch(actTimestamp, strlen(actTimestamp), false);
   
   // Skip first 3 telegrams .. just to settle down a bit ;-)
   
   if ((int32_t)(telegramCount - telegramErrors) < 3) 
   {
+    strCopy(actTimestamp, sizeof(actTimestamp), newTimestamp);
+    actT = epoch(actTimestamp, strlen(actTimestamp), true);   // update system time
     return;
   }
   
-  strCopy(actTimestamp, sizeof(actTimestamp), newTimestamp);  // maar nog NIET actT!!!
   DebugTf("actHour[%02d] -- newHour[%02d]\r\n", hour(actT), hour(newT));
-  
+  if (hour(actT) != hour(newT)) {
+    writeToSysLog("actHour[%02d] -- newHour[%02d]", hour(actT), hour(newT));
+  }
   // has the hour changed (or the day or month)  
   // in production testing on hour only would
   // suffice, but in testing I need all three
@@ -58,6 +61,9 @@ void processTelegram()
   {
     sendMQTTData();      
   }    
+
+  strCopy(actTimestamp, sizeof(actTimestamp), newTimestamp);
+  actT = epoch(actTimestamp, strlen(actTimestamp), true);   // update system time
 
 } // processTelegram()
 

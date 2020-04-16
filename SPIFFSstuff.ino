@@ -209,7 +209,8 @@ void writeDataToFiles()
   recSlot = timestampToHourSlot(actTimestamp, strlen(actTimestamp));
   if (Verbose1) DebugTf("HOURS:  Write to slot[%02d] in %s\r\n", recSlot, HOURS_FILE);
   writeDataToFile(HOURS_FILE, record, recSlot, HOURS);
-
+  writeToSysLog("HOURS: actTimestamp[%s], recSlot[%d]", actTimestamp, recSlot);
+  
   // update DAYS
   recSlot = timestampToDaySlot(actTimestamp, strlen(actTimestamp));
   if (Verbose1) DebugTf("DAYS:   Write to slot[%02d] in %s\r\n", recSlot, DAYS_FILE);
