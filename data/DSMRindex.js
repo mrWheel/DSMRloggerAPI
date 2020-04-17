@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRindex.js, part of DSMRfirmwareAPI
-**  Version  : v1.2.2
+**  Version  : v1.3.1
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -94,8 +94,8 @@
     timeTimer = setInterval(refreshDevTime, 10 * 1000); // repeat every 10s
 
     openPage("mainPage");
-    openTab("ActualTab");
     initActualGraph();
+    openTab("ActualTab");
     setPresentationType('TAB');
     readGitHubVersion();
       
@@ -1106,6 +1106,7 @@ http://DSMR-API.local/api/v1/dev/settings</pre>", false);
     
     addAPIdoc("v1/sm/info",       "Smart Meter info in JSON format", true);
     addAPIdoc("v1/sm/actual",     "Smart Meter Actual data in JSON format", true);
+    addAPIdoc("v0/sm/actual",     "Smart Meter Actual data in JSON format (backwards compatibility)", true);
     addAPIdoc("v1/sm/fields",     "Smart Meter all fields data in JSON format\
         <br>JSON format: {\"fields\":[{\"name\":\"&lt;fieldName&gt;\",\"value\":&lt;value&gt;,\"unit\":\"&lt;unit&gt;\"}]} ", true);
     addAPIdoc("v1/sm/fields/{fieldName}", "Smart Meter one field data in JSON format", false);

@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : FSexplorer, part of DSMRloggerAPI
-**  Version  : v1.2.1
+**  Version  : v2.0.1
 **
 **  Mostly stolen from https://www.arduinoforum.de/User-Fips
 **  For more information visit: https://fipsok.de
@@ -240,7 +240,7 @@ void updateFirmware()
   DebugTln(F("Redirect to updateIndex .."));
   doRedirect("wait ... ", 1, "/updateIndex", false);
 #else
-  doRedirect("UpdateServer not implemented", 10, "/", false);
+  doRedirect("UpdateServer not available", 10, "/", false);
 #endif
       
 } // updateFirmware()

@@ -10,8 +10,14 @@ Documentation can be found [here](https://mrwheel-docs.gitbook.io/dsmrloggerapi/
 <table>
 <tr><th>Versie</th><th>Opmerking</th></tr>
 <tr>
-   <td valign="top">1.2.4</td>
-   <td>Bug Fixes
+   <td valign="top">2.0.1</td>
+   <td>First Final Release
+   <br>Implementing DSMRloggerWS actual api (for bacwards compatibility)
+   <br>More robust way to write hourly data to the RING-files
+   <br>Bugfix PRE40 gasmeter reading
+   <br>Remove validity check on meterstanden editor
+   <br>Better FieldName transaltion
+   <br>Bugfix mindergas processing
    </td>
 </tr>
    <td valign="top">1.2.1</td>

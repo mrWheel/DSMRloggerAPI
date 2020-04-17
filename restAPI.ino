@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : restAPI, part of DSMRloggerAPI
-**  Version  : v1.2.4
+**  Version  : v2.0.1
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -85,6 +85,14 @@ void processAPI()
     return;
   }
 
+  if (words[2] == "v0" && words[3] == "sm" && words[4] == "actual")
+  {
+    //--- depreciated api. left here for backward compatibility
+    onlyIfPresent = true;
+    copyToFieldsArray(actualArray, actualElements);
+    sendJsonV0Fields();
+    return;
+  }
   if (words[2] != "v1")
   {
     sendApiNotFound(URI);
@@ -504,9 +512,53 @@ void sendDeviceDebug(const char *URI, String tail)
 
 } // sendDeviceDebug()
 
+//=======================================================================
+struct buildJsonApiV0SmActual
+{
+    bool  skip = false;
+    
+    template<typename Item>
+    void apply(Item &i) {
+      skip = false;
+      String Name = Item::name;
+      //-- for dsmr30 -----------------------------------------------
+#if defined( USE_PRE40_PROTOCOL )
+      if (Name.indexOf("gas_delivered2") == 0) Name = "gas_delivered";
+#endif
+      if (!isInFieldsArray(Name.c_str(), fieldsElements))
+      {
+        skip = true;
+      }
+      if (!skip)
+      {
+        if (i.present()) 
+        {
+          //String Unit = Item::unit();
+          sendNestedJsonV0Obj(Name.c_str(), typecastValue(i.val()));
+        }
+      }
+  }
+
+};  // buildJsonApiV0SmActual()
+
 
 //=======================================================================
-struct buildJsonApi {
+void sendJsonV0Fields() 
+{
+  objSprtr[0]    = '\0';
+  
+  httpServer.sendHeader("Access-Control-Allow-Origin", "*");
+  httpServer.setContentLength(CONTENT_LENGTH_UNKNOWN);
+  httpServer.send(200, "application/json", "{\r\n");
+  DSMRdata.applyEach(buildJsonApiV0SmActual());
+  httpServer.sendContent("\r\n}\r\n");
+
+} // sendJsonV0Fields()
+
+
+//=======================================================================
+struct buildJsonApi 
+{
     bool  skip = false;
     
     template<typename Item>
@@ -544,6 +596,7 @@ struct buildJsonApi {
   }
 
 };  // buildJsonApi()
+
 
 //=======================================================================
 void sendJsonFields(const char *Name) 
