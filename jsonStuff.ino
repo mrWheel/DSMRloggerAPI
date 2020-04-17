@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : jsonStuff, part of DSMRloggerAPI
-**  Version  : v1.2.1
+**  Version  : v2.0.1
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -217,6 +217,61 @@ void sendNestedJsonObj(const char *cName, float fValue)
   
 } // sendNestedJsonObj(*char, float)
 
+
+//=======================================================================
+//----- v0 api ----------------------------------------------------------
+//=======================================================================
+void sendNestedJsonV0Obj(const char *cName, uint32_t uValue)
+{
+  char jsonBuff[200] = "";
+  
+  snprintf(jsonBuff, sizeof(jsonBuff), "%s \"%s\": %u"
+                                      , objSprtr, cName, uValue);
+
+  httpServer.sendContent(jsonBuff);
+  sprintf(objSprtr, ",\r\n");
+
+} // sendNestedJsonV0Obj(*char, uint)
+
+//---------------------------------------------------------------
+void sendNestedJsonV0Obj(const char *cName, float fValue)
+{
+  char jsonBuff[200] = "";
+  
+  snprintf(jsonBuff, sizeof(jsonBuff), "%s \"%s\": %.3f"
+                                      , objSprtr, cName, fValue);
+
+  httpServer.sendContent(jsonBuff);
+  sprintf(objSprtr, ",\r\n");
+  
+} // sendNestedJsonV0Obj(*char, float)
+
+//---------------------------------------------------------------
+void sendNestedJsonV0Obj(const char *cName, int32_t iValue)
+{
+  char jsonBuff[200] = "";
+  
+  snprintf(jsonBuff, sizeof(jsonBuff), "%s \"%s\": %u"
+                                      , objSprtr, cName, iValue);
+
+  httpServer.sendContent(jsonBuff);
+  sprintf(objSprtr, ",\r\n");
+  
+} // sendNestedV0Obj(*char, int)
+
+//---------------------------------------------------------------
+void sendNestedJsonV0Obj(const char *cName, String sValue)
+{
+  char jsonBuff[200] = "";
+  
+  snprintf(jsonBuff, sizeof(jsonBuff), "%s \"%s\": \"%s\""
+                                      , objSprtr, cName
+                                      , sValue.substring(0,(150 - (strlen(cName)))).c_str());
+
+  httpServer.sendContent(jsonBuff);
+  sprintf(objSprtr, ",\r\n");
+  
+} // sendNestedJsonV0Obj(*char, String)
 
 
 //=======================================================================

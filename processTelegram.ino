@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : processTelegram, part of DSMRloggerAPI
-**  Version  : v1.2.1
+**  Version  : v2.0.1
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -28,26 +28,28 @@ void processTelegram()
   }
                                                     
   strcpy(newTimestamp, DSMRdata.timestamp.c_str()); 
-
-  newT = epoch(newTimestamp, strlen(newTimestamp), false); // do NOT update system time
+  //--- newTimestamp is the timestamp from the last telegram
+  newT = epoch(newTimestamp, strlen(newTimestamp), true); // update system time
+  //--- actTimestamp is the timestamp from the previous telegram
   actT = epoch(actTimestamp, strlen(actTimestamp), false);
   
-  // Skip first 3 telegrams .. just to settle down a bit ;-)
-  
+  //--- Skip first 3 telegrams .. just to settle down a bit ;-)
   if ((int32_t)(telegramCount - telegramErrors) < 3) 
   {
     strCopy(actTimestamp, sizeof(actTimestamp), newTimestamp);
-    actT = epoch(actTimestamp, strlen(actTimestamp), true);   // update system time
+    actT = epoch(actTimestamp, strlen(actTimestamp), false);   // update system time
     return;
   }
   
   DebugTf("actHour[%02d] -- newHour[%02d]\r\n", hour(actT), hour(newT));
+  //--- if we have a new hour() update the previous hour
   if (hour(actT) != hour(newT)) {
     writeToSysLog("actHour[%02d] -- newHour[%02d]", hour(actT), hour(newT));
   }
-  // has the hour changed (or the day or month)  
-  // in production testing on hour only would
-  // suffice, but in testing I need all three
+  //--- has the hour changed (or the day or month)  
+  //--- in production testing on hour only would
+  //--- suffice, but in testing I need all three
+  //--- if we have a new hour() update the previous hour(actT)
   if (     (hour(actT) != hour(newT)  ) 
        ||   (day(actT) != day(newT)   ) 
        || (month(actT) != month(newT) ) )
@@ -55,6 +57,25 @@ void processTelegram()
     writeToSysLog("Update RING-files");
     writeDataToFiles();
     writeLastStatus();
+    //--- now see if the day() has changed also
+    if ( day(actT) != day(newT) )
+    {
+      //--- YES! actTimestamp := newTimestamp
+      //--- and update the files with the actTimestamp
+      strCopy(actTimestamp, sizeof(actTimestamp), newTimestamp);
+      writeDataToFiles();
+    }
+    else  //--- NO, only the hour has changed
+    {
+      char      record[DATA_RECLEN + 1] = "";
+      //--- actTimestamp := newTimestamp
+      strCopy(actTimestamp, sizeof(actTimestamp), newTimestamp);
+      buildDataRecordFromSM(record);
+      uint16_t recSlot = timestampToHourSlot(actTimestamp, strlen(actTimestamp));
+      //--- and update the files with the actTimestamp
+      writeDataToFile(HOURS_FILE, record, recSlot, HOURS);
+      DebugTf(">%s\r\n", record); // record ends in a \n
+    }
   }
 
   if ( DUE(publishMQTTtimer) )
