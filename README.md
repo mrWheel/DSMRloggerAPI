@@ -12,11 +12,11 @@ Documentation can be found [here](https://mrwheel-docs.gitbook.io/dsmrloggerapi/
 <tr>
    <td valign="top">2.0.1</td>
    <td>First Final Release
-   <br>Implementing DSMRloggerWS actual api (for bacwards compatibility)
+   <br>Implementing DSMRloggerWS actual api (for backwards compatibility)
    <br>More robust way to write hourly data to the RING-files
    <br>Bugfix PRE40 gasmeter reading
    <br>Remove validity check on meterstanden editor
-   <br>Better FieldName transaltion
+   <br>Better FieldName translation
    <br>Bugfix mindergas processing
    </td>
 </tr>
