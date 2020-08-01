@@ -6,33 +6,51 @@
     <link rel=icon href=/favicon.ico> <title>kW trend</title>
     <link href="https://fonts.googleapis.com/css?family=Dosis:400,700" rel="stylesheet">
     <link href="hjm.css" rel="stylesheet">
-    <script src="hjm.js"></script>
+
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/highcharts-more.js"></script>
+    <script src="https://code.highcharts.com/modules/solid-gauge.js"></script>
+    
 </head>
   
 <body><noscript><strong>Please enable JavaScript to continue.</strong></noscript>
     <div class=outer>
         <div class=card id=l1>
             <h1 id=power_delivered_l1h>Phase 1</h1>
-            <h2 id=power_delivered_l1>0.0</h2>
-            <h3><span id=power_delivered_l1a>0</span><span> Amp</span></h3>
-            <h2 id=power_delivered_l1p>0.0</h2>
+	        <div class="chart-container" id="container-1">I</div>
+            <hr/>
+            <div style="text-align:center">Kilowatt</div>
+            <h2 id="power_delivered_l1">0.0</h2>
+            <h2 id="power_delivered_l1p">0.0</h2>
         </div>
         <div class=card id=l2>
             <h1 id=power_delivered_l2h>Phase 2</h1>
+            <div class="chart-container" id="container-2">II</div>
+            <hr/>
+            <div style="text-align:center">Kilowatt</div>
             <h2 id=power_delivered_l2>0.0</h2>
-            <h3><span id=power_delivered_l2a>0</span><span> Amp</span></h3>
             <h2 id=power_delivered_l2p>0.0</h2>
         </div>
         <div class=card id=l3>
             <h1 id=power_delivered_l3h>Phase 3</h1>
+            <div class="chart-container" id="container-3">III</div>
+            <hr/>
+            <div style="text-align:center">Kilowatt</div>
             <h2 id=power_delivered_l3>0.0</h2>
-            <h3><span id=power_delivered_l3a>0</span><span> Amp</span></h3>
             <h2 id=power_delivered_l3p>0.0</h2>
         </div>
+        <div class=card id=l4>
+            <h1 id=power_delivered_th>Total</h1>
+            <div class="chart-container" id="container-t">IV</div>
+            <hr/>
+            <div style="text-align:center">Kilowatt</div>
+            <h2 id="power_delivered_t">0.0</h2>
+        </div>
     </div>    
+    <script src="hjm.js"></script>
     <script>
         update() // fill fist-time data
-        var timer = setInterval(update, 10 * 1000) // update every 10 seconds
+        var timer = setInterval(update, 3 * 1000) // update every n seconds
     </script>
 </body> 
 </html>

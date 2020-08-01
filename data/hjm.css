@@ -14,6 +14,7 @@ html {
 .outer {
 	display: flex;
 	flex-wrap: wrap;
+	justify-content: center;
 }
 
 @media screen and (min-width: 600px) {
@@ -43,7 +44,13 @@ html {
 	box-shadow: 2px 8px 45px rgba(0, 0, 0, .15);
 	transform: translate3D(0, -2px, 0);
 }
-  
+
+.chart-container {
+	width: 200px;
+	float: none;
+	height: 180px;
+}
+
 h1 {
 	text-align: center;
 	padding: 0.5rem 1.5rem;
@@ -66,4 +73,9 @@ h3 {
 	font-family: 'Heiti TC';
 	padding: 0.2rem 0.2rem;	
 	margin: 0;
+}
+
+hr {
+	width: 80%;
+	opacity: 0.5;
 }
