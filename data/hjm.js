@@ -3,6 +3,9 @@ const AMPS=25
 const PHASES=3
 
 var AmpG = [4];
+var PhaseAmps = [4];
+var MaxAmps = [4];
+var TotalAmps;
 
 var gaugeOptions = {
 
@@ -13,16 +16,17 @@ var gaugeOptions = {
     title: null,
 
     pane: {
-        center: ['50%', '85%'],
+        center: ['50%', '75%'],
         size: '100%',
         startAngle: -90,
         endAngle: 90,
         background: {
             backgroundColor:
                 Highcharts.defaultOptions.legend.backgroundColor || '#EEE',
-            innerRadius: '60%',
-            outerRadius: '80%',
+            innerRadius: '80%',
+            outerRadius: '105%',
             shape: 'arc'
+            //opacity: '30%'
         }
     },
 
@@ -38,7 +42,9 @@ var gaugeOptions = {
             [0.9, '#DF5353'] // red
         ],
         lineWidth: 1,
-        minorTickInterval: null,
+        //minorTickInterval: 'auto',
+        minorTicks: true,
+        // minorTicksWidth: 3px,
         tickAmount: 6,
         title: {
             y: -70
@@ -50,6 +56,8 @@ var gaugeOptions = {
 
     plotOptions: {
         solidgauge: {
+            innerRadius: '85%',
+            opacity: '60%',
             dataLabels: {
                 y: 5,
                 borderWidth: 0,
@@ -71,14 +79,29 @@ var AmpOptions = {
 
     series: [{
         name: 'A',
-        data: [22],
+        data: [0],
         dataLabels: {
             format:
                 '<div style="text-align:center">' +
                 '<span style="font-weight:lighter;font-size:16px;font-family: Dosis">{y} A</span><br/>' +
                 '</div>'
+        },
+        dial: {            
+            rearLength: '5%'
+          
         }
-    }]
+    },{
+
+        name: 'Max',
+        data: [1],
+        innerRadius:'100%',
+        radius: '105%',
+        dataLabels: {
+            enabled: false
+       }
+    },
+
+]
 
 };
 
@@ -87,8 +110,7 @@ function abs(x)
     return (x < 0 ? -x : x);
 }
 
-var PhaseAmps = [4];
-var TotalAmps;
+
 
 function update()
 {
@@ -122,14 +144,25 @@ function update()
                         newValue,
                         myPhase;
                     
-                    myPhase = json.fields[j].name.replace('power_delivered_l','');
+                    myPhase = Number(json.fields[j].name.replace('power_delivered_l',''));
                     
-                    chart = AmpG[Number(myPhase)];
+                    chart = AmpG[myPhase];
                     point = chart.series[0].points[0];
 		               
                     newValue = Math.round(nva*1000.0 ) /1000.0;
                     
-        	        point.update(newValue);
+                    point.update(newValue);
+                    
+                    if (newValue > MaxAmps[myPhase])
+                    {
+                        console.log('new record');
+                        MaxAmps[myPhase] = newValue;
+                        point = AmpG[myPhase].series[1].points[0];
+                        point.update(Math.round(MaxAmps[myPhase]));
+
+                    } else {
+                        console.log ('MaxAmps:', MaxAmps[myPhase])
+                    }
                     
                     // trend coloring
 
@@ -177,14 +210,9 @@ function update()
     }
 }
 
-
-
 AmpG[1] = Highcharts.chart('container-1', Highcharts.merge(gaugeOptions, AmpOptions));
-
 AmpG[2] = Highcharts.chart('container-2', Highcharts.merge(gaugeOptions, AmpOptions));
-
 AmpG[3] = Highcharts.chart('container-3', Highcharts.merge(gaugeOptions, AmpOptions));
-
 AmpG[4] = Highcharts.chart('container-t', Highcharts.merge(gaugeOptions, {
                 yAxis: {
                     min: 00,
@@ -209,3 +237,6 @@ AmpG[4] = Highcharts.chart('container-t', Highcharts.merge(gaugeOptions, {
 
             }));
 
+MaxAmps[1] = 0.0;
+MaxAmps[2] = 0.0;
+MaxAmps[3] = 0.0;
