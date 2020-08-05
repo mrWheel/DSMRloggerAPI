@@ -12,8 +12,8 @@
   Arduino-IDE settings for DSMR-logger Version 4 (ESP-12):
 
     - Board: "Generic ESP8266 Module"
-    - Builtin Led: "2"
-    - Flash mode: "DOUT" | "DIO"    // change only after power-off and on again!
+    - Builtin Led: "2"  // GPIO02 for Wemos and ESP-12
+    - Flash mode: "DOUT" | "DIO"    // changes only after power-off and on again!
     - Flash size: "4MB (FS: 2MB OAT:~1019KB)"  << LET OP! 2MB SPIFFS
     - DebugT port: "Disabled"
     - DebugT Level: "None"
@@ -23,7 +23,6 @@
     - VTables: "Flash"
     - Flash Frequency: "40MHz"
     - CPU Frequency: "80 MHz" (or 160MHz)
-    - Buildin Led: "2"  // GPIO02 for Wemos and ESP-12
     - Upload Speed: "115200"                                                                                                                                                                                                                                                 
     - Erase Flash: "Only Sketch"
     - Port: <select correct port>
