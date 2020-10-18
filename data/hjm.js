@@ -1,4 +1,4 @@
-const APIGW='http://'+window.location.host+'/api/';
+const APIGW=window.location.protocol+'//'+window.location.host+'/api/';
 const AMPS=25
 const PHASES=3
 

@@ -8,7 +8,7 @@
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
 */
-  const APIGW='http://'+window.location.host+'/api/';
+  const APIGW=window.location.protocol+'//'+window.location.host+'/api/';
 
   "use strict";
 
