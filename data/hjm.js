@@ -262,8 +262,9 @@ AmpG[4] = Highcharts.chart('container-t', Highcharts.merge(gaugeOptions, {
 
 for(i=1 ; i <= PHASES+1 ; i++)
 {
-    MaxAmps[i] = 0.0;
+    MaxAmps[i] = -1 * AMPS;
     PhaseAmps[i] = 0.0;
     minKW [i] = 99.99;
     maxKW [i] = -99.99;
 }
+MaxAmps[4] = -1 * PHASES * AMPS;
