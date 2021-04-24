@@ -5,6 +5,8 @@ const PHASES = 3
 var AmpG = [4];
 var PhaseAmps = [4];
 var MaxAmps = [4];
+var MeterPhases = 0;
+var updateCount = 0;
 var TotalAmps = 0.0, 
     minKW = [4], 
     maxKW = [4];
@@ -44,7 +46,7 @@ var gaugeOptions = {
             [0.9, '#DF5353'] // red
         ],
         lineWidth: 1,
-        //minorTickInterval: 'auto',
+        minorTickInterval: 5,
         minorTicks: true,
         // minorTicksWidth: 3px,
         //tickAmount: 0,
@@ -52,7 +54,7 @@ var gaugeOptions = {
             y: -70
         },
         labels: {
-            y: 16
+            y: 2
         }
     },
 
@@ -71,8 +73,8 @@ var gaugeOptions = {
 
 var AmpOptions = {
     yAxis: {
-        min: -25,
-        max: 25,
+        min: -1 * AMPS,
+        max: AMPS,
     },
 
     credits: {
@@ -85,7 +87,7 @@ var AmpOptions = {
         dataLabels: {
             format:
                 '<div style="text-align:center">' +
-                '<span style="font-weight:lighter;font-size:16px;font-family: Dosis">{y} A</span><br/>' +
+                '<span style="font-weight:lighter;font-size:20px;font-family:Dosis">{point.y:.1f} A</span><br/>' +
                 '</div>'
         }
     },{
@@ -107,6 +109,9 @@ function abs(x)
 }
 
 function getFieldByName(json, prefix, factor = 1) {
+    //prefix _l4 = total; strip it for matching API name
+    prefix = prefix.replace(/_l4+$/, "");
+
     for (const field of json.fields) {
         if (field.name.startsWith(prefix)) {
              return {
@@ -118,39 +123,63 @@ function getFieldByName(json, prefix, factor = 1) {
     throw new Error(`Did not find field '${prefix}' in the JSON`);
 }
 
+function checkError(response) {
+    if (response.status >= 200 && response.status <= 299) {
+        return response.json();
+    } else {
+        throw Error(response.statusText);
+    }
+}
+
 function update()
 {
     var phase;
-    for( let phase = 1 ; phase <= PHASES ; phase++ )
+    if (MeterPhases == 0) { // Try to detect single or three phase meter (to reduce number of API calls)
+        updateCount++;
+        if (PhaseAmps[1] != 0 || PhaseAmps[2] != 0 || PhaseAmps[3] != 0) {
+            MeterPhases = 3;
+        } else if (updateCount > 6) { // 6 * 10sec. Change me to match update interval
+            MeterPhases = 1;
+        }
+    }
+
+    for( let phase = ( MeterPhases == 1 ? PHASES + 1 : 1) ; phase <= PHASES + 1 ; phase++ )
     {
-        fetch(APIGW+"v1/sm/fields/power_delivered_l"+phase)
-        .then(response => response.json())
+        fetch(APIGW + "v1/sm/fields/power_delivered" + ((phase < 4) ? "_l" + phase : ""))
+        .then(checkError)
+        //.then(response => response.json())
         .then(json => {
-            const field = getFieldByName(json, "power_delivered_l"+phase);
-            let cvKW=document.getElementById(field.name).innerHTML;
+            const field = getFieldByName(json, "power_delivered" + ((phase < 4) ? "_l" + phase : ""));
+            //console.log("field.name = "+field.name);
+            let cvKW=document.getElementById((phase < 4) ? field.name : "power_delivered_t").innerHTML;
             let nvKW=Number(field.value);
             (nvKW == 0 // check if power is generated
-                ? fetch(APIGW+"v1/sm/fields/power_returned_l"+phase)
-                    .then(response => response.json())
-                    .then(json2 => getFieldByName(json2,"power_returned_l"+phase, -1))
+                ? fetch(APIGW + "v1/sm/fields/power_returned" + ((phase < 4) ? "_l" + phase : ""))
+                    .then(checkError)
+                    .then(json2 => getFieldByName(json2, "power_returned" + ((phase < 4) ? "_l" + phase : ""), -1))
                 : Promise.resolve(field)
             ).then(({name, value: nvKW}) => {
                 //console.log("nvKW = "+ nvKW.toString()) // here nvKW is 0
                 let nvA=nvKW*1000.0/230.0  // estimated amps using fixed voltage
-
-                // console.log("about to get elements");
                 // update view
-                document.getElementById(field.name).innerHTML = nvKW.toFixed(1);
+                document.getElementById((phase < 4) ? field.name : "power_delivered_t").innerHTML = nvKW.toFixed(2);
+
+                if (phase ==  1 || phase == 2 || phase == 3){
+                    docId = "power_delivered_" + phase;
+                }
+                else if (phase == 4){
+                    docId = "power_delivered_t";
+                }
 
                 if (nvKW < minKW[phase]) {
                     minKW[phase] = nvKW                      
                     //console.log(`power_delivered_${phase}min`);
-                    document.getElementById(`power_delivered_${phase}min`).innerHTML = nvKW.toFixed(2);
+                    document.getElementById(`${docId}min`).innerHTML = nvKW.toFixed(2);
                 }
                 if (nvKW > maxKW[phase]) {
                     maxKW[phase] = nvKW;
                     //console.log(`power_delivered_${phase}max`);
-                    document.getElementById(`power_delivered_${phase}max`).innerHTML = nvKW.toFixed(2);
+                    document.getElementById(`${docId}max`).innerHTML = nvKW.toFixed(2);
                 }
 
                 // update gauge with actual values
@@ -159,7 +188,7 @@ function update()
                     newValue;
                 chart = AmpG[phase];
                 point = chart.series[0].points[0];   
-                newValue = Math.round(nvA*1000.0 ) / 1000.0;
+                newValue = Math.round(nvA*10.0) / 10.0;
                 point.update(newValue);
                 
                 if (nvA > MaxAmps[phase]) { //new record
@@ -168,55 +197,30 @@ function update()
                     point.update(Math.round(MaxAmps[phase]));
                 } 
                 
-                // trend coloring
-                if(abs(cvKW - nvKW) < 0.15) {// don't highlight small changes < 150W
-                    //console.log("value remains the same")
-                    document.getElementById(field.name+"h").style.background="#314b77";
-                } else if( nvKW > cvKW ) {
-                    //console.log(json.fields[j].name+"=increased")
-                    document.getElementById(field.name+"h").style.background="Red";
-                } else {
-                    //console.log(json.fields[j].name+"=decreased")
-                    document.getElementById(field.name+"h").style.background="Green";
+                if (MeterPhases != 0) {
+                    // trend coloring
+                     if (phase ==  1 || phase == 2 || phase == 3){
+                        headerId = field.name;
+                    }
+                    else if (phase == 4){
+                        headerId = "power_delivered_t";
+                    }
+
+                    if(abs(cvKW - nvKW) < 0.005) {// don't highlight small changes < 5W
+                        //console.log("value remains the same")
+                        document.getElementById(headerId+"h").style.background="#314b77";
+                    } else if( nvKW > cvKW ) {
+                        //console.log(json.fields[j].name+"=increased")
+                        document.getElementById(headerId+"h").style.background="Red";
+                    } else {
+                        //console.log(json.fields[j].name+"=decreased")
+                        document.getElementById(headerId+"h").style.background="Green";
+                    }
                 }
                 PhaseAmps[phase] = nvA;
             });
-        });
-        //.catch(function(error) {
-        //    var p = document.createElement('p');
-        //    p.appendChild(
-        //    document.createTextNode('Error: ' + error.message)
-        //    );
-        //}
-        //);
-        
-    }
-
-    TotalAmps = 0.0;
-    for (let t=1; t<= PHASES ; t++) {
-        TotalAmps += PhaseAmps[t];
-    }
-    if (TotalAmps != NaN && TotalAmps != 0.0) {
-        let TotalKW = TotalAmps * 230.0 / 1000.0;
-
-        if (TotalKW < minKW[4]) {
-            minKW[4] = TotalKW;
-            document.getElementById("power_delivered_tmin").innerHTML = TotalKW.toFixed(2);
-        }
-        if (TotalKW > maxKW[4]) {
-            maxKW[4] = TotalKW;
-            document.getElementById("power_delivered_tmax").innerHTML = TotalKW.toFixed(2);
-        }
-        
-        document.getElementById("power_delivered_t").innerHTML = TotalKW.toFixed(1);
-        point = AmpG[4].series[0].points[0];
-        point.update(Math.round(TotalAmps*1000.0 ) /1000.0);
-
-        if (TotalAmps >  MaxAmps[4]){
-            MaxAmps[4] = TotalAmps;
-            point = AmpG[4].series[1].points[0];
-            point.update(Math.round(TotalAmps*1000.0 ) /1000.0);
-        }
+        })
+        .catch(error => void 0); //fail silent on network errors
     }
 }
 
@@ -225,22 +229,20 @@ AmpG[2] = Highcharts.chart('container-2', Highcharts.merge(gaugeOptions, AmpOpti
 AmpG[3] = Highcharts.chart('container-3', Highcharts.merge(gaugeOptions, AmpOptions));
 AmpG[4] = Highcharts.chart('container-t', Highcharts.merge(gaugeOptions, {
                 yAxis: {
-                    min: -3*AMPS,
-                    max: 3*AMPS,
-                    
+                    min: -3 * AMPS,
+                    max: 3 * AMPS,
+                    minorTickInterval: 5,
                 },
-
                 credits: {
                     enabled: false
                 },
-
                 series: [{
                     name: 'A',
                     data: [0],
                     dataLabels: {
                         format:
                             '<div style="text-align:center">' +
-                            '<span style="font-weight:lighter;font-size:16px;font-family: Dosis">{y} A</span><br/>' +
+                            '<span style="font-weight:lighter;font-size:20px;font-family:Dosis">{point.y:.1f} A</span><br/>' +
                             '</div>'
                     },
                     dial: {            
