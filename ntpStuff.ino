@@ -8,7 +8,7 @@
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
 */
-#if defined(USE_NTP_TIME)
+//#if defined(USE_NTP_TIME)
 
 #include <WiFiUdp.h>            // - part of ESP8266 Core https://github.com/esp8266/Arduino
 WiFiUDP           Udp;
@@ -178,7 +178,7 @@ time_t dateTime2Epoch(char const *date, char const *time)
     
 } // dateTime2Epoch()
 
-#endif
+//#endif
 /***************************************************************************
 *
 * Permission is hereby granted, free of charge, to any person obtaining a

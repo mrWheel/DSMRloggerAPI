@@ -1,0 +1,165 @@
+/* For more information visit:https://fipsok.de */
+body {
+  margin: 0;
+  height: 100vh;  /*100% view height */
+  width: 100vw;   /* 100% view width */
+  background: lightblue;
+  font-family: monospace; 
+  font-size: 12pt;
+} 
+  
+li {
+	background-color: rgba(255, 255, 255, 0.4);
+	list-style-type: none;
+	margin-bottom: 10px;
+	padding: 2px 5px 1px 0;
+	box-shadow: 5px 5px 5px rgba(0,0,0,0.7);
+}
+li a:first-child, li b {
+  background-color: #87cefa;
+	font-weight: bold;
+	color: black;
+	text-decoration:none;
+	padding: 2px 5px;
+	cursor:pointer;
+}
+
+input {
+	height:35px;
+	font-size:14px;
+	padding-left: .3em;
+}
+
+button {
+	height:30px;
+	width:150px;
+	font-size:16px;
+	margin-top: 1em;
+	box-shadow: 5px 5px 5px rgba(0,0,0,0.7);
+}
+div button {
+	<!--background-color: #7bff97; -->
+  background: rgba(0, 0, 0, 0.2);
+}
+
+form [title] {
+	background-color: skyblue;
+	font-size: 16px;
+	width: 125px;
+}
+form:nth-of-type(2) {
+	margin-bottom: 1em;
+}
+
+.content {
+  display: flex;
+  flex-direction: row;
+  flex: 1 0 800px;
+  justify-content: center;
+}
+
+.box.flex {
+  display: flex;
+}
+.box {
+  flex: 0 0 600px;
+  border-radius: 4px;
+}
+.box.left  {
+  flex-shrink: 0;
+  text-align: left;
+}
+.box.center  {
+  flex-shrink: 0;
+  text-align: center;
+}
+.box.right  {
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.no {
+	display: none;
+}
+
+.row {
+  flex: 1 1 auto;
+  width: 580px;
+  margin-bottom: 0px;
+  border: 1px solid gray;
+  background-color: #e1e1e1;
+  display: flex;
+  flex-direction: row;
+}
+.row:last-child {
+  margin-bottom: 0;
+}
+
+.colFname  {
+  flex: 0 0 53%;
+  text-decoration: none!important;
+}
+.colFsize {
+  flex: 0 0 15%;
+  text-align: right;
+}
+.colButton a {
+  flex: 0 0 10%;
+  text-decoration: none;
+}
+
+.linkButton {
+    -webkit-border-radius: 6px;
+    -moz-border-radius: 6px;
+    border-radius: 6px;
+    border: solid 1px #e1e1e1;
+    -webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 1px rgba(0, 0, 0, 0.2);
+    -moz-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 1px rgba(0, 0, 0, 0.2);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 1px rgba(0, 0, 0, 0.2);
+    background: rgba(0, 0, 0, 0.2);
+    color: white; /* #FFF; */
+    padding-left: 1px;
+    padding-right: 1px;
+    text-decoration: none;
+}
+
+.bottomButtons {
+  display: flex;
+  flex: 1 1 600px;
+  justify-content: center;
+  align-items: center;   
+}
+
+#up {
+	box-shadow: 5px 5px 5px rgba(0,0,0,0.7);
+}
+
+#cr {
+	font-weight: bold;
+	cursor:pointer;
+	font-size: 1.5em;
+}
+
+[type=submit] {
+	height:25px; 
+	font-size: 16px;
+}
+[value*=Format] {
+	margin-top: 1em;
+	box-shadow: 5px 5px 5px rgba(0,0,0,0.7);
+}
+
+[name="group"] {
+	display: none;
+}
+[name="group"] + label {
+	font-size: 2.0em;
+	margin-right: 25px;
+}
+[name="group"] + label::before {
+	margin-right: 25px;
+	content: "\002610";
+}	
+[name="group"]:checked + label::before {
+	content: '\002611\0027A5';
+}

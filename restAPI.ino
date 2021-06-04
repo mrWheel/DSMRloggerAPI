@@ -307,16 +307,13 @@ void handleSmV1Api(const char *URI, const char *word4, const char *word5, const 
     }
 
     tlgrm[l++] = '!';
-#if !defined( USE_PRE40_PROTOCOL )
     // next 6 bytes are "<CRC>\r\n"
-    for (int i=0; ( i<6 && (i<(sizeof(tlgrm)-7)) ); i++)
+    for (int i=0; ( (i<6) && (i<(sizeof(tlgrm)-7)) && (tlgrm[l] != '\n') ); i++)
     {
       tlgrm[l++] = (char)Serial.read();
     }
-#else
-    tlgrm[l++]    = '\r';
+//  tlgrm[l++]    = '\r';
     tlgrm[l++]    = '\n';
-#endif
     tlgrm[(l +1)] = '\0';
     // shift telegram 1 char to the right (make room at pos [0] for '/')
     for (int i=strlen(tlgrm); i>=0; i--) { tlgrm[i+1] = tlgrm[i]; yield(); }
@@ -339,13 +336,6 @@ void sendDeviceInfo()
 #ifdef USE_REQUEST_PIN
     strConcat(compileOptions, sizeof(compileOptions), "[USE_REQUEST_PIN]");
 #endif
-#if defined( USE_PRE40_PROTOCOL )
-    strConcat(compileOptions, sizeof(compileOptions), "[USE_PRE40_PROTOCOL]");
-#elif defined( USE_BELGIUM_PROTOCOL )
-    strConcat(compileOptions, sizeof(compileOptions), "[USE_BELGIUM_PROTOCOL]");
-#else
-    strConcat(compileOptions, sizeof(compileOptions), "[USE_DUTCH_PROTOCOL]");
-#endif
 #ifdef USE_UPDATE_SERVER
     strConcat(compileOptions, sizeof(compileOptions), "[USE_UPDATE_SERVER]");
 #endif
@@ -358,8 +348,11 @@ void sendDeviceInfo()
 #ifdef USE_SYSLOGGER
     strConcat(compileOptions, sizeof(compileOptions), "[USE_SYSLOGGER]");
 #endif
-#ifdef USE_NTP_TIME
-    strConcat(compileOptions, sizeof(compileOptions), "[USE_NTP_TIME]");
+//#ifdef USE_NTP_TIME
+//    strConcat(compileOptions, sizeof(compileOptions), "[USE_NTP_TIME]");
+//#endif
+#ifdef HAS_NO_SLIMMEMETER
+    strConcat(compileOptions, sizeof(compileOptions), "[NO_SLIMMEMETER]");
 #endif
 
   sendStartJsonObj("devinfo");

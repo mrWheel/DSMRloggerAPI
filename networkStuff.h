@@ -32,7 +32,7 @@ ESP8266WebServer        httpServer (80);
 
 
 static      FSInfo SPIFFSinfo;
-bool        SPIFFSmounted; 
+bool        FSYSmounted; 
 bool        isConnected = false;
 
 //gets called when WiFiManager enters configuration mode

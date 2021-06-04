@@ -1,9 +1,9 @@
 <!--
 ***************************************************************************  
 **  Program  : DSMRindex.html.inc, part of DSMRloggerAPI
-**  Version  : v1.2.2
+**  Version  : v3.0.0
 **
-**  Copyright (c) 2020 Willem Aandewiel
+**  Copyright (c) 2021 Willem Aandewiel
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
@@ -36,10 +36,20 @@
       <a id='bFieldsTab'    class='nav-item tabButton'>all Fields</a>
       <a id='bSysInfoTab'   class='nav-item tabButton'>Systeem Info</a>
       <a id='bAPIdocTab'    class='nav-item tabButton'>API Docs</a>
-      <a id='FSexplorer'    class='nav-img'>
-                      <img src='/FSexplorer.png' alt='FSexplorer'></a>
+<!--
+      <a id='FSmanager'    class='nav-img'>
+                      <img src='/FSmanager.png' alt='FSmanager'></a>
       <a id='Settings'      class='nav-img'>
                       <img src='/settings.png' alt='Settings'></a>
+-->
+      <div class="wrapper">
+      <div id='FSmanager2'    class='default'>&#128452; &nbsp;</div>
+      <div id='FSmanager'   class='hover'>&#128452; &nbsp;</div>
+      </div>
+      <div class="wrapper">
+      <div id='Settings2'    class='default'>&#9935; &nbsp;</div>
+      <div id='Settings'    class='hover'>&#9935; &nbsp;</div>
+      </div>
     </div>
   </div>
   <!-- END Tabbladen -->

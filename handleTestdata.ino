@@ -21,7 +21,7 @@ double      ED_T1=0, ED_T2=0, ER_T1=0, ER_T2=0, V_l1=0, V_l2=0, V_l3=0, C_l1=0, 
 uint8_t     ETariffInd=1;
 float       PDelivered, PReturned;
 float       IPD_l1, IPD_l2, IPD_l3, IPR_l1, IPR_l2, IPR_l3;
-float       GDelivered;
+float       GDelivered = 321.123;
 bool        forceBuildRingFiles = false;
 int16_t     forceBuildRecs;
 

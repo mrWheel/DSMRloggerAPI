@@ -13,6 +13,19 @@
 #include <TelnetStream.h>       // https://github.com/jandrassy/TelnetStream/commit/1294a9ee5cc9b1f7e51005091e351d60c8cddecf
 #include "safeTimers.h"
 
+#include "FS.h"
+#if defined( USE_LITTLEFS )
+  #warning using LittleFS
+  #include "LittleFS.h"
+  #define FSYS  LittleFS
+  
+#else
+  #warning using SPIFFS
+  //#include "SPIFFS.h"
+  #define FSYS  SPIFFS
+  
+#endif
+
 #ifdef USE_SYSLOGGER
   #include "ESP_SysLogger.h"      // https://github.com/mrWheel/ESP_SysLogger
   ESPSL sysLog;                   // Create instance of the ESPSL object
@@ -25,16 +38,8 @@
   #define writeToSysLog(...)  // nothing
 #endif
 
-#if defined( USE_PRE40_PROTOCOL )                               //PRE40
-  //  https://github.com/mrWheel/arduino-dsmr30.git             //PRE40
-  #include <dsmr30.h>                                           //PRE40
-#elif defined( USE_BELGIUM_PROTOCOL )                           //Belgium
-  //  https://github.com/mrWheel/arduino-dsmr-be.git            //Belgium
-  #include <dsmr-be.h>                                          //Belgium
-#else                                                           //else
-  //  https://github.com/matthijskooijman/arduino-dsmr
-  #include <dsmr2.h>               // Version 0.1 - Commit f79c906 on 18 Sep 2018
-#endif
+//  https://github.com/mrWheel/dsmr2Lib.git             //PRE40
+#include <dsmr2.h>               // Version 0.1 - Commit f79c906 on 18 Sep 2018
 
 #define _DEFAULT_HOSTNAME  "DSMR-API"  
 #ifdef USE_REQUEST_PIN
@@ -221,7 +226,7 @@ void delayms(unsigned long);
 
 char      cMsg[150], fChar[10];
 String    lastReset           = "";
-bool      spiffsNotPopulated  = false;
+bool      FSYSnotPopulated    = false;
 bool      hasAlternativeIndex = false;
 bool      mqttIsConnected     = false;
 bool      doLog = false, Verbose1 = false, Verbose2 = false;

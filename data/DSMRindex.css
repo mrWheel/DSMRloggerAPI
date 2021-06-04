@@ -1,9 +1,9 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRindex.css, part of DSMRfirmwareAPI
-**  Version  : v1.2.1
+**  Version  : v3.0.0
 **
-**  Copyright (c) 2020 Willem Aandewiel
+**  Copyright (c) 2021 Willem Aandewiel
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
@@ -242,6 +242,28 @@ input {
   margin-top: -52px;
 }
 
+/* animated icons on menu bar */
+.default,
+.hover {
+  font-size: 20px;
+  cursor:pointer;
+}
+.hover {
+  overflow: hidden;
+  font-size: 25px;
+  width: 0;
+  position: absolute;
+  left: 0;
+  top: 0;
+  white-space: nowrap;
+}
+.wrapper {
+  position: relative;
+  display: inline-block;
+}
+.wrapper:hover .hover {
+  width: 100%;
+}
 
 /* define tag selectors () -------------------------------------------------- */
 

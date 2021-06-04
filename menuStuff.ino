@@ -43,11 +43,11 @@ void displayBoardInfo()
   Debug(F("]\r\n              Compiled ["));  Debug( __DATE__ ); 
                                                Debug( "  " );
                                                Debug( __TIME__ );
-#ifdef USE_PRE40_PROTOCOL
-  Debug(F("]\r\n         compiled with [dsmr30.h] [USE_PRE40_PROTOCOL"));
-#else
-  Debug(F("]\r\n         compiled with [dsmr.h"));
-#endif
+//#ifdef USE_PRE40_PROTOCOL
+  Debug(F("]\r\n         compiled with [dsmr2.h]"));
+//#else
+//  Debug(F("]\r\n         compiled with [dsmr.h"));
+//#endif
   Debug(F("]\r\n              #defines "));
 #ifdef USE_REQUEST_PIN
   Debug(F("[USE_REQUEST_PIN]"));
@@ -64,12 +64,9 @@ void displayBoardInfo()
 #ifdef USE_SYSLOGGER
   Debug(F("[USE_SYSLOGGER]"));
 #endif
-#ifdef USE_NTP_TIME
-  Debug(F("[USE_NTP_TIME]"));
-#endif
-#ifdef USE_BELGIUM_PROTOCOL
-  Debug(F("[USE_BELGIUM_PROTOCOL]"));
-#endif
+//#ifdef USE_NTP_TIME
+//  Debug(F("[USE_NTP_TIME]"));
+//#endif
 #ifdef SHOW_PASSWRDS
   Debug(F("[SHOW_PASSWRDS]"));
 #endif
