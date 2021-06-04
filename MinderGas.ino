@@ -405,7 +405,8 @@ void writePostToFile()
                                                           , year(t)
                                                           , month(t)
                                                           , day(t)
-                                                          , DSMRdata.gas_delivered.val());
+                                                          , gasDelivered);
+//                                                        , DSMRdata.mbus1_delivered.val());
   //--- write the POST to a file...
   minderGasFile.println(F("POST /api/gas_meter_readings HTTP/1.1"));
   minderGasFile.print(F("AUTH-TOKEN:")); minderGasFile.println(settingMindergasToken);

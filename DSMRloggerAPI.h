@@ -33,7 +33,7 @@
   #include <dsmr-be.h>                                          //Belgium
 #else                                                           //else
   //  https://github.com/matthijskooijman/arduino-dsmr
-  #include <dsmr.h>               // Version 0.1 - Commit f79c906 on 18 Sep 2018
+  #include <dsmr2.h>               // Version 0.1 - Commit f79c906 on 18 Sep 2018
 #endif
 
 #define _DEFAULT_HOSTNAME  "DSMR-API"  
@@ -79,62 +79,73 @@ enum    { PERIOD_UNKNOWN, HOURS, DAYS, MONTHS, YEARS };
  * Each template argument below results in a field of the same name.
  */
 using MyData = ParsedData<
-  /* String */         identification
-  /* String */        ,p1_version
-  /* String */        ,timestamp
-  /* String */        ,equipment_id
-  /* FixedValue */    ,energy_delivered_tariff1
-  /* FixedValue */    ,energy_delivered_tariff2
-  /* FixedValue */    ,energy_returned_tariff1
-  /* FixedValue */    ,energy_returned_tariff2
-  /* String */        ,electricity_tariff
-  /* FixedValue */    ,power_delivered
-  /* FixedValue */    ,power_returned
-  /* FixedValue */    ,electricity_threshold
-  /* uint8_t */       ,electricity_switch_position
-  /* uint32_t */      ,electricity_failures
-  /* uint32_t */      ,electricity_long_failures
-  /* String */        ,electricity_failure_log
-  /* uint32_t */      ,electricity_sags_l1
-  /* uint32_t */      ,electricity_sags_l2
-  /* uint32_t */      ,electricity_sags_l3
-  /* uint32_t */      ,electricity_swells_l1
-  /* uint32_t */      ,electricity_swells_l2
-  /* uint32_t */      ,electricity_swells_l3
-  /* String */        ,message_short
-  /* String */        ,message_long
-  /* FixedValue */    ,voltage_l1
-  /* FixedValue */    ,voltage_l2
-  /* FixedValue */    ,voltage_l3
-  /* FixedValue */    ,current_l1
-  /* FixedValue */    ,current_l2
-  /* FixedValue */    ,current_l3
-  /* FixedValue */    ,power_delivered_l1
-  /* FixedValue */    ,power_delivered_l2
-  /* FixedValue */    ,power_delivered_l3
-  /* FixedValue */    ,power_returned_l1
-  /* FixedValue */    ,power_returned_l2
-  /* FixedValue */    ,power_returned_l3
-  /* uint16_t */      ,gas_device_type
-  /* String */        ,gas_equipment_id
-  /* uint8_t */       ,gas_valve_position
-  /* TimestampedFixedValue */ ,gas_delivered
-#ifdef USE_PRE40_PROTOCOL                          //PRE40
-  /* TimestampedFixedValue */ ,gas_delivered2      //PRE40
-#endif                                             //PRE40
-  /* uint16_t */      ,thermal_device_type
-  /* String */        ,thermal_equipment_id
-  /* uint8_t */       ,thermal_valve_position
-  /* TimestampedFixedValue */ ,thermal_delivered
-  /* uint16_t */      ,water_device_type
-  /* String */        ,water_equipment_id
-  /* uint8_t */       ,water_valve_position
-  /* TimestampedFixedValue */ ,water_delivered
-  /* uint16_t */      ,slave_device_type
-  /* String */        ,slave_equipment_id
-  /* uint8_t */       ,slave_valve_position
-  /* TimestampedFixedValue */ ,slave_delivered
+  /* String */                 identification
+  /* String */                ,p1_version
+  /* String */                ,p1_version_be
+  /* String */                ,timestamp
+  /* String */                ,equipment_id
+  /* FixedValue */            ,energy_delivered_tariff1
+  /* FixedValue */            ,energy_delivered_tariff2
+  /* FixedValue */            ,energy_returned_tariff1
+  /* FixedValue */            ,energy_returned_tariff2
+  /* String */                ,electricity_tariff
+  /* FixedValue */            ,power_delivered
+  /* FixedValue */            ,power_returned
+  /* FixedValue */            ,electricity_threshold
+  /* uint8_t */               ,electricity_switch_position
+  /* uint32_t */              ,electricity_failures
+  /* uint32_t */              ,electricity_long_failures
+  /* String */                ,electricity_failure_log
+  /* uint32_t */              ,electricity_sags_l1
+  /* uint32_t */              ,electricity_sags_l2
+  /* uint32_t */              ,electricity_sags_l3
+  /* uint32_t */              ,electricity_swells_l1
+  /* uint32_t */              ,electricity_swells_l2
+  /* uint32_t */              ,electricity_swells_l3
+  /* String */                ,message_short
+  /* String */                ,message_long
+  /* FixedValue */            ,voltage_l1
+  /* FixedValue */            ,voltage_l2
+  /* FixedValue */            ,voltage_l3
+  /* FixedValue */            ,current_l1
+  /* FixedValue */            ,current_l2
+  /* FixedValue */            ,current_l3
+  /* FixedValue */            ,power_delivered_l1
+  /* FixedValue */            ,power_delivered_l2
+  /* FixedValue */            ,power_delivered_l3
+  /* FixedValue */            ,power_returned_l1
+  /* FixedValue */            ,power_returned_l2
+  /* FixedValue */            ,power_returned_l3
+  /* uint16_t */              ,mbus1_device_type
+  /* String */                ,mbus1_equipment_id_tc
+  /* String */                ,mbus1_equipment_id_ntc
+  /* uint8_t */               ,mbus1_valve_position
+  /* TimestampedFixedValue */ ,mbus1_delivered
+  /* TimestampedFixedValue */ ,mbus1_delivered_ntc
+  /* TimestampedFixedValue */ ,mbus1_delivered_dbl
+  /* uint16_t */              ,mbus2_device_type
+  /* String */                ,mbus2_equipment_id_tc
+  /* String */                ,mbus2_equipment_id_ntc
+  /* uint8_t */               ,mbus2_valve_position
+  /* TimestampedFixedValue */ ,mbus2_delivered
+  /* TimestampedFixedValue */ ,mbus2_delivered_ntc
+  /* TimestampedFixedValue */ ,mbus2_delivered_dbl
+  /* uint16_t */              ,mbus3_device_type
+  /* String */                ,mbus3_equipment_id_tc
+  /* String */                ,mbus3_equipment_id_ntc
+  /* uint8_t */               ,mbus3_valve_position
+  /* TimestampedFixedValue */ ,mbus3_delivered
+  /* TimestampedFixedValue */ ,mbus3_delivered_ntc
+  /* TimestampedFixedValue */ ,mbus3_delivered_dbl
+  /* uint16_t */              ,mbus4_device_type
+  /* String */                ,mbus4_equipment_id_tc
+  /* String */                ,mbus4_equipment_id_ntc
+  /* uint8_t */               ,mbus4_valve_position
+  /* TimestampedFixedValue */ ,mbus4_delivered
+  /* TimestampedFixedValue */ ,mbus4_delivered_ntc
+  /* TimestampedFixedValue */ ,mbus4_delivered_dbl
 >;
+
 
 enum    { TAB_UNKNOWN, TAB_ACTUEEL, TAB_LAST24HOURS, TAB_LAST7DAYS, TAB_LAST24MONTHS, TAB_GRAPHICS, TAB_SYSINFO, TAB_EDITOR };
 
@@ -190,6 +201,8 @@ void delayms(unsigned long);
   uint32_t    telegramCount = 0, telegramErrors = 0;
   bool        showRaw = false;
   int8_t      showRawCount = 0;
+  float       gasDelivered;
+  float       mbus1Delivered, mbus2Delivered, mbus3Delivered, mbus4Delivered;
 
 
 #ifdef USE_MQTT
@@ -220,6 +233,11 @@ float     settingEDT1, settingEDT2, settingERT1, settingERT2, settingGDT;
 float     settingENBK, settingGNBK;
 uint8_t   settingTelegramInterval;
 uint8_t   settingSmHasFaseInfo = 1;
+uint8_t   settingMbus1Type     = 3;
+uint8_t   settingMbus2Type     = 0;
+uint8_t   settingMbus3Type     = 0;
+uint8_t   settingMbus4Type     = 0;
+uint8_t   settingPreDSMR40     = 0;
 char      settingHostname[30];
 char      settingIndexPage[50];
 char      settingMQTTbroker[101], settingMQTTuser[40], settingMQTTpasswd[30], settingMQTTtopTopic[21];

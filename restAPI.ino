@@ -17,7 +17,6 @@ char fieldName[40] = "";
 char fieldsArray[50][35] = {{0}}; // to lookup fields 
 int  fieldsElements      = 0;
 
-int  actualElements = 20;
 char actualArray[][35] = { "timestamp"
                           ,"energy_delivered_tariff1","energy_delivered_tariff2"
                           ,"energy_returned_tariff1","energy_returned_tariff2"
@@ -26,12 +25,25 @@ char actualArray[][35] = { "timestamp"
                           ,"current_l1","current_l2","current_l3"
                           ,"power_delivered_l1","power_delivered_l2","power_delivered_l3"
                           ,"power_returned_l1","power_returned_l2","power_returned_l3"
-                          ,"gas_delivered"
+                          ,"mbus1_delivered"
+                          ,"mbus2_delivered"
+                          ,"mbus3_delivered"
+                          ,"mbus4_delivered"
                           ,"\0"};
-int  infoElements = 7;
-char infoArray[][35]   = { "identification","p1_version","equipment_id","electricity_tariff"
-                          ,"gas_device_type","gas_equipment_id"
+                          
+int  actualElements = (sizeof(actualArray)/sizeof(actualArray[0]))-1;
+
+char infoArray[][35]   = { "identification","p1_version", "p1_version_be"
+                          ,"equipment_id"
+                          ,"electricity_tariff"
+//                        ,"gas_device_type","gas_equipment_id"
+                          ,"mbus1_device_type","mbus1_equipment"
+                          ,"mbus2_device_type","mbus2_equipment"
+                          ,"mbus3_device_type","mbus3_equipment"
+                          ,"mbus4_device_type","mbus4_equipment"
                           , "\0" };
+
+int  infoElements = (sizeof(infoArray)/sizeof(infoArray[0]))-1;
   
 bool onlyIfPresent  = false;
 
@@ -101,15 +113,15 @@ void processAPI()
 
   if (words[3] == "dev")
   {
-    handleDevApi(URI, words[4].c_str(), words[5].c_str(), words[6].c_str());
+    handleDevV1Api(URI, words[4].c_str(), words[5].c_str(), words[6].c_str());
   }
   else if (words[3] == "hist")
   {
-    handleHistApi(URI, words[4].c_str(), words[5].c_str(), words[6].c_str());
+    handleHistV1Api(URI, words[4].c_str(), words[5].c_str(), words[6].c_str());
   }
   else if (words[3] == "sm")
   {
-    handleSmApi(URI, words[4].c_str(), words[5].c_str(), words[6].c_str());
+    handleSmV1Api(URI, words[4].c_str(), words[5].c_str(), words[6].c_str());
   }
   else sendApiNotFound(URI);
   
@@ -117,7 +129,7 @@ void processAPI()
 
 
 //====================================================
-void handleDevApi(const char *URI, const char *word4, const char *word5, const char *word6)
+void handleDevV1Api(const char *URI, const char *word4, const char *word5, const char *word6)
 {
   //DebugTf("word4[%s], word5[%s], word6[%s]\r\n", word4, word5, word6);
   if (strcmp(word4, "info") == 0)
@@ -172,11 +184,11 @@ void handleDevApi(const char *URI, const char *word4, const char *word5, const c
   }
   else sendApiNotFound(URI);
   
-} // handleDevApi()
+} // handleDevV1Api()
 
 
 //====================================================
-void handleHistApi(const char *URI, const char *word4, const char *word5, const char *word6)
+void handleHistV1Api(const char *URI, const char *word4, const char *word5, const char *word6)
 {
   int8_t  fileType     = 0;
   char    fileName[20] = "";
@@ -232,11 +244,11 @@ void handleHistApi(const char *URI, const char *word4, const char *word5, const 
         sendJsonHist(fileType, fileName, actTimestamp, true);
   else  sendJsonHist(fileType, fileName, actTimestamp, false);
 
-} // handleHistApi()
+} // handleHistV1Api()
 
 
 //====================================================
-void handleSmApi(const char *URI, const char *word4, const char *word5, const char *word6)
+void handleSmV1Api(const char *URI, const char *word4, const char *word5, const char *word6)
 {
   char    tlgrm[1200] = "";
   uint8_t p=0;  
@@ -246,16 +258,18 @@ void handleSmApi(const char *URI, const char *word4, const char *word5, const ch
   if (strcmp(word4, "info") == 0)
   {
     //sendSmInfo();
-    onlyIfPresent = false;
+    DebugTf("infoElements[%d]\r\n", infoElements);
+    onlyIfPresent = true;
     copyToFieldsArray(infoArray, infoElements);
-    sendJsonFields(word4);
+    sendJsonV1Fields(word4);
   }
   else if (strcmp(word4, "actual") == 0)
   {
     //sendSmActual();
+    DebugTf("actualElements[%d]\r\n", actualElements);
     onlyIfPresent = true;
     copyToFieldsArray(actualArray, actualElements);
-    sendJsonFields(word4);
+    sendJsonV1Fields(word4);
   }
   else if (strcmp(word4, "fields") == 0)
   {
@@ -269,7 +283,7 @@ void handleSmApi(const char *URI, const char *word4, const char *word5, const ch
        strCopy(fieldsArray[1], 34, word5);
        fieldsElements = 2;
     }
-    sendJsonFields(word4);
+    sendJsonV1Fields(word4);
   }
   else if (strcmp(word4, "telegram") == 0)
   {
@@ -314,7 +328,7 @@ void handleSmApi(const char *URI, const char *word4, const char *word5, const ch
   }
   else sendApiNotFound(URI);
   
-} // handleSmApi()
+} // handleSmV1Api()
 
 
 //=======================================================================
@@ -453,6 +467,7 @@ void sendDeviceSettings()
   sendStartJsonObj("settings");
   
   sendJsonSettingObj("hostname",          settingHostname,        "s", sizeof(settingHostname) -1);
+  sendJsonSettingObj("pre_dsmr40",        settingPreDSMR40,       "i", 0, 1);
   sendJsonSettingObj("ed_tariff1",        settingEDT1,            "f", 0, 10,  5);
   sendJsonSettingObj("ed_tariff2",        settingEDT2,            "f", 0, 10,  5);
   sendJsonSettingObj("er_tariff1",        settingERT1,            "f", 0, 10,  5);
@@ -460,6 +475,10 @@ void sendDeviceSettings()
   sendJsonSettingObj("gd_tariff",         settingGDT,             "f", 0, 10,  5);
   sendJsonSettingObj("electr_netw_costs", settingENBK,            "f", 0, 100, 2);
   sendJsonSettingObj("gas_netw_costs",    settingGNBK,            "f", 0, 100, 2);
+  sendJsonSettingObj("mbus1_type",        settingMbus1Type,       "i", 0, 200);
+  sendJsonSettingObj("mbus2_type",        settingMbus2Type,       "i", 0, 200);
+  sendJsonSettingObj("mbus3_type",        settingMbus3Type,       "i", 0, 200);
+  sendJsonSettingObj("mbus4_type",        settingMbus4Type,       "i", 0, 200);
   sendJsonSettingObj("sm_has_fase_info",  settingSmHasFaseInfo,   "i", 0, 1);
   sendJsonSettingObj("tlgrm_interval",    settingTelegramInterval,"i", 2, 60);
   sendJsonSettingObj("oled_type",         settingOledType,        "i", 0, 2);
@@ -513,14 +532,14 @@ void sendDeviceDebug(const char *URI, String tail)
 } // sendDeviceDebug()
 
 //=======================================================================
-struct buildJsonApiV0SmActual
+struct buildJsonV0ApiSmActual
 {
     bool  skip = false;
     
     template<typename Item>
     void apply(Item &i) {
       skip = false;
-      String Name = Item::name;
+      String Name = String(Item::name);
       //-- for dsmr30 -----------------------------------------------
 #if defined( USE_PRE40_PROTOCOL )
       if (Name.indexOf("gas_delivered2") == 0) Name = "gas_delivered";
@@ -539,7 +558,7 @@ struct buildJsonApiV0SmActual
       }
   }
 
-};  // buildJsonApiV0SmActual()
+};  // buildJsonV0ApiSmActual()
 
 
 //=======================================================================
@@ -550,30 +569,29 @@ void sendJsonV0Fields()
   httpServer.sendHeader("Access-Control-Allow-Origin", "*");
   httpServer.setContentLength(CONTENT_LENGTH_UNKNOWN);
   httpServer.send(200, "application/json", "{\r\n");
-  DSMRdata.applyEach(buildJsonApiV0SmActual());
+  DSMRdata.applyEach(buildJsonV0ApiSmActual());
   httpServer.sendContent("\r\n}\r\n");
 
 } // sendJsonV0Fields()
 
 
 //=======================================================================
-struct buildJsonApi 
+struct buildJsonV1Api 
 {
-    bool  skip = false;
+    bool  show;
     
     template<typename Item>
     void apply(Item &i) {
-      skip = false;
-      String Name = Item::name;
+      String Name = String(Item::name);
       //-- for dsmr30 -----------------------------------------------
 #if defined( USE_PRE40_PROTOCOL )
       if (Name.indexOf("gas_delivered2") == 0) Name = "gas_delivered";
 #endif
-      if (!isInFieldsArray(Name.c_str(), fieldsElements))
-      {
-        skip = true;
-      }
-      if (!skip)
+      if (isInFieldsArray(Name.c_str(), fieldsElements))
+            show = true;
+      else  show = false;
+      
+      if (show)
       {
         if (i.present()) 
         {
@@ -595,17 +613,21 @@ struct buildJsonApi
       }
   }
 
-};  // buildJsonApi()
+};  // buildJsonV1Api()
 
 
 //=======================================================================
-void sendJsonFields(const char *Name) 
+void sendJsonV1Fields(const char *Name) 
 {
   sendStartJsonObj(Name);
-  DSMRdata.applyEach(buildJsonApi());
+  DSMRdata.applyEach(buildJsonV1Api());
+  if (strncmp(Name, "actual", 6)==0)
+  {
+    sendNestedJsonObj("gas_delivered", gasDelivered, "m3");
+  }
   sendEndJsonObj();
 
-} // sendJsonFields()
+} // sendJsonV1Fields()
 
 
 //=======================================================================
@@ -661,8 +683,9 @@ bool isInFieldsArray(const char* lookUp, int elemts)
 
   for (int i=0; i<elemts; i++)
   {
-    //if (Verbose2) DebugTf("[%2d] Looking for [%s] in array[%s]\r\n", i, lookUp, fieldsArray[i]); 
-    if (strcmp(lookUp, fieldsArray[i]) == 0) return true;
+    if (Verbose2) 
+        DebugTf("[%2d] Looking for [%s] in array[%s]\r\n", i, lookUp, fieldsArray[i]); 
+    if (strncmp(lookUp, fieldsArray[i], strlen(fieldsArray[i])) == 0) return true;
   }
   return false;
   

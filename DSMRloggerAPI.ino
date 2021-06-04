@@ -38,8 +38,8 @@
 #define USE_UPDATE_SERVER         // define if there is enough memory and updateServer to be used
 //  #define USE_BELGIUM_PROTOCOL      // define if Slimme Meter is a Belgium Smart Meter
 //  #define USE_PRE40_PROTOCOL        // define if Slimme Meter is pre DSMR 4.0 (2.2 .. 3.0)
-//  #define USE_NTP_TIME              // define to generate Timestamp from NTP (Only Winter Time for now)
-//  #define HAS_NO_SLIMMEMETER        // define for testing only!
+  #define USE_NTP_TIME              // define to generate Timestamp from NTP (Only Winter Time for now)
+  #define HAS_NO_SLIMMEMETER        // define for testing only!
 #define USE_MQTT                  // define if you want to use MQTT (configure through webinterface)
 #define USE_MINDERGAS             // define if you want to update mindergas (configure through webinterface)
 //  #define USE_SYSLOGGER             // define if you want to use the sysLog library for debugging
@@ -481,11 +481,30 @@ void setup()
 
   DebugTln(F("Enable slimmeMeter..\r"));
 
-#if defined( USE_REQUEST_PIN ) && !defined( HAS_NO_SLIMMEMETER )
+#if !defined( HAS_NO_SLIMMEMETER )
     DebugTf("Swapping serial port to Smart Meter, debug output will continue on telnet\r\n");
     DebugFlush();
+    if (settingPreDSMR40 == 0)
+    {
+      DebugTln("Serial will be set to 115200 baud / 7N1");
+      DebugFlush();
+      Serial.end();
+      delay(100);
+      Serial.begin(115200, SERIAL_8N1);
+      slimmeMeter.doChecksum(true);
+    }
+    else
+    {                //PRE40
+     DebugTln("Serial will be set to 9600 baud / 7N1");
+     DebugFlush();
+     Serial.end();
+     delay(100);
+     Serial.begin(9600, SERIAL_7E1);
+     slimmeMeter.doChecksum(false);
+    }                                    
     Serial.swap();
-#endif // is_esp12
+    
+#endif // HAS_NO_SLIMME_METER
 
   delay(100);
   slimmeMeter.enable(true);
