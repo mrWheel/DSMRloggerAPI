@@ -222,7 +222,7 @@ uint8_t   settingTelegramInterval;
 uint8_t   settingSmHasFaseInfo = 1;
 char      settingHostname[30];
 char      settingIndexPage[50];
-char      settingMQTTbroker[101], settingMQTTuser[40], settingMQTTpasswd[30], settingMQTTtopTopic[21];
+char      settingMQTTbroker[101], settingMQTTuser[40], settingMQTTpasswd[40], settingMQTTtopTopic[21];
 int32_t   settingMQTTinterval, settingMQTTbrokerPort;
 String    pTimestamp;
 
