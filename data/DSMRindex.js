@@ -1222,7 +1222,7 @@ http://DSMR-API.local/api/v1/dev/settings</pre>", false);
                     }
                     sInput.setAttribute("value", data[i].value);
                     sInput.addEventListener('change',
-                                function() { setBackGround("setFld_"+data[i].name, "lightgray"); },
+                                function() { setBackGround(this.id, "lightgray"); },
                                             false
                                 );
                   inputDiv.appendChild(sInput);
