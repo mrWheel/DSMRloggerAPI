@@ -159,6 +159,7 @@ input {
 }
 
 .nav-container a:hover {
+  cursor: pointer;
   color: black;
   background: skyblue; /* only for FSexplorer - Rest does not work */
 }
