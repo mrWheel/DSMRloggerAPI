@@ -93,7 +93,10 @@ bool connectMQTT_FSM()
           DebugTf("[%s] => setServer(%s, %d) \r\n", settingMQTTbroker, MQTTbrokerIPchar, settingMQTTbrokerPort);
           MQTTclient.setServer(MQTTbrokerIPchar, settingMQTTbrokerPort);
           DebugTf("setServer  -> MQTT status, rc=%d \r\n", MQTTclient.state());
-          MQTTclientId  = String(settingHostname) + "-" + WiFi.macAddress();
+          MQTTclientId  = String(settingHostname);
+          if (MQTTclientId.equalsIgnoreCase("DSMR-API")) {
+            MQTTclientId+= "-" + WiFi.macAddress();
+          }
           stateMQTT = MQTT_STATE_TRY_TO_CONNECT;
           DebugTln(F("Next State: MQTT_STATE_TRY_TO_CONNECT"));
           reconnectAttempts = 0;
