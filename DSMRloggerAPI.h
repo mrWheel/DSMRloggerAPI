@@ -42,9 +42,7 @@
 #include <dsmr2.h>               // Version 0.1 - Commit f79c906 on 18 Sep 2018
 
 #define _DEFAULT_HOSTNAME  "DSMR-API"  
-#ifdef USE_REQUEST_PIN
-    #define DTR_ENABLE  12
-#endif  // is_esp12
+#define DTR_ENABLE         12
 
 #define SETTINGS_FILE      "/DSMRsettings.ini"
 
@@ -207,7 +205,6 @@ void delayms(unsigned long);
   bool        showRaw = false;
   int8_t      showRawCount = 0;
   float       gasDelivered;
-  float       mbus1Delivered, mbus2Delivered, mbus3Delivered, mbus4Delivered;
 
 
 #ifdef USE_MQTT
@@ -245,7 +242,7 @@ uint8_t   settingMbus4Type     = 0;
 uint8_t   settingPreDSMR40     = 0;
 char      settingHostname[30];
 char      settingIndexPage[50];
-char      settingMQTTbroker[101], settingMQTTuser[40], settingMQTTpasswd[30], settingMQTTtopTopic[21];
+char      settingMQTTbroker[101], settingMQTTuser[40], settingMQTTpasswd[40], settingMQTTtopTopic[21];
 int32_t   settingMQTTinterval, settingMQTTbrokerPort;
 String    pTimestamp;
 

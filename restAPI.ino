@@ -333,9 +333,6 @@ void sendDeviceInfo()
 {
   char compileOptions[200] = "";
 
-#ifdef USE_REQUEST_PIN
-    strConcat(compileOptions, sizeof(compileOptions), "[USE_REQUEST_PIN]");
-#endif
 #ifdef USE_UPDATE_SERVER
     strConcat(compileOptions, sizeof(compileOptions), "[USE_UPDATE_SERVER]");
 #endif
@@ -382,7 +379,7 @@ void sendDeviceInfo()
   sendNestedJsonObj("flashchipsize", formatFloat((ESP.getFlashChipSize() / 1024.0 / 1024.0), 3), "MB");
   sendNestedJsonObj("flashchiprealsize", formatFloat((ESP.getFlashChipRealSize() / 1024.0 / 1024.0), 3), "MB");
 
-  SPIFFS.info(SPIFFSinfo);
+  FSYS.info(SPIFFSinfo);
   sendNestedJsonObj("spiffssize", formatFloat( (SPIFFSinfo.totalBytes / (1024.0 * 1024.0)), 0), "MB");
 
   sendNestedJsonObj("flashchipspeed", formatFloat((ESP.getFlashChipSpeed() / 1000.0 / 1000.0), 0), "MHz");
@@ -533,10 +530,6 @@ struct buildJsonV0ApiSmActual
     void apply(Item &i) {
       skip = false;
       String Name = String(Item::name);
-      //-- for dsmr30 -----------------------------------------------
-#if defined( USE_PRE40_PROTOCOL )
-      if (Name.indexOf("gas_delivered2") == 0) Name = "gas_delivered";
-#endif
       if (!isInFieldsArray(Name.c_str(), fieldsElements))
       {
         skip = true;
@@ -545,7 +538,6 @@ struct buildJsonV0ApiSmActual
       {
         if (i.present()) 
         {
-          //String Unit = Item::unit();
           sendNestedJsonV0Obj(Name.c_str(), typecastValue(i.val()));
         }
       }
@@ -576,10 +568,6 @@ struct buildJsonV1Api
     template<typename Item>
     void apply(Item &i) {
       String Name = String(Item::name);
-      //-- for dsmr30 -----------------------------------------------
-#if defined( USE_PRE40_PROTOCOL )
-      if (Name.indexOf("gas_delivered2") == 0) Name = "gas_delivered";
-#endif
       if (isInFieldsArray(Name.c_str(), fieldsElements))
             show = true;
       else  show = false;

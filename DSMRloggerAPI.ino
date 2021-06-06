@@ -2,7 +2,7 @@
 ***************************************************************************  
 **  Program  : DSMRloggerAPI (restAPI)
 */
-#define _FW_VERSION "v3.0.Beta2 (04-06-2020)"
+#define _FW_VERSION "v3.0.Beta2 (05-06-2020)"
 /*
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -34,17 +34,14 @@
 **   https://mrwheel.github.io/DSMRloggerWS/
 */
 /******************** compiler options  ********************************************/
-#define USE_REQUEST_PIN           // define if it's a esp8266 with GPIO 12 connected to SM DTR pin
 #define USE_UPDATE_SERVER         // define if there is enough memory and updateServer to be used
-//  #define USE_BELGIUM_PROTOCOL      // define if Slimme Meter is a Belgium Smart Meter
-//  #define USE_PRE40_PROTOCOL        // define if Slimme Meter is pre DSMR 4.0 (2.2 .. 3.0)
 //  #define USE_NTP_TIME              // define to generate Timestamp from NTP (Only Winter Time for now)
   #define HAS_NO_SLIMMEMETER        // define for testing only!
 #define USE_MQTT                  // define if you want to use MQTT (configure through webinterface)
 #define USE_MINDERGAS             // define if you want to update mindergas (configure through webinterface)
 //  #define USE_SYSLOGGER             // define if you want to use the sysLog library for debugging
 //  #define SHOW_PASSWRDS             // well .. show the PSK key and MQTT password, what else?
-//  #define USE_LITTLEFS
+#define USE_LITTLEFS              // if not use SPIFFS
 /******************** don't change anything below this comment **********************/
 
 #include "DSMRloggerAPI.h"
@@ -137,17 +134,10 @@ void openSysLog(bool empty)
 //===========================================================================================
 void setup() 
 {
-#ifdef USE_PRE40_PROTOCOL                                                         //PRE40
-//Serial.begin(115200);                                                           //DEBUG
-  Serial.begin(9600, SERIAL_7E1);                                                 //PRE40
-#else   // not use_dsmr_30                                                        //PRE40
-  Serial.begin(115200, SERIAL_8N1);
-#endif  // use_dsmr_30
+  Serial.begin(115200, SERIAL_8N1); // for now. Look at end of setup()
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(FLASH_BUTTON, INPUT);
-#ifdef DTR_ENABLE
   pinMode(DTR_ENABLE, OUTPUT);
-#endif
   
   //--- setup randomseed the right way
   //--- This is 8266 HWRNG used to seed the Random PRNG

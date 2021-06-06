@@ -41,7 +41,7 @@ bool startNTP()
   DebugTln(F("Starting UDP"));
   Udp.begin(localPort);
   DebugT(F("Local port: "));
-  DebugTln(String(Udp.localPort()));
+  Debugln(String(Udp.localPort()));
   DebugTln(F("waiting for NTP sync"));
   setSyncProvider(getNtpTime);
   setSyncInterval(60);  // seconds!

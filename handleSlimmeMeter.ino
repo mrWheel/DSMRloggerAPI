@@ -67,17 +67,6 @@ void processSlimmemeterRaw()
   }
 
   tlgrm[l++] = '!';
-//#if !defined( USE_PRE40_PROTOCOL )
-//  // next 6 bytes are "<CRC>\r\n"
-//  for (int i=0; ( i<6 && (i<(sizeof(tlgrm)-7)) ); i++)
-//  {
-//    tlgrm[l++] = (char)Serial.read();
-//  }
-//#else
-//  tlgrm[l++]    = '\r';
-//  tlgrm[l++]    = '\n';
-//#endif
-//  tlgrm[(l +1)] = '\0';
   // next 6 bytes are "<CRC>\r\n"
   lc = Serial.readBytesUntil('\n', checkSum, sizeof(checkSum));
   for (int i=0; i<lc; i++)

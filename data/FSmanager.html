@@ -42,7 +42,7 @@
             myList.insertAdjacentHTML('beforeend', dir);
           }
 
-          myList.insertAdjacentHTML('beforeend', `<br/><li><b id="so">${to ? '&#9660;' : '&#9650;'} LittleFS</b> uses ${json[i].usedBytes.replace(".00", "")} of ${json[i].totalBytes.replace(".00", "")}`);
+          myList.insertAdjacentHTML('beforeend', `<br/><li><b id="so">${to ? '&#9660;' : '&#9650;'} FileSYS</b> uses ${json[i].usedBytes.replace(".00", "")} of ${json[i].totalBytes.replace(".00", "")}`);
           var free = json[i].freeBytes;
 		      cr.addEventListener('click', () => {
 			      document.getElementById('no').classList.toggle('no');
@@ -154,7 +154,7 @@
       <div class="box flex">
         <div class="bottomButtons">
           <form action="/format" method="POST" disabled>
-	          <button id="format" disabled>Format LittleFS</button>
+	          <button id="format" disabled>Format FileSYS</button>
 	        </form>
 	      </div>
         <div class="bottomButtons">

@@ -181,31 +181,12 @@ bool handleList()
   _fileMeta dirMap[30];
   int fileNr = 0;
   
-  File root = SPIFFS.open("/", "r");         // List files on SPIFFS
-  if(!root){
-      DebugTln("- failed to open directory");
-      return false;
-  }
-  if(!root.isDirectory())
+  Dir dir = FSYS.openDir("/");         // List files on SPIFFS
+  while (dir.next())  
   {
-      DebugTln(" - not a directory");
-      return false;
-  }
-
-  File file = root.openNextFile();
-  while(file){
-    if(file.isDirectory()){
-        DebugT("  DIR : ");
-        DebugTln(file.name());
-        // directory is skipped
-    } else 
-    {
-      dirMap[fileNr].Name[0] = '\0';
-      strncat(dirMap[fileNr].Name, file.name(), 29); // first copy file.name() to dirMap
-      memmove(dirMap[fileNr].Name, dirMap[fileNr].Name+1, strlen(dirMap[fileNr].Name)); // remove leading '/'
-      dirMap[fileNr].Size = file.size();
-    }
-    file = root.openNextFile();
+    dirMap[fileNr].Name[0] = '\0';
+    strncat(dirMap[fileNr].Name, dir.fileName().substring(1).c_str(), 29); // remove leading '/'
+    dirMap[fileNr].Size = dir.fileSize();
     fileNr++;
   }
 
@@ -236,13 +217,14 @@ bool handleList()
   for (int f=0; f < fileNr; f++)  
   {
     if (temp != "[") temp += ",";
-    temp += R"({"name":")" + String(dirMap[f].Name) + R"(","size":")" + formatBytes(dirMap[f].Size) + R"("})";
+  //temp += R"({\"folder\":\"/\","name":")" + String(dirMap[f].Name) + R"(","size":")" + formatBytes(dirMap[f].Size) + R"("})";
+    temp += R"({"folder":"","name":")" + String(dirMap[f].Name) + R"(","size":")" + formatBytes(dirMap[f].Size) + R"("})";
+  //temp += "{\"folder\":\"/"\",\"name\":\"" + get<1>(t) + "\",\"size\":\"" + formatBytes(get<2>(t)) + "\"}";
   }
-  //SPIFFS.info(SPIFFSinfo);
-  //--- UITZOEKEN 
-//  temp += R"(,{"usedBytes":")" + formatBytes(FSYS.usedBytes() * 1.05) + R"(",)" +       // Berechnet den verwendeten Speicherplatz + 5% Sicherheitsaufschlag
-//          R"("totalBytes":")" + formatBytes(FSYS.totalBytes()) + R"(","freeBytes":")" + // Zeigt die Größe des Speichers
-//          (FSYS.totalBytes() - (FSYS.usedBytes() * 1.05)) + R"("}])";                 // Berechnet den freien Speicherplatz + 5% Sicherheitsaufschlag
+  FSYS.info(SPIFFSinfo);
+  temp += R"(,{"usedBytes":")" + formatBytes(SPIFFSinfo.usedBytes * 1.05) + R"(",)" +       // Berechnet den verwendeten Speicherplatz + 5% Sicherheitsaufschlag
+          R"("totalBytes":")" + formatBytes(SPIFFSinfo.totalBytes) + R"(","freeBytes":")" + // Zeigt die Größe des Speichers
+          (SPIFFSinfo.totalBytes - (SPIFFSinfo.usedBytes * 1.05)) + R"("}])";               // Berechnet den freien Speicherplatz + 5% Sicherheitsaufschlag
 
 #endif
 
@@ -287,7 +269,11 @@ bool handleFile(String &&path)
     #if defined( USE_LITTLEFS )
       deleteRecursive(httpServer.arg("delete"));
     #else
-      FSYS.remove(httpServer.arg("delete"));    // Datei löschen
+      // remove "undefined" (9 positions)
+      String fileName = httpServer.arg("delete");
+      //fileName.remove(0,9);
+      DebugTf("remove [%s] ..\r\n", fileName.c_str());
+      FSYS.remove(fileName);    // Datei löschen
     #endif
     sendResponce();
     return true;
@@ -302,7 +288,7 @@ bool handleFile(String &&path)
   //if (path == "/FSmanager.html") sendResponce(); 
   if (path == "/admin.html") sendResponce(); 
 
-#if defined( USE_LITTLEFS)
+#if defined( USE_LITTLEFS )
   return FSYS.exists(path) ? ({File f = FSYS.open(path, "r"); httpServer.streamFile(f, mime::getContentType(path)); f.close(); true;}) : false;
 
 #else
@@ -325,7 +311,11 @@ void handleUpload()
       upload.filename = upload.filename.substring(upload.filename.length() - 31, upload.filename.length());
     }
     printf(PSTR("handleFileUpload Name: /%s\r\n"), upload.filename.c_str());
+  #if defined( USE_LITTLEFS )
     fsUploadFile = FSYS.open(httpServer.arg(0) + "/" + httpServer.urlDecode(upload.filename), "w");
+  #else
+    fsUploadFile = FSYS.open(httpServer.arg(0) + httpServer.urlDecode(upload.filename), "w");
+  #endif
   } 
   else if (upload.status == UPLOAD_FILE_WRITE) 
   {

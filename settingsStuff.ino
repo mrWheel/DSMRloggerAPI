@@ -15,7 +15,7 @@ void writeSettings()
 {
   yield();
   DebugT(F("Writing to [")); Debug(SETTINGS_FILE); Debugln(F("] ..."));
-  File file = SPIFFS.open(SETTINGS_FILE, "w"); // open for reading and writing
+  File file = FSYS.open(SETTINGS_FILE, "w"); // open for reading and writing
   if (!file) 
   {
     DebugTf("open(%s, 'w') FAILED!!! --> Bailout\r\n", SETTINGS_FILE);
@@ -160,7 +160,7 @@ void readSettings(bool show)
   settingMindergasToken[0] = '\0';
 #endif
 
-  if (!SPIFFS.exists(SETTINGS_FILE)) 
+  if (!FSYS.exists(SETTINGS_FILE)) 
   {
     DebugTln(F(" .. file not found! --> created file!"));
     writeSettings();
@@ -168,7 +168,7 @@ void readSettings(bool show)
 
   for (int T = 0; T < 2; T++) 
   {
-    file = SPIFFS.open(SETTINGS_FILE, "r");
+    file = FSYS.open(SETTINGS_FILE, "r");
     if (!file) 
     {
       if (T == 0) DebugTf(" .. something went wrong opening [%s]\r\n", SETTINGS_FILE);
@@ -241,7 +241,7 @@ void readSettings(bool show)
     }
     if (words[0].equalsIgnoreCase("MQTTbrokerPort"))      settingMQTTbrokerPort    = words[1].toInt();  
     if (words[0].equalsIgnoreCase("MQTTuser"))            strCopy(settingMQTTuser    ,35 ,words[1].c_str());  
-    if (words[0].equalsIgnoreCase("MQTTpasswd"))          strCopy(settingMQTTpasswd  ,25, words[1].c_str());  
+    if (words[0].equalsIgnoreCase("MQTTpasswd"))          strCopy(settingMQTTpasswd  ,35, words[1].c_str());  
     if (words[0].equalsIgnoreCase("MQTTinterval"))        settingMQTTinterval        = words[1].toInt(); 
     if (words[0].equalsIgnoreCase("MQTTtopTopic"))        strCopy(settingMQTTtopTopic, 20, words[1].c_str());  
     
@@ -400,7 +400,7 @@ void updateSetting(const char *field, const char *newValue)
     CHANGE_INTERVAL_MS(reconnectMQTTtimer, 100); // try reconnecting cyclus timer
   }
   if (!stricmp(field, "mqtt_passwd")) {
-    strCopy(settingMQTTpasswd  ,25, newValue);  
+    strCopy(settingMQTTpasswd  ,35, newValue);  
     mqttIsConnected = false;
     CHANGE_INTERVAL_MS(reconnectMQTTtimer, 100); // try reconnecting cyclus timer
   }
