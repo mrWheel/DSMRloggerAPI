@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : FSYSstuff, part of DSMRloggerAPI
-**  Version  : v2.0.1
+**  Version  : v3.0
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -503,7 +503,11 @@ void listFSYS()
   while (dir.next())  
   {
     dirMap[fileNr].Name[0] = '\0';
+  #if defined( USE_LITTLEFS )
+    strncat(dirMap[fileNr].Name, dir.fileName().substring(0).c_str(), 19); 
+  #else // SPIFFS
     strncat(dirMap[fileNr].Name, dir.fileName().substring(1).c_str(), 19); // remove leading '/'
+  #endif
     dirMap[fileNr].Size = dir.fileSize();
     fileNr++;
   }
@@ -536,10 +540,10 @@ void listFSYS()
   if (freeSpace() < (10 * SPIFFSinfo.blockSize))
         Debugf("Available FSYS space [%6d]kB (LOW ON SPACE!!!)\r\n", (freeSpace() / 1024));
   else  Debugf("Available FSYS space [%6d]kB\r\n", (freeSpace() / 1024));
-  Debugf("             FSYS Size [%6d]kB\r\n", (SPIFFSinfo.totalBytes / 1024));
-  Debugf("       FSYS block Size [%6d]bytes\r\n", SPIFFSinfo.blockSize);
-  Debugf("        FSYS page Size [%6d]bytes\r\n", SPIFFSinfo.pageSize);
-  Debugf("   FSYS max.Open Files [%6d]\r\n\r\n", SPIFFSinfo.maxOpenFiles);
+  Debugf("           FSYS Size [%6d]kB\r\n", (SPIFFSinfo.totalBytes / 1024));
+  Debugf("     FSYS block Size [%6d]bytes\r\n", SPIFFSinfo.blockSize);
+  Debugf("      FSYS page Size [%6d]bytes\r\n", SPIFFSinfo.pageSize);
+  Debugf(" FSYS max.Open Files [%6d]\r\n\r\n", SPIFFSinfo.maxOpenFiles);
 
 
 } // listFSYS()

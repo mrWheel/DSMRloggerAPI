@@ -1,7 +1,7 @@
 /*
 **************************************************************************
 **  Program  : MinderGas.ino
-**  Version  : v2.0.1
+**  Version  : v3.0
 **
 **  Copyright (c) 2020 Robert van den Breemen
 **

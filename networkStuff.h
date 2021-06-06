@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : networkStuff.h, part of DSMRloggerAPI
-**  Version  : v2.0.1
+**  Version  : v3.0
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -62,7 +62,7 @@ void startWiFi(const char* hostname, int timeOut)
   uint32_t lTime = millis();
   String thisAP = String(hostname) + "-" + WiFi.macAddress();
 
-  DebugT("start ...");
+  DebugTln("start ...");
   
   manageWiFi.setDebugOutput(true);
   
@@ -94,7 +94,7 @@ void startWiFi(const char* hostname, int timeOut)
     //delay(3000);
     //ESP.reset();
     //delay(2000);
-    DebugTf(" took [%d] seconds ==> ERROR!\r\n", (millis() - lTime) / 1000);
+    DebugTf(" took [%d] milli-seconds ==> ERROR!\r\n", (millis() - lTime));
     return;
   }
   
@@ -109,7 +109,7 @@ void startWiFi(const char* hostname, int timeOut)
   httpUpdater.setIndexPage(UpdateServerIndex);
   httpUpdater.setSuccessPage(UpdateServerSuccess);
 #endif
-  DebugTf(" took [%d] seconds => OK!\r\n", (millis() - lTime) / 1000);
+  DebugTf(" took [%d] milli-seconds => OK!\r\n", (millis() - lTime));
   
 } // startWiFi()
 

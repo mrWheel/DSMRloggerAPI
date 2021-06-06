@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRloggerAPI.h - definitions for DSMRloggerAPI
-**  Version  : v2.0.1
+**  Version  : v3.0
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -52,6 +52,7 @@
 #define MAXCOLORNAME       15
 #define JSON_BUFF_MAX     255
 #define MQTT_BUFF_MAX     200
+#define MAX_TLGRM_LENGTH 1500
 
 //-------------------------.........1....1....2....2....3....3....4....4....5....5....6....6....7....7
 //-------------------------1...5....0....5....0....5....0....5....0....5....0....5....0....5....0....5

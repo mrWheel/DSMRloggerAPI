@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : settingsStuff, part of DSMRloggerAPI
-**  Version  : v2.0.1
+**  Version  : v3.0
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -280,7 +280,7 @@ void readSettings(bool show)
   Debugf("                 MBus 2 Type : %d\r\n",     settingMbus2Type);
   Debugf("                 MBus 3 Type : %d\r\n",     settingMbus3Type);
   Debugf("                 MBus 4 Type : %d\r\n",     settingMbus4Type);
-  Debugf("  SM Fase Info (0=No, 1=Yes) : %d\r\n",     settingSmHasFaseInfo);
+  Debugf("  SM Fase Info (0=No, 1=Yes) : %s\r\n",     settingSmHasFaseInfo ? "Yes":"No");
   Debugf("   Telegram Process Interval : %d\r\n",     settingTelegramInterval);
   Debugf("         OLED Type (0, 1, 2) : %d\r\n",     settingOledType);
   Debugf("OLED Sleep Min. (0=oneindig) : %d\r\n",     settingOledSleep);

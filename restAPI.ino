@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : restAPI, part of DSMRloggerAPI
-**  Version  : v2.0.1
+**  Version  : v3.0
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -250,7 +250,7 @@ void handleHistV1Api(const char *URI, const char *word4, const char *word5, cons
 //====================================================
 void handleSmV1Api(const char *URI, const char *word4, const char *word5, const char *word6)
 {
-  char    tlgrm[1200] = "";
+  char    tlgrm[MAX_TLGRM_LENGTH] = "";
   uint8_t p=0;  
   bool    stopParsingTelegram = false;
 
@@ -258,7 +258,7 @@ void handleSmV1Api(const char *URI, const char *word4, const char *word5, const 
   if (strcmp(word4, "info") == 0)
   {
     //sendSmInfo();
-    DebugTf("infoElements[%d]\r\n", infoElements);
+    //DebugTf("infoElements[%d]\r\n", infoElements);
     onlyIfPresent = true;
     copyToFieldsArray(infoArray, infoElements);
     sendJsonV1Fields(word4);
@@ -266,7 +266,7 @@ void handleSmV1Api(const char *URI, const char *word4, const char *word5, const 
   else if (strcmp(word4, "actual") == 0)
   {
     //sendSmActual();
-    DebugTf("actualElements[%d]\r\n", actualElements);
+    //DebugTf("actualElements[%d]\r\n", actualElements);
     onlyIfPresent = true;
     copyToFieldsArray(actualArray, actualElements);
     sendJsonV1Fields(word4);
@@ -293,12 +293,20 @@ void handleSmV1Api(const char *URI, const char *word4, const char *word5, const 
     memset(tlgrm, 0, sizeof(tlgrm));
     int l = 0;
     // The terminator character is discarded from the serial buffer.
-    l = Serial.readBytesUntil('/', tlgrm, sizeof(tlgrm));
+    do
+    {
+      l = Serial.readBytesUntil('/', tlgrm, (sizeof(tlgrm)-10));
+    } while(l>=(MAX_TLGRM_LENGTH -11));
     // now read from '/' to '!'
     // The terminator character is discarded from the serial buffer.
-    l = Serial.readBytesUntil('!', tlgrm, sizeof(tlgrm));
+    l = Serial.readBytesUntil('!', tlgrm, (sizeof(tlgrm)-10));
     Serial.setTimeout(1000);  // seems to be the default ..
     DebugTf("read [%d] bytes\r\n", l);
+    if (l >= (MAX_TLGRM_LENGTH -11))
+    {
+      DebugTf("telegram > [%d] bytes. Bailout!\r\n", MAX_TLGRM_LENGTH);
+      return;
+    }
     if (l == 0) 
     {
       httpServer.send(200, "application/plain", "no telegram received");
@@ -308,7 +316,7 @@ void handleSmV1Api(const char *URI, const char *word4, const char *word5, const 
 
     tlgrm[l++] = '!';
     // next 6 bytes are "<CRC>\r\n"
-    for (int i=0; ( (i<6) && (i<(sizeof(tlgrm)-7)) && (tlgrm[l] != '\n') ); i++)
+    for (int i=0; ( (i<6) && (i<(sizeof(tlgrm)-10)) && (tlgrm[l] != '\n') ); i++)
     {
       tlgrm[l++] = (char)Serial.read();
     }
@@ -345,9 +353,6 @@ void sendDeviceInfo()
 #ifdef USE_SYSLOGGER
     strConcat(compileOptions, sizeof(compileOptions), "[USE_SYSLOGGER]");
 #endif
-//#ifdef USE_NTP_TIME
-//    strConcat(compileOptions, sizeof(compileOptions), "[USE_NTP_TIME]");
-//#endif
 #ifdef HAS_NO_SLIMMEMETER
     strConcat(compileOptions, sizeof(compileOptions), "[NO_SLIMMEMETER]");
 #endif

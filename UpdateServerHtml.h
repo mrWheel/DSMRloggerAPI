@@ -12,14 +12,14 @@ static const char UpdateServerIndex[] PROGMEM =
           <input type='submit' value='Flash Firmware'>
       </form>
       <form method='POST' action='?cmd=100' enctype='multipart/form-data'> 
-          Selecteer een "<b>.spiffs.bin</b>" bestand<br/>
-          <input type='file' accept='spiffs.bin' name='filesystem'>
+          Selecteer een "<b>.{ spiffs | mklittlefs }.bin</b>" bestand<br/>
+          <input type='file' accept='.bin' name='filesystem'>
           <input type='submit' value='Flash Spiffs'>
       </form>
       <hr>
       <br/><font color='red'>Let op!!!</font>
       <br/>Bij het flashen van FSYS raakt u de RING-bestanden kwijt. 
-      <br/>Maak daarom eerst een kopie van deze bestanden (met de FSexplorer) 
+      <br/>Maak daarom eerst een kopie van deze bestanden (met de FSmanager) 
       en zet de data-bestanden na het flashen van FSYS weer terug.
       <hr>
       <br/>

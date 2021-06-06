@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : FSmanager, part of DSMRloggerAPI
-**  Version  : v2.0.1
+**  Version  : v3.0
 **
 **  Mostly stolen from: https://fipsok.de/Esp8266-Webserver/littlefs-esp8266-270.tab
 */  

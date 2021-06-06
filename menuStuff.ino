@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : menuStuff, part of DSMRloggerAPI
-**  Version  : v2.0.1
+**  Version  : v3.0
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -41,8 +41,8 @@ void displayBoardInfo()
   Debug(F(" \r\n            (c)2019 by [Willem Aandewiel"));
   Debug(F("]\r\n      Firmware Version ["));  Debug( _FW_VERSION );
   Debug(F("]\r\n              Compiled ["));  Debug( __DATE__ ); 
-                                               Debug( "  " );
-                                               Debug( __TIME__ );
+                                              Debug( "  " );
+                                              Debug( __TIME__ );
   Debug(F("]\r\n         compiled with [dsmr2.h]"));
   Debug(F("]\r\n              #defines "));
 #ifdef USE_UPDATE_SERVER
@@ -57,9 +57,6 @@ void displayBoardInfo()
 #ifdef USE_SYSLOGGER
   Debug(F("[USE_SYSLOGGER]"));
 #endif
-//#ifdef USE_NTP_TIME
-//  Debug(F("[USE_NTP_TIME]"));
-//#endif
 #ifdef SHOW_PASSWRDS
   Debug(F("[SHOW_PASSWRDS]"));
 #endif

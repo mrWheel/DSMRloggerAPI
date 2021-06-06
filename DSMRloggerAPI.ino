@@ -2,9 +2,9 @@
 ***************************************************************************  
 **  Program  : DSMRloggerAPI (restAPI)
 */
-#define _FW_VERSION "v3.0.Beta2 (05-06-2020)"
+#define _FW_VERSION "v3.0.Beta2 (06-06-2020)"
 /*
-**  Copyright (c) 2020 Willem Aandewiel
+**  Copyright (c) 2020, 2021 Willem Aandewiel
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
@@ -35,8 +35,7 @@
 */
 /******************** compiler options  ********************************************/
 #define USE_UPDATE_SERVER         // define if there is enough memory and updateServer to be used
-//  #define USE_NTP_TIME              // define to generate Timestamp from NTP (Only Winter Time for now)
-  #define HAS_NO_SLIMMEMETER        // define for testing only!
+//  #define HAS_NO_SLIMMEMETER        // define for testing only!
 #define USE_MQTT                  // define if you want to use MQTT (configure through webinterface)
 #define USE_MINDERGAS             // define if you want to update mindergas (configure through webinterface)
 //  #define USE_SYSLOGGER             // define if you want to use the sysLog library for debugging
@@ -55,9 +54,6 @@ struct showValues {
       Debug(F(": "));
       Debug(i.val());
       Debug(Item::unit());
-    //} else 
-    //{
-    //  TelnetStream.print(F("<no value>"));
     }
     Debugln();
   }
@@ -260,35 +256,33 @@ void setup()
   
 //=============end Networkstuff======================================
 
-//#if defined(USE_NTP_TIME)                                   //USE_NTP
 //================ startNTP =========================================
-  if (settingOledType > 0)                                  //USE_NTP
-  {                                                         //USE_NTP
-    oled_Print_Msg(3, "setup NTP server", 100);             //USE_NTP
-  }                                                         //USE_NTP
-                                                            //USE_NTP
-  if (!startNTP())                                          //USE_NTP
-  {                                                         //USE_NTP
-    DebugTln(F("ERROR!!! No NTP server reached!\r\n\r"));   //USE_NTP
-    if (settingOledType > 0)                                //USE_NTP
-    {                                                       //USE_NTP
-      oled_Print_Msg(0, " <DSMRloggerAPI>", 0);              //USE_NTP
-      oled_Print_Msg(2, "geen reactie van", 100);           //USE_NTP
-      oled_Print_Msg(2, "NTP server's", 100);               //USE_NTP 
-      oled_Print_Msg(3, "Reboot DSMR-logger", 2000);        //USE_NTP
-    }                                                       //USE_NTP
-    delay(2000);                                            //USE_NTP
-    ESP.restart();                                          //USE_NTP
-    delay(3000);                                            //USE_NTP
-  }                                                         //USE_NTP
-  if (settingOledType > 0)                                  //USE_NTP
-  {                                                         //USE_NTP
-    oled_Print_Msg(0, " <DSMRloggerAPI>", 0);                //USE_NTP
-    oled_Print_Msg(3, "NTP gestart", 1500);                 //USE_NTP
-  }                                                         //USE_NTP
-  prevNtpHour = hour();                                     //USE_NTP
-                                                            //USE_NTP
-//#endif  //USE_NTP_TIME                                      //USE_NTP
+  if (settingOledType > 0)
+  {
+    oled_Print_Msg(3, "setup NTP server", 100);
+  } 
+
+  if (!startNTP())
+  {
+    DebugTln(F("ERROR!!! No NTP server reached!\r\n\r"));
+    if (settingOledType > 0)
+    {
+      oled_Print_Msg(0, " <DSMRloggerAPI>", 0);
+      oled_Print_Msg(2, "geen reactie van", 100);
+      oled_Print_Msg(2, "NTP server's", 100); 
+      oled_Print_Msg(3, "Reboot DSMR-logger", 2000);
+    }
+    delay(2000);
+    ESP.restart();
+    delay(3000);
+  }
+  if (settingOledType > 0)
+  {
+    oled_Print_Msg(0, " <DSMRloggerAPI>", 0);
+    oled_Print_Msg(3, "NTP gestart", 1500);
+  }
+  prevNtpHour = hour();
+
 //================ end NTP =========================================
 
   snprintf(cMsg, sizeof(cMsg), "Last reset reason: [%s]\r", ESP.getResetReason().c_str());
@@ -348,14 +342,12 @@ void setup()
 
 //=================================================================
 
-//#if defined(USE_NTP_TIME)                                                           //USE_NTP
   time_t t = now(); // store the current time in time variable t                    //USE_NTP
   snprintf(cMsg, sizeof(cMsg), "%02d%02d%02d%02d%02d%02dW\0\0"                      //USE_NTP
                                                , (year(t) - 2000), month(t), day(t) //USE_NTP
                                                , hour(t), minute(t), second(t));    //USE_NTP
   pTimestamp = cMsg;                                                                //USE_NTP
   DebugTf("Time is set to [%s] from NTP\r\n", cMsg);                                //USE_NTP
-//#endif  // use_dsmr_30
 
   if (settingOledType > 0)
   {
@@ -609,19 +601,12 @@ void loop ()
     }
   }
 
-//--- if NTP set, see if it needs synchronizing
-//#if defined(USE_NTP_TIME)                                           //USE_NTP
-  if DUE(synchrNTP)                                                 //USE_NTP
+//--- see if NTP needs synchronizing
+  if DUE(synchrNTP)
   {
-  //if (timeStatus() == timeNeedsSync || prevNtpHour != hour())     //USE_NTP
-  //{
-      //prevNtpHour = hour();                                         //USE_NTP
-      setSyncProvider(getNtpTime);                                  //USE_NTP
-      setSyncInterval(600);                                         //USE_NTP
-  //}
+      setSyncProvider(getNtpTime);
+      setSyncInterval(600);
   }
-//#endif                                                              //USE_NTP
-  
   yield();
   
 } // loop()

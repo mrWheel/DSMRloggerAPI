@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : handleSlimmeMeter - part of DSMRloggerAPI
-**  Version  : v2.0.1
+**  Version  : v3.0
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -29,7 +29,8 @@ void handleSlimmemeter()
 //==================================================================================
 void processSlimmemeterRaw()
 {
-  char    tlgrm[1200] = "";
+  char    tlgrm[MAX_TLGRM_LENGTH] = "";
+  char    checkSum[10]            = "";
    
   DebugTf("handleSlimmerMeter RawCount=[%4d]\r\n", showRawCount);
   showRawCount++;
@@ -52,13 +53,23 @@ void processSlimmemeterRaw()
   slimmeMeter.enable(true);
   Serial.setTimeout(5000);  // 5 seconds must be enough ..
   memset(tlgrm, 0, sizeof(tlgrm));
-  int l = 0;
+  int l = 0, lc = 0;
   // The terminator character is discarded from the serial buffer.
-  l = Serial.readBytesUntil('/', tlgrm, sizeof(tlgrm));
+  do
+  {
+    l = Serial.readBytesUntil('/', tlgrm, (sizeof(tlgrm)-10));
+  }
+  while(l>=(MAX_TLGRM_LENGTH -11));
   // now read from '/' to '!'
   // The terminator character is discarded from the serial buffer.
-  l = Serial.readBytesUntil('!', tlgrm, sizeof(tlgrm));
+  l = Serial.readBytesUntil('!', tlgrm, (sizeof(tlgrm)-10));
   Serial.setTimeout(1000);  // seems to be the default ..
+  DebugTf("read [%d] bytes\r\n", l);
+  if (l >= (MAX_TLGRM_LENGTH -11))
+  {
+    DebugTf("telegram > [%d] bytes. Bailout!\r\n", MAX_TLGRM_LENGTH);
+    return;
+  }
 //  DebugTf("read [%d] bytes\r\n", l);
   if (l == 0) 
   {
@@ -132,16 +143,14 @@ void processSlimmemeter()
 
       modifySmFaseInfo();
       
-//#ifdef USE_NTP_TIME
-      if (!DSMRdata.timestamp_present)                        //USE_NTP
-      {                                                       //USE_NTP
-        sprintf(cMsg, "%02d%02d%02d%02d%02d%02dW\0\0"         //USE_NTP
-                        , (year() - 2000), month(), day()     //USE_NTP
-                        , hour(), minute(), second());        //USE_NTP
-        DSMRdata.timestamp         = cMsg;                    //USE_NTP
-        DSMRdata.timestamp_present = true;                    //USE_NTP
-      }                                                       //USE_NTP
-//#endif
+      if (!DSMRdata.timestamp_present)
+      { 
+        sprintf(cMsg, "%02d%02d%02d%02d%02d%02dW\0\0"
+                        , (year() - 2000), month(), day()
+                        , hour(), minute(), second());
+        DSMRdata.timestamp         = cMsg;
+        DSMRdata.timestamp_present = true;
+      }
 
       //-- handle mbus delivered values
       gasDelivered = modifyMbusDelivered();
