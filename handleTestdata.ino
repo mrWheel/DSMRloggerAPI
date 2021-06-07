@@ -20,6 +20,7 @@ double      ED_T1=0, ED_T2=0, ER_T1=0, ER_T2=0, V_l1=0, V_l2=0, V_l3=0, C_l1=0, 
 uint8_t     ETariffInd=1;
 float       PDelivered, PReturned;
 float       IPD_l1, IPD_l2, IPD_l3, IPR_l1, IPR_l2, IPR_l3;
+float       CUR_l1, CUR_l2, CUR_l3;
 float       GDelivered = 321.123;
 bool        forceBuildRingFiles = false;
 int16_t     forceBuildRecs;
@@ -116,7 +117,7 @@ void handleTestdata()
   {
     for (int16_t line = 0; line <= testTlgrmLines; line++) {
       yield();
-      int16_t len = buildTelegram40(line, telegramLine);  // also: prints to DSMRsend
+      int16_t len = buildTelegram(line, telegramLine);  // also: prints to DSMRsend
       calcCRC = decodeTelegram(len);
     } 
     snprintf(cMsg, sizeof(cMsg), "!%04X\r\n\r\n", (calcCRC & 0xFFFF));
@@ -166,7 +167,7 @@ void handleTestdata()
 
 
 //==================================================================================================
-int16_t buildTelegram40(int16_t line, char telegramLine[]) 
+int16_t buildTelegram(int16_t line, char telegramLine[]) 
 {
   int16_t len = 0;
 
@@ -248,13 +249,13 @@ int16_t buildTelegram40(int16_t line, char telegramLine[])
               sprintf(telegramLine, "1-0:72.7.0(%03d.0*V)\r\n", (236 + random(-3,3)));
               break;
     case 25:  // Instantaneous current L1 in A resolution
-              sprintf(telegramLine, "1-0:31.7.0(%03d*A)\r\n", random(0,4));
+              sprintf(telegramLine, "1-0:31.7.0(%s*A)\r\n", Format(CUR_l1, 6, 2).c_str());
               break;
     case 26:  // Instantaneous current L2 in A resolution
               sprintf(telegramLine, "1-0:51.7.0(%03d*A)\r\n",  random(0,4));
               break;
     case 27:  // Instantaneous current L3 in A resolution
-              sprintf(telegramLine, "1-0:71.7.0(000*A)\r\n", val);
+              sprintf(telegramLine, "1-0:71.7.0(%s*A)\r\n", Format(CUR_l3, 6, 2).c_str());
               break;
     case 28:  // Instantaneous active power L1 (+P) in W resolution
               sprintf(telegramLine, "1-0:21.7.0(%s*kW)\r\n", Format(IPD_l1, 6, 3).c_str());
@@ -330,7 +331,7 @@ int16_t buildTelegram40(int16_t line, char telegramLine[])
   
   return len;
 
-} // buildTelegram40()
+} // buildTelegram()
 
 
 //==================================================================================================
@@ -480,6 +481,9 @@ void updateMeterValues(uint8_t period)
   }
   PDelivered  = (float)(IPD_l1 + IPD_l2 + IPD_l3) / 1.0;       // Power Delivered
   PReturned   = (float)(IPR_l1 + IPR_l2 + IPR_l3) / 1.0;       // Power Returned
+  CUR_l1      = (float)(random(0,3000) * 0.001);
+  CUR_l2      = (float)(random(0,25000) * 0.001);
+  CUR_l3      = (float)(random(500,3000) * 0.001);
 
   if (Verbose2) Debugf("l1[%5d], l2[%5d], l3[%5d] ==> l1+l2+l3[%9.3f]\n"
                                                           , (int)(IPD_l1 * 1000)

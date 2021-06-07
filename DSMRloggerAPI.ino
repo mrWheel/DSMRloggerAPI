@@ -40,7 +40,7 @@
 #define USE_MINDERGAS             // define if you want to update mindergas (configure through webinterface)
 //  #define USE_SYSLOGGER             // define if you want to use the sysLog library for debugging
 //  #define SHOW_PASSWRDS             // well .. show the PSK key and MQTT password, what else?
-#define USE_LITTLEFS              // if not use SPIFFS
+#define USE_LITTLEFS              // if not: use SPIFFS
 /******************** don't change anything below this comment **********************/
 
 #include "DSMRloggerAPI.h"
