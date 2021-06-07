@@ -112,6 +112,7 @@ void displayBoardInfo()
   Debug(F("]\r\n            IP Address ["));  Debug( WiFi.localIP().toString() );
   Debug(F("]\r\n              Hostname ["));  Debug( settingHostname );
   Debug(F("]\r\n     Last reset reason ["));  Debug( ESP.getResetReason() );
+  Debug(F("]\r\n     number of reboots ["));  Debug( nrReboots );
   Debug(F("]\r\n                upTime ["));  Debug( upTime() );
   Debugln(F("]\r"));
 
