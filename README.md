@@ -8,7 +8,15 @@ you can find information about this project.
 Documentation can be found [here](https://mrwheel-docs.gitbook.io/dsmrloggerapi/) (in progress)!
 
 <table>
-<tr><th>Versie</th><th>Opmerking</th></tr>
+<tr><th>Versie</th><th align="Left">Opmerking</th></tr>
+<tr>
+   <td valign="top">3.0.Beta2</td>
+   <td>v3-Beta2 Release
+      <br>Instelling DSMR protocol nu via settings
+      <br>Belgische Slimme Meters werken nu zonder aanpassingen (dsmr2Lib)
+      <br>Selectie MBus waar de Slimme Meter op is aangesloten via settings
+   </td>
+</tr>
 <tr>
    <td valign="top">2.0.1</td>
    <td>First Final Release
@@ -20,6 +28,7 @@ Documentation can be found [here](https://mrwheel-docs.gitbook.io/dsmrloggerapi/
    <br>Bugfix mindergas processing
    </td>
 </tr>
+<tr>
    <td valign="top">1.2.1</td>
    <td>Third Official Release
       <br>Instelling SM_HAS_NO_FASE_INFO nu via settings
