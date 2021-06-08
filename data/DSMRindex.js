@@ -35,8 +35,8 @@
   var electr_netw_costs     = 0;
   var gas_netw_costs        = 0;
   var hostName              =  "-";
-  var pre_dsmr40            =  0;
-  var mbus_nr_gas           =  1;
+  var pre_dsmr40            = 0;
+  var mbus_nr_gas           = 1;
   
   var data       = [];
                   
@@ -1990,18 +1990,38 @@ http://DSMR-API.local/api/v1/dev/settings</pre>", false);
           ,[ "power_returned_l1",         "Vermogen Opgewekt l1" ]
           ,[ "power_returned_l2",         "Vermogen Opgewekt l2" ]
           ,[ "power_returned_l3",         "Vermogen Opgewekt l3" ]
-          ,[ "mbus1_device_type",         "Type meter op MBus ID1 (0=geen)" ]
-          ,[ "mbus1_delivered",           "MBus ID1 Gebruikt" ]
-          ,[ "mbus1_valve_position",      "MBus ID1 Klep Positie" ]
-          ,[ "mbus2_device_type",         "Type meter op MBus ID2 (0=geen)" ]
-          ,[ "mbus2_delivered",           "MBus ID2 Gebruikt" ]
-          ,[ "mbus2_valve_position",      "MBus ID2 Klep Positie" ]
-          ,[ "mbus3_device_type",         "Type meter op MBus ID3 (0=geen)" ]
-          ,[ "mbus3_delivered",           "MBus ID3 Gebruikt" ]
-          ,[ "mbus3_valve_position",      "MBus ID3 Klep Positie" ]
-          ,[ "mbus4_device_type",         "Type meter op MBus ID4 (0=geen)" ]
-          ,[ "mbus4_delivered",           "MBus ID4 Gebruikt" ]
-          ,[ "mbus4_valve_position",      "MBus ID4 Klep Positie" ]
+          ,[ "mbus1_type",                "MBus-1 Type meter (0=geen)" ]
+          ,[ "mbus1_device_type",         "MBus-1 Type meter (0=geen)" ]
+          ,[ "mbus1_equipment_id_tc",     "MBus-1 Equipm. ID (tc)" ]
+          ,[ "mbus1_equipment_id_ntc",    "MBus-1 Equipm. ID (ntc)" ]
+          ,[ "mbus1_delivered",           "MBus-1 Gebruikt" ]
+          ,[ "mbus1_delivered_ntc",       "MBus-1 Gebruikt (ntc)" ]
+          ,[ "mbus1_delivered_dbl",       "MBus-1 Gebruikt" ]
+          ,[ "mbus1_valve_position",      "MBus-1 Klep Positie" ]
+          ,[ "mbus2_type",                "MBus-2 Type meter (0=geen)" ]
+          ,[ "mbus2_device_type",         "MBus-2 Type meter (0=geen)" ]
+          ,[ "mbus2_equipment_id_tc",     "MBus-2 Equipm. ID (tc)" ]
+          ,[ "mbus2_equipment_id_ntc",    "MBus-2 Equipm. ID (ntc)" ]
+          ,[ "mbus2_delivered",           "MBus-2 Gebruikt" ]
+          ,[ "mbus2_delivered_ntc",       "MBus-2 Gebruikt (ntc)" ]
+          ,[ "mbus2_delivered_dbl",       "MBus-2 Gebruikt" ]
+          ,[ "mbus2_valve_position",      "MBus-2 Klep Positie" ]
+          ,[ "mbus3_type",                "MBus-3 Type meter (0=geen)" ]
+          ,[ "mbus3_device_type",         "MBus-3 Type meter (0=geen)" ]
+          ,[ "mbus3_equipment_id_tc",     "MBus-3 Equipm. ID (tc)" ]
+          ,[ "mbus3_equipment_id_ntc",    "MBus-3 Equipm. ID (ntc)" ]
+          ,[ "mbus3_delivered",           "MBus-3 Gebruikt" ]
+          ,[ "mbus3_delivered_ntc",       "MBus-3 Gebruikt (ntc)" ]
+          ,[ "mbus3_delivered_dbl",       "MBus-3 Gebruikt" ]
+          ,[ "mbus3_valve_position",      "MBus-3 Klep Positie" ]
+          ,[ "mbus4_type",                "MBus-4 Type meter (0=geen)" ]
+          ,[ "mbus4_device_type",         "MBus-4 Type meter (0=geen)" ]
+          ,[ "mbus4_equipment_id_tc",     "MBus-4 Equipm. ID (tc)" ]
+          ,[ "mbus4_equipment_id_ntc",    "MBus-4 Equipm. ID (ntc)" ]
+          ,[ "mbus4_delivered",           "MBus-4 Gebruikt" ]
+          ,[ "mbus4_delivered_ntc",       "MBus-4 Gebruikt (ntc)" ]
+          ,[ "mbus4_delivered_dbl",       "MBus-4 Gebruikt" ]
+          ,[ "mbus4_valve_position",      "MBus-4 Klep Positie" ]
           ,[ "gas_delivered",             "Gas Gebruikt" ]
           ,[ "ed_tariff1",                "Energy Verbruik Tarief-1/kWh" ]
           ,[ "ed_tariff2",                "Energy Verbruik Tarief-2/kWh" ]

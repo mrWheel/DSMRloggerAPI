@@ -560,6 +560,7 @@ void sendJsonV0Fields()
   httpServer.setContentLength(CONTENT_LENGTH_UNKNOWN);
   httpServer.send(200, "application/json", "{\r\n");
   DSMRdata.applyEach(buildJsonV0ApiSmActual());
+  sendNestedJsonV0Obj("gas_delivered", gasDelivered);
   httpServer.sendContent("\r\n}\r\n");
 
 } // sendJsonV0Fields()

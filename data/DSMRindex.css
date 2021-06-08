@@ -159,8 +159,9 @@ input {
 }
 
 .nav-container a:hover {
+  cursor: pointer;
   color: black;
-  background: skyblue; /* only for FSexplorer - Rest does not work */
+  background: skyblue; /* only for FSmanager - Rest does not work */
 }
 
 .nav-clock {
