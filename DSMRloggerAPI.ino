@@ -2,9 +2,9 @@
 ***************************************************************************  
 **  Program  : DSMRloggerAPI (restAPI)
 */
-#define _FW_VERSION "v2.0.1 (17-04-2020)"
+#define _FW_VERSION "v3.0.Beta2 (08-06-2021)"
 /*
-**  Copyright (c) 2020 Willem Aandewiel
+**  Copyright (c) 2020, 2021 Willem Aandewiel
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
@@ -14,7 +14,7 @@
     - Board: "Generic ESP8266 Module"
     - Builtin Led: "2"  // GPIO02 for Wemos and ESP-12
     - Flash mode: "DOUT" | "DIO"    // changes only after power-off and on again!
-    - Flash size: "4MB (FS: 2MB OAT:~1019KB)"  << LET OP! 2MB SPIFFS
+    - Flash size: "4MB (FS: 2MB OAT:~1019KB)"  << LET OP! 2MB FSYS
     - DebugT port: "Disabled"
     - DebugT Level: "None"
     - IwIP Variant: "v2 Lower Memory"
@@ -34,16 +34,13 @@
 **   https://mrwheel.github.io/DSMRloggerWS/
 */
 /******************** compiler options  ********************************************/
-#define USE_REQUEST_PIN           // define if it's a esp8266 with GPIO 12 connected to SM DTR pin
 #define USE_UPDATE_SERVER         // define if there is enough memory and updateServer to be used
-//  #define USE_BELGIUM_PROTOCOL      // define if Slimme Meter is a Belgium Smart Meter
-//  #define USE_PRE40_PROTOCOL        // define if Slimme Meter is pre DSMR 4.0 (2.2 .. 3.0)
-//  #define USE_NTP_TIME              // define to generate Timestamp from NTP (Only Winter Time for now)
 //  #define HAS_NO_SLIMMEMETER        // define for testing only!
 #define USE_MQTT                  // define if you want to use MQTT (configure through webinterface)
 #define USE_MINDERGAS             // define if you want to update mindergas (configure through webinterface)
 //  #define USE_SYSLOGGER             // define if you want to use the sysLog library for debugging
 //  #define SHOW_PASSWRDS             // well .. show the PSK key and MQTT password, what else?
+#define USE_LITTLEFS              // if not: use SPIFFS
 /******************** don't change anything below this comment **********************/
 
 #include "DSMRloggerAPI.h"
@@ -51,18 +48,14 @@
 struct showValues {
   template<typename Item>
   void apply(Item &i) {
-    TelnetStream.print("showValues: ");
     if (i.present()) 
     {
-      TelnetStream.print(Item::name);
-      TelnetStream.print(F(": "));
-      TelnetStream.print(i.val());
-      TelnetStream.print(Item::unit());
-    //} else 
-    //{
-    //  TelnetStream.print(F("<no value>"));
+      DebugT(Item::name);
+      Debug(F(": "));
+      Debug(i.val());
+      Debug(Item::unit());
     }
-    TelnetStream.println();
+    Debugln();
   }
 };
 
@@ -137,17 +130,10 @@ void openSysLog(bool empty)
 //===========================================================================================
 void setup() 
 {
-#ifdef USE_PRE40_PROTOCOL                                                         //PRE40
-//Serial.begin(115200);                                                           //DEBUG
-  Serial.begin(9600, SERIAL_7E1);                                                 //PRE40
-#else   // not use_dsmr_30                                                        //PRE40
-  Serial.begin(115200, SERIAL_8N1);
-#endif  // use_dsmr_30
+  Serial.begin(115200, SERIAL_8N1); // for now. Look at end of setup()
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(FLASH_BUTTON, INPUT);
-#ifdef DTR_ENABLE
   pinMode(DTR_ENABLE, OUTPUT);
-#endif
   
   //--- setup randomseed the right way
   //--- This is 8266 HWRNG used to seed the Random PRNG
@@ -186,23 +172,41 @@ void setup()
     oled_Print_Msg(3, "telnet (poort 23)", 2500);
   }
   
-//================ SPIFFS ===========================================
-  if (SPIFFS.begin()) 
+//================ FSYS ===========================================
+#if defined( USE_LITTLEFS )
+  LittleFSConfig cfg;
+#else
+  SPIFFSConfig cfg;
+#endif
+  cfg.setAutoFormat(false);
+  FSYS.setConfig(cfg);
+  
+  if (FSYS.begin()) 
   {
-    DebugTln(F("SPIFFS Mount succesfull\r"));
-    SPIFFSmounted = true;
+    #if defined( USE_LITTLEFS )
+      DebugTln(F("LittleFS Mount succesfull\r"));
+    #else
+      DebugTln(F("SPIFFS Mount succesfull\r"));
+    #endif
+    File nF = FSYS.open("/doNotFormat!", "w");
+    nF.close();
+    FSYSmounted = true;
     if (settingOledType > 0)
     {
       oled_Print_Msg(0, " <DSMRloggerAPI>", 0);
-      oled_Print_Msg(3, "SPIFFS mounted", 1500);
+      oled_Print_Msg(3, "FSYS mounted", 1500);
     }    
   } else { 
-    DebugTln(F("SPIFFS Mount failed\r"));   // Serious problem with SPIFFS 
-    SPIFFSmounted = false;
+    #if defined( USE_LITTLEFS )
+      DebugTln(F("LittleFS Mount failed\r")); // Serious problem with LittleFS 
+    #else
+      DebugTln(F("SPIFFS Mount failed\r"));   // Serious problem with SPIFFS 
+    #endif
+    FSYSmounted = false;
     if (settingOledType > 0)
     {
       oled_Print_Msg(0, " <DSMRloggerAPI>", 0);
-      oled_Print_Msg(3, "SPIFFS FAILED!", 2000);
+      oled_Print_Msg(3, "FSYS FAILED!", 2000);
     }
   }
 
@@ -270,35 +274,41 @@ void setup()
   
 //=============end Networkstuff======================================
 
-#if defined(USE_NTP_TIME)                                   //USE_NTP
 //================ startNTP =========================================
-  if (settingOledType > 0)                                  //USE_NTP
-  {                                                         //USE_NTP
-    oled_Print_Msg(3, "setup NTP server", 100);             //USE_NTP
-  }                                                         //USE_NTP
-                                                            //USE_NTP
-  if (!startNTP())                                          //USE_NTP
-  {                                                         //USE_NTP
-    DebugTln(F("ERROR!!! No NTP server reached!\r\n\r"));   //USE_NTP
-    if (settingOledType > 0)                                //USE_NTP
-    {                                                       //USE_NTP
-      oled_Print_Msg(0, " <DSMRloggerAPI>", 0);              //USE_NTP
-      oled_Print_Msg(2, "geen reactie van", 100);           //USE_NTP
-      oled_Print_Msg(2, "NTP server's", 100);               //USE_NTP 
-      oled_Print_Msg(3, "Reboot DSMR-logger", 2000);        //USE_NTP
-    }                                                       //USE_NTP
-    delay(2000);                                            //USE_NTP
-    ESP.restart();                                          //USE_NTP
-    delay(3000);                                            //USE_NTP
-  }                                                         //USE_NTP
-  if (settingOledType > 0)                                  //USE_NTP
-  {                                                         //USE_NTP
-    oled_Print_Msg(0, " <DSMRloggerAPI>", 0);                //USE_NTP
-    oled_Print_Msg(3, "NTP gestart", 1500);                 //USE_NTP
-  }                                                         //USE_NTP
-  prevNtpHour = hour();                                     //USE_NTP
-                                                            //USE_NTP
-#endif  //USE_NTP_TIME                                      //USE_NTP
+  if (settingOledType > 0)
+  {
+    oled_Print_Msg(3, "setup NTP server", 100);
+  } 
+
+  if (!startNTP())
+  {
+    DebugTln(F("ERROR!!! No NTP server reached!\r\n\r"));
+    if (settingOledType > 0)
+    {
+      oled_Print_Msg(0, " <DSMRloggerAPI>", 0);
+      oled_Print_Msg(2, "geen reactie van", 100);
+      oled_Print_Msg(2, "NTP server's", 100); 
+      oled_Print_Msg(3, "Reboot DSMR-logger", 2000);
+    }
+    delay(2000);
+    ESP.restart();
+    delay(3000);
+  }
+  
+  setSyncProvider(getNtpTime);
+  snprintf(cMsg, sizeof(cMsg), "%02d-%02d-%02d %02d:%02d:%02d (%s)"
+                        , year(ntpTime), month(ntpTime), day(ntpTime) 
+                        , hour(ntpTime), minute(ntpTime), second(ntpTime)
+                        , DSTactive ? "CEST":"CET");   
+  DebugTf("NTP time is [%s]\r\n", cMsg);
+
+  if (settingOledType > 0)
+  {
+    oled_Print_Msg(0, " <DSMRloggerAPI>", 0);
+    oled_Print_Msg(3, "NTP gestart", 1500);
+  }
+  prevNtpHour = hour();
+
 //================ end NTP =========================================
 
   snprintf(cMsg, sizeof(cMsg), "Last reset reason: [%s]\r", ESP.getResetReason().c_str());
@@ -308,7 +318,7 @@ void setup()
   Serial.print (WiFi.localIP());
   Serial.println("' voor verdere debugging\r\n");
 
-//=============now test if SPIFFS is correct populated!============
+//=============now test if FS is correct populated!============
   if (DSMRfileExist(settingIndexPage, false) )
   {
     if (strcmp(settingIndexPage, "DSMRindex.html") != 0)
@@ -325,7 +335,7 @@ void setup()
   }
   if (!hasAlternativeIndex && !DSMRfileExist("/DSMRindex.html", false) )
   {
-    spiffsNotPopulated = true;
+    FSYSnotPopulated = true;
   }
   if (!hasAlternativeIndex)    //--- there's no alternative index.html
   {
@@ -333,43 +343,44 @@ void setup()
     DSMRfileExist("/DSMRindex.css",   false);
     DSMRfileExist("/DSMRgraphics.js", false);
   }
-  if (!DSMRfileExist("/FSexplorer.html", true))
+  if (!DSMRfileExist("/FSmanager.html", true))
   {
-    spiffsNotPopulated = true;
+    FSYSnotPopulated = true;
   }
-  if (!DSMRfileExist("/FSexplorer.css", true))
+  if (!DSMRfileExist("/FSmanager.css", true))
   {
-    spiffsNotPopulated = true;
+    FSYSnotPopulated = true;
   }
-//=============end SPIFFS =========================================
+//=============end FSYS =========================================
 #ifdef USE_SYSLOGGER
-  if (spiffsNotPopulated)
+  if (FSYSnotPopulated)
   {
-    sysLog.write("SPIFFS is not correct populated (files are missing)");
+    sysLog.write("FSYS is not correct populated (files are missing)");
   }
 #endif
   
 //=============now test if "convertPRD" file exists================
 
-  if (SPIFFS.exists("/!PRDconvert") )
+  if (FSYS.exists("/!PRDconvert") )
   {
     convertPRD2RING();
   }
 
 //=================================================================
 
-#if defined(USE_NTP_TIME)                                                           //USE_NTP
-  time_t t = now(); // store the current time in time variable t                    //USE_NTP
-  snprintf(cMsg, sizeof(cMsg), "%02d%02d%02d%02d%02d%02dW\0\0"                      //USE_NTP
+  time_t t = now(); // store the current time in time variable t 
+  check4DST(t);
+  snprintf(cMsg, sizeof(cMsg), "%02d%02d%02d%02d%02d%02d\0\0"                      //USE_NTP
                                                , (year(t) - 2000), month(t), day(t) //USE_NTP
                                                , hour(t), minute(t), second(t));    //USE_NTP
+  if (DSTactive)  strConcat(cMsg, 15, "S");
+  else            strConcat(cMsg, 15, "W");
   pTimestamp = cMsg;                                                                //USE_NTP
   DebugTf("Time is set to [%s] from NTP\r\n", cMsg);                                //USE_NTP
-#endif  // use_dsmr_30
 
   if (settingOledType > 0)
   {
-    snprintf(cMsg, sizeof(cMsg), "DT: %02d%02d%02d%02d0101W", thisYear
+    snprintf(cMsg, sizeof(cMsg), "DT: %02d%02d%02d%02d0101x", thisYear
                                                             , thisMonth, thisDay, thisHour);
     oled_Print_Msg(0, " <DSMRloggerAPI>", 0);
     oled_Print_Msg(3, cMsg, 1500);
@@ -391,49 +402,49 @@ void setup()
 
 //================ Start HTTP Server ================================
 
-  if (!spiffsNotPopulated) {
-    DebugTln(F("SPIFFS correct populated -> normal operation!\r"));
+  if (!FSYSnotPopulated) {
+    DebugTln(F("FSYS correct populated -> normal operation!\r"));
     if (settingOledType > 0)
     {
       oled_Print_Msg(0, " <DSMRloggerAPI>", 0); 
-      oled_Print_Msg(1, "OK, SPIFFS correct", 0);
+      oled_Print_Msg(1, "OK, FSYS correct", 0);
       oled_Print_Msg(2, "Verder met normale", 0);
       oled_Print_Msg(3, "Verwerking ;-)", 2500);
     }
     if (hasAlternativeIndex)
     {
-      httpServer.serveStatic("/",                 SPIFFS, settingIndexPage);
-      httpServer.serveStatic("/index",            SPIFFS, settingIndexPage);
-      httpServer.serveStatic("/index.html",       SPIFFS, settingIndexPage);
-      httpServer.serveStatic("/DSMRindex.html",   SPIFFS, settingIndexPage);
+      httpServer.serveStatic("/",                 FSYS, settingIndexPage);
+      httpServer.serveStatic("/index",            FSYS, settingIndexPage);
+      httpServer.serveStatic("/index.html",       FSYS, settingIndexPage);
+      httpServer.serveStatic("/DSMRindex.html",   FSYS, settingIndexPage);
     }
     else
     {
-      httpServer.serveStatic("/",                 SPIFFS, "/DSMRindex.html");
-      httpServer.serveStatic("/DSMRindex.html",   SPIFFS, "/DSMRindex.html");
-      httpServer.serveStatic("/index",            SPIFFS, "/DSMRindex.html");
-      httpServer.serveStatic("/index.html",       SPIFFS, "/DSMRindex.html");
-      httpServer.serveStatic("/DSMRindex.css",    SPIFFS, "/DSMRindex.css");
-      httpServer.serveStatic("/DSMRindex.js",     SPIFFS, "/DSMRindex.js");
-      httpServer.serveStatic("/DSMRgraphics.js",  SPIFFS, "/DSMRgraphics.js");
+      httpServer.serveStatic("/",                 FSYS, "/DSMRindex.html");
+      httpServer.serveStatic("/DSMRindex.html",   FSYS, "/DSMRindex.html");
+      httpServer.serveStatic("/index",            FSYS, "/DSMRindex.html");
+      httpServer.serveStatic("/index.html",       FSYS, "/DSMRindex.html");
+      httpServer.serveStatic("/DSMRindex.css",    FSYS, "/DSMRindex.css");
+      httpServer.serveStatic("/DSMRindex.js",     FSYS, "/DSMRindex.js");
+      httpServer.serveStatic("/DSMRgraphics.js",  FSYS, "/DSMRgraphics.js");
     }
   } else {
-    DebugTln(F("Oeps! not all files found on SPIFFS -> present FSexplorer!\r"));
-    spiffsNotPopulated = true;
+    DebugTln(F("Oeps! not all files found on FSYS -> Start FSmanager!\r"));
+    FSYSnotPopulated = true;
     if (settingOledType > 0)
     {
       oled_Print_Msg(0, "!OEPS! niet alle", 0);
-      oled_Print_Msg(1, "files op SPIFFS", 0);
+      oled_Print_Msg(1, "files op FSYS", 0);
       oled_Print_Msg(2, "gevonden! (fout!)", 0);
-      oled_Print_Msg(3, "Start FSexplorer", 2000);
+      oled_Print_Msg(3, "Start FSmanager", 2000);
     }
   }
 
-  setupFSexplorer();
-  httpServer.serveStatic("/FSexplorer.png",   SPIFFS, "/FSexplorer.png");
+  setupFsManager();
+  //httpServer.serveStatic("/FSexplorer.png",   FSYS, "/FSexplorer.png");
 
   httpServer.on("/api", HTTP_GET, processAPI);
-  // all other api calls are catched in FSexplorer onNotFounD!
+  // all other api calls are catched in FSmanager onNotFounD!
 
   httpServer.begin();
   DebugTln( "HTTP server gestart\r" );
@@ -481,11 +492,30 @@ void setup()
 
   DebugTln(F("Enable slimmeMeter..\r"));
 
-#if defined( USE_REQUEST_PIN ) && !defined( HAS_NO_SLIMMEMETER )
+#if !defined( HAS_NO_SLIMMEMETER )
     DebugTf("Swapping serial port to Smart Meter, debug output will continue on telnet\r\n");
     DebugFlush();
+    if (settingPreDSMR40 == 0)
+    {
+      DebugTln("Serial will be set to 115200 baud / 7N1");
+      DebugFlush();
+      Serial.end();
+      delay(100);
+      Serial.begin(115200, SERIAL_8N1);
+      slimmeMeter.doChecksum(true);
+    }
+    else
+    {                //PRE40
+      DebugTln("Serial will be set to 9600 baud / 7N1");
+      DebugFlush();
+      Serial.end();
+      delay(100);
+      Serial.begin(9600, SERIAL_7E1);
+      slimmeMeter.doChecksum(false);
+    }                                    
     Serial.swap();
-#endif // is_esp12
+    
+#endif // HAS_NO_SLIMME_METER
 
   delay(100);
   slimmeMeter.enable(true);
@@ -600,19 +630,13 @@ void loop ()
     }
   }
 
-//--- if NTP set, see if it needs synchronizing
-#if defined(USE_NTP_TIME)                                           //USE_NTP
-  if DUE(synchrNTP)                                                 //USE_NTP
+//--- see if NTP needs synchronizing
+  if DUE(synchrNTP)
   {
-  //if (timeStatus() == timeNeedsSync || prevNtpHour != hour())     //USE_NTP
-  //{
-      //prevNtpHour = hour();                                         //USE_NTP
-      setSyncProvider(getNtpTime);                                  //USE_NTP
-      setSyncInterval(600);                                         //USE_NTP
-  //}
+    setSyncProvider(getNtpTime);
+    setSyncInterval(600);
+    check4DST(ntpTime);
   }
-#endif                                                              //USE_NTP
-  
   yield();
   
 } // loop()

@@ -1,9 +1,9 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRindex.js, part of DSMRfirmwareAPI
-**  Version  : v2.0.1
+**  Version  : v3.0.0
 **
-**  Copyright (c) 2020 Willem Aandewiel
+**  Copyright (c) 2021 Willem Aandewiel
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
@@ -34,7 +34,9 @@
   var gd_tariff             = 0;
   var electr_netw_costs     = 0;
   var gas_netw_costs        = 0;
-  var hostName            =  "-";
+  var hostName              =  "-";
+  var pre_dsmr40            = 0;
+  var mbus_nr_gas           = 1;
   
   var data       = [];
                   
@@ -77,9 +79,9 @@
                                                 {openTab('SysInfoTab');});
     document.getElementById('bAPIdocTab').addEventListener('click',function() 
                                                 {openTab('APIdocTab');});
-    document.getElementById('FSexplorer').addEventListener('click',function() 
-                                                { console.log("newTab: goFSexplorer");
-                                                  location.href = "/FSexplorer";
+    document.getElementById('FSmanager').addEventListener('click',function() 
+                                                { console.log("newTab: goFSmanager");
+                                                  location.href = "/FSmanager.html";
                                                 });
     document.getElementById('Settings').addEventListener('click',function() 
                                                 {openPage('settingsPage');});
@@ -98,6 +100,8 @@
     openTab("ActualTab");
     setPresentationType('TAB');
     readGitHubVersion();
+    
+    console.log("..exit bootsTrapMain()!");
       
   } // bootsTrapMain()
   
@@ -269,7 +273,9 @@
         for( let i in data )
         {
             var tableRef = document.getElementById('devInfoTable').getElementsByTagName('tbody')[0];
-            data[i].humanName = translateToHuman(data[i].name);
+            //data[i].humanName = translateToHuman(data[i].name);
+            bName = translateToHuman(data[i].name);
+            data[i].humanName = bName.replace("<2>", "<br>");
 
             if( ( document.getElementById("devInfoTable_"+data[i].name)) == null )
             {
@@ -374,7 +380,7 @@
     fetch(APIGW+"v1/sm/actual")
       .then(response => response.json())
       .then(json => {
-          //console.log("parsed .., fields is ["+ JSON.stringify(json)+"]");
+          console.log("parsed .., fields is ["+ JSON.stringify(json)+"]");
           data = json.actual;
           copyActualToChart(data);
           if (presentationType == "TAB")
@@ -401,7 +407,10 @@
           data = json.fields;
           for (var i in data) 
           {
-            data[i].humanName = translateToHuman(data[i].name);
+            //data[i].humanName = translateToHuman(data[i].name);
+            bName = translateToHuman(data[i].name);
+            data[i].humanName = bName.replace("<2>", "<br>");
+
             var tableRef = document.getElementById('fieldsTable').getElementsByTagName('tbody')[0];
             if( ( document.getElementById("fieldsTable_"+data[i].name)) == null )
             {
@@ -1007,6 +1016,14 @@
             {
               gas_netw_costs = json.settings[i].value;
             }
+            else if (json.settings[i].name == "mbus_nr_gas")
+            {
+              mbus_nr_gas = json.settings[i].value;
+            }
+            else if (json.settings[i].name == "pre_dsmr40")
+            {
+              pre_dsmr40 = json.settings[i].value;
+            }
             else if (json.settings[i].name == "hostname")
             {
               hostName = json.settings[i].value;
@@ -1192,6 +1209,7 @@ http://DSMR-API.local/api/v1/dev/settings</pre>", false);
                   fldDiv.style.width = "250px";
                   fldDiv.style.float = 'left';
                   fldDiv.textContent = translateToHuman(data[i].name);
+
                   rowDiv.appendChild(fldDiv);
             //--- input ---
               var inputDiv = document.createElement("div");
@@ -1939,6 +1957,7 @@ http://DSMR-API.local/api/v1/dev/settings</pre>", false);
            [ "author",                    "Auteur" ]
           ,[ "identification",            "Slimme Meter ID" ]
           ,[ "p1_version",                "P1 Versie" ]
+          ,[ "p1_version_be",             "P1 Versie (BE)" ]
           ,[ "energy_delivered_tariff1",  "Energie Gebruikt tarief 1" ]
           ,[ "energy_delivered_tariff2",  "Energie Gebruikt tarief 2" ]
           ,[ "energy_returned_tariff1",   "Energie Opgewekt tarief 1" ]
@@ -1971,22 +1990,39 @@ http://DSMR-API.local/api/v1/dev/settings</pre>", false);
           ,[ "power_returned_l1",         "Vermogen Opgewekt l1" ]
           ,[ "power_returned_l2",         "Vermogen Opgewekt l2" ]
           ,[ "power_returned_l3",         "Vermogen Opgewekt l3" ]
-          ,[ "gas_device_type",           "Gas Device Type" ]
-          ,[ "gas_equipment_id",          "Gas Equipment ID" ]
-          ,[ "gas_valve_position",        "Gas Klep Positie" ]
+          ,[ "mbus1_type",                "MBus-1 Type meter (0=geen)" ]
+          ,[ "mbus1_device_type",         "MBus-1 Type meter (0=geen)" ]
+          ,[ "mbus1_equipment_id_tc",     "MBus-1 Equipm. ID (tc)" ]
+          ,[ "mbus1_equipment_id_ntc",    "MBus-1 Equipm. ID (ntc)" ]
+          ,[ "mbus1_delivered",           "MBus-1 Gebruikt" ]
+          ,[ "mbus1_delivered_ntc",       "MBus-1 Gebruikt (ntc)" ]
+          ,[ "mbus1_delivered_dbl",       "MBus-1 Gebruikt" ]
+          ,[ "mbus1_valve_position",      "MBus-1 Klep Positie" ]
+          ,[ "mbus2_type",                "MBus-2 Type meter (0=geen)" ]
+          ,[ "mbus2_device_type",         "MBus-2 Type meter (0=geen)" ]
+          ,[ "mbus2_equipment_id_tc",     "MBus-2 Equipm. ID (tc)" ]
+          ,[ "mbus2_equipment_id_ntc",    "MBus-2 Equipm. ID (ntc)" ]
+          ,[ "mbus2_delivered",           "MBus-2 Gebruikt" ]
+          ,[ "mbus2_delivered_ntc",       "MBus-2 Gebruikt (ntc)" ]
+          ,[ "mbus2_delivered_dbl",       "MBus-2 Gebruikt" ]
+          ,[ "mbus2_valve_position",      "MBus-2 Klep Positie" ]
+          ,[ "mbus3_type",                "MBus-3 Type meter (0=geen)" ]
+          ,[ "mbus3_device_type",         "MBus-3 Type meter (0=geen)" ]
+          ,[ "mbus3_equipment_id_tc",     "MBus-3 Equipm. ID (tc)" ]
+          ,[ "mbus3_equipment_id_ntc",    "MBus-3 Equipm. ID (ntc)" ]
+          ,[ "mbus3_delivered",           "MBus-3 Gebruikt" ]
+          ,[ "mbus3_delivered_ntc",       "MBus-3 Gebruikt (ntc)" ]
+          ,[ "mbus3_delivered_dbl",       "MBus-3 Gebruikt" ]
+          ,[ "mbus3_valve_position",      "MBus-3 Klep Positie" ]
+          ,[ "mbus4_type",                "MBus-4 Type meter (0=geen)" ]
+          ,[ "mbus4_device_type",         "MBus-4 Type meter (0=geen)" ]
+          ,[ "mbus4_equipment_id_tc",     "MBus-4 Equipm. ID (tc)" ]
+          ,[ "mbus4_equipment_id_ntc",    "MBus-4 Equipm. ID (ntc)" ]
+          ,[ "mbus4_delivered",           "MBus-4 Gebruikt" ]
+          ,[ "mbus4_delivered_ntc",       "MBus-4 Gebruikt (ntc)" ]
+          ,[ "mbus4_delivered_dbl",       "MBus-4 Gebruikt" ]
+          ,[ "mbus4_valve_position",      "MBus-4 Klep Positie" ]
           ,[ "gas_delivered",             "Gas Gebruikt" ]
-          ,[ "thermal_device_type",       "Thermal Device Type" ]
-          ,[ "thermal_equipment_id",      "Thermal Equipment ID" ]
-          ,[ "thermal_valve_position",    "Thermal Klep Positie" ]
-          ,[ "thermal_delivered",         "Thermal Gebruikt" ]
-          ,[ "water_device_type" ,        "Water Device Type" ]
-          ,[ "water_equipment_id",        "Water Equipment ID" ]
-          ,[ "water_valve_position",      "Water Klep Positie" ]
-          ,[ "water_delivered",           "Water Gebruikt" ]
-          ,[ "slave_device_type",         "Slave Device Type" ]
-          ,[ "slave_equipment_id",        "Slave Equipment ID" ]
-          ,[ "slave_valve_position",      "Slave Klep Positie" ]
-          ,[ "slave_delivered",           "Slave Gebruikt" ]
           ,[ "ed_tariff1",                "Energy Verbruik Tarief-1/kWh" ]
           ,[ "ed_tariff2",                "Energy Verbruik Tarief-2/kWh" ]
           ,[ "er_tariff1",                "Energy Opgewekt Tarief-1/kWh" ]
@@ -1997,6 +2033,7 @@ http://DSMR-API.local/api/v1/dev/settings</pre>", false);
           
           ,[ "smhasfaseinfo",             "SM Has Fase Info (0=No, 1=Yes)" ]
           ,[ "sm_has_fase_info",          "SM Has Fase Info (0=No, 1=Yes)" ]
+          ,[ "pre_dsmr40",                "Pré DSMR 40 (0=No, 1=Yes)" ]
           ,[ "oled_type",                 "OLED type (0=None, 1=SDD1306, 2=SH1106)" ]
           ,[ "oled_flip_screen",          "Flip OLED scherm (0=No, 1=Yes)" ]
           ,[ "tlgrm_interval",            "Telegram Lees Interval (Sec.)" ]

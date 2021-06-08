@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : networkStuff.h, part of DSMRloggerAPI
-**  Version  : v2.0.1
+**  Version  : v3.0
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -32,7 +32,7 @@ ESP8266WebServer        httpServer (80);
 
 
 static      FSInfo SPIFFSinfo;
-bool        SPIFFSmounted; 
+bool        FSYSmounted; 
 bool        isConnected = false;
 
 //gets called when WiFiManager enters configuration mode
@@ -62,7 +62,7 @@ void startWiFi(const char* hostname, int timeOut)
   uint32_t lTime = millis();
   String thisAP = String(hostname) + "-" + WiFi.macAddress();
 
-  DebugT("start ...");
+  DebugTln("start ...");
   
   manageWiFi.setDebugOutput(true);
   
@@ -90,15 +90,13 @@ void startWiFi(const char* hostname, int timeOut)
       oled_Print_Msg(3, "**** NO WIFI ****", 0);
     }
 
-    //reset and try again, or maybe put it to deep sleep
-    //delay(3000);
-    //ESP.reset();
-    //delay(2000);
-    DebugTf(" took [%d] seconds ==> ERROR!\r\n", (millis() - lTime) / 1000);
-    return;
+    DebugTf(" took [%d] milli-seconds ==> ERROR!\r\n", (millis() - lTime));
+    //return;
   }
-  
-  DebugTf("Connected with IP-address [%s]\r\n\r\n", WiFi.localIP().toString().c_str());
+  else
+  {
+    DebugTf("Connected with IP-address [%s]\r\n\r\n", WiFi.localIP().toString().c_str());
+  }
   if (settingOledType > 0)
   {
     oled_Clear();
@@ -109,7 +107,7 @@ void startWiFi(const char* hostname, int timeOut)
   httpUpdater.setIndexPage(UpdateServerIndex);
   httpUpdater.setSuccessPage(UpdateServerSuccess);
 #endif
-  DebugTf(" took [%d] seconds => OK!\r\n", (millis() - lTime) / 1000);
+  DebugTf(" took [%d] milli-seconds => OK!\r\n", (millis() - lTime));
   
 } // startWiFi()
 

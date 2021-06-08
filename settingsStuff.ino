@@ -1,7 +1,7 @@
 /*
 ***************************************************************************  
 **  Program  : settingsStuff, part of DSMRloggerAPI
-**  Version  : v2.0.1
+**  Version  : v3.0
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -15,7 +15,7 @@ void writeSettings()
 {
   yield();
   DebugT(F("Writing to [")); Debug(SETTINGS_FILE); Debugln(F("] ..."));
-  File file = SPIFFS.open(SETTINGS_FILE, "w"); // open for reading and writing
+  File file = FSYS.open(SETTINGS_FILE, "w"); // open for reading and writing
   if (!file) 
   {
     DebugTf("open(%s, 'w') FAILED!!! --> Bailout\r\n", SETTINGS_FILE);
@@ -30,10 +30,15 @@ void writeSettings()
   DebugT(F("Start writing setting data "));
 
   file.print("Hostname = ");          file.println(settingHostname);            Debug(F("."));
+  file.print("preDSMR40 = ");         file.println(settingPreDSMR40);           Debug(F("."));
   file.print("EnergyDeliveredT1 = "); file.println(String(settingEDT1, 5));     Debug(F("."));
   file.print("EnergyDeliveredT2 = "); file.println(String(settingEDT2, 5));     Debug(F("."));
   file.print("EnergyReturnedT1 = ");  file.println(String(settingERT1, 5));     Debug(F("."));
   file.print("EnergyReturnedT2 = ");  file.println(String(settingERT2, 5));     Debug(F("."));
+  file.print("mBus1Type = ");         file.println(settingMbus1Type);           Debug(F("."));
+  file.print("mBus2Type = ");         file.println(settingMbus2Type);           Debug(F("."));
+  file.print("mBus3Type = ");         file.println(settingMbus3Type);           Debug(F("."));
+  file.print("mBus4Type = ");         file.println(settingMbus4Type);           Debug(F("."));
   file.print("GASDeliveredT = ");     file.println(String(settingGDT,  5));     Debug(F("."));
   file.print("EnergyVasteKosten = "); file.println(String(settingENBK, 2));     Debug(F("."));
   file.print("GasVasteKosten = ");    file.println(String(settingGNBK, 2));     Debug(F("."));
@@ -69,6 +74,10 @@ file.close();
     DebugT(F("EnergyDeliveredT2 = ")); Debugln(String(settingEDT2, 5));     
     DebugT(F("EnergyReturnedT1 = "));  Debugln(String(settingERT1, 5));     
     DebugT(F("EnergyReturnedT2 = "));  Debugln(String(settingERT2, 5));     
+    DebugT(F("mBus1Type = "));         Debugln(settingMbus1Type);     
+    DebugT(F("mBus2Type = "));         Debugln(settingMbus2Type);     
+    DebugT(F("mBus3Type = "));         Debugln(settingMbus3Type);     
+    DebugT(F("mBus4Type = "));         Debugln(settingMbus4Type);     
     DebugT(F("GASDeliveredT = "));     Debugln(String(settingGDT,  5));     
     DebugT(F("EnergyVasteKosten = ")); Debugln(String(settingENBK, 2));    
     DebugT(F("GasVasteKosten = "));    Debugln(String(settingGNBK, 2));    
@@ -123,6 +132,11 @@ void readSettings(bool show)
   DebugTf(" %s ..\r\n", SETTINGS_FILE);
 
   snprintf(settingHostname, sizeof(settingHostname), "%s", _DEFAULT_HOSTNAME);
+  settingPreDSMR40          = 0;
+  settingMbus1Type          = 3;
+  settingMbus2Type          = 0;
+  settingMbus3Type          = 0;
+  settingMbus4Type          = 0;
   settingEDT1               = 0.1;
   settingEDT2               = 0.2;
   settingERT1               = 0.3;
@@ -147,7 +161,7 @@ void readSettings(bool show)
   settingMindergasToken[0] = '\0';
 #endif
 
-  if (!SPIFFS.exists(SETTINGS_FILE)) 
+  if (!FSYS.exists(SETTINGS_FILE)) 
   {
     DebugTln(F(" .. file not found! --> created file!"));
     writeSettings();
@@ -155,11 +169,11 @@ void readSettings(bool show)
 
   for (int T = 0; T < 2; T++) 
   {
-    file = SPIFFS.open(SETTINGS_FILE, "r");
+    file = FSYS.open(SETTINGS_FILE, "r");
     if (!file) 
     {
       if (T == 0) DebugTf(" .. something went wrong opening [%s]\r\n", SETTINGS_FILE);
-      else        DebugT(T);
+      else        DebugTln(T);
       delay(100);
     }
   } // try T times ..
@@ -175,10 +189,15 @@ void readSettings(bool show)
     nColor    = words[1].substring(0,15);
 
     if (words[0].equalsIgnoreCase("Hostname"))            strCopy(settingHostname, 29, words[1].c_str());
+    if (words[0].equalsIgnoreCase("preDSMR40"))           settingPreDSMR40    = words[1].toInt();
     if (words[0].equalsIgnoreCase("EnergyDeliveredT1"))   settingEDT1         = strToFloat(words[1].c_str(), 5);  
     if (words[0].equalsIgnoreCase("EnergyDeliveredT2"))   settingEDT2         = strToFloat(words[1].c_str(), 5);
     if (words[0].equalsIgnoreCase("EnergyReturnedT1"))    settingERT1         = strToFloat(words[1].c_str(), 5);
     if (words[0].equalsIgnoreCase("EnergyReturnedT2"))    settingERT2         = strToFloat(words[1].c_str(), 5);
+    if (words[0].equalsIgnoreCase("mBus1Type"))           settingMbus1Type    = words[1].toInt(); 
+    if (words[0].equalsIgnoreCase("mBus2Type"))           settingMbus2Type    = words[1].toInt(); 
+    if (words[0].equalsIgnoreCase("mBus3Type"))           settingMbus3Type    = words[1].toInt(); 
+    if (words[0].equalsIgnoreCase("mBus4Type"))           settingMbus4Type    = words[1].toInt(); 
     if (words[0].equalsIgnoreCase("GasDeliveredT"))       settingGDT          = strToFloat(words[1].c_str(), 5); 
     if (words[0].equalsIgnoreCase("EnergyVasteKosten"))   settingENBK         = strToFloat(words[1].c_str(), 2);
     if (words[0].equalsIgnoreCase("GasVasteKosten"))      settingGNBK         = strToFloat(words[1].c_str(), 2);
@@ -223,7 +242,7 @@ void readSettings(bool show)
     }
     if (words[0].equalsIgnoreCase("MQTTbrokerPort"))      settingMQTTbrokerPort    = words[1].toInt();  
     if (words[0].equalsIgnoreCase("MQTTuser"))            strCopy(settingMQTTuser    ,35 ,words[1].c_str());  
-    if (words[0].equalsIgnoreCase("MQTTpasswd"))          strCopy(settingMQTTpasswd  ,25, words[1].c_str());  
+    if (words[0].equalsIgnoreCase("MQTTpasswd"))          strCopy(settingMQTTpasswd  ,35, words[1].c_str());  
     if (words[0].equalsIgnoreCase("MQTTinterval"))        settingMQTTinterval        = words[1].toInt(); 
     if (words[0].equalsIgnoreCase("MQTTtopTopic"))        strCopy(settingMQTTtopTopic, 20, words[1].c_str());  
     
@@ -250,6 +269,7 @@ void readSettings(bool show)
   
   Debugln(F("\r\n==== Settings ===================================================\r"));
   Debugf("                    Hostname : %s\r\n",     settingHostname);
+  Debugf("   Pre DSMR 40 (0=No, 1=Yes) : %s\r\n",     settingPreDSMR40 ? "Yes":"No");
   Debugf("   Energy Delivered Tarief 1 : %9.7f\r\n",  settingEDT1);
   Debugf("   Energy Delivered Tarief 2 : %9.7f\r\n",  settingEDT2);
   Debugf("   Energy Delivered Tarief 1 : %9.7f\r\n",  settingERT1);
@@ -257,7 +277,11 @@ void readSettings(bool show)
   Debugf("        Gas Delivered Tarief : %9.7f\r\n",  settingGDT);
   Debugf("     Energy Netbeheer Kosten : %9.2f\r\n",  settingENBK);
   Debugf("        Gas Netbeheer Kosten : %9.2f\r\n",  settingGNBK);
-  Debugf("  SM Fase Info (0=No, 1=Yes) : %d\r\n",     settingSmHasFaseInfo);
+  Debugf("                 MBus 1 Type : %d\r\n",     settingMbus1Type);
+  Debugf("                 MBus 2 Type : %d\r\n",     settingMbus2Type);
+  Debugf("                 MBus 3 Type : %d\r\n",     settingMbus3Type);
+  Debugf("                 MBus 4 Type : %d\r\n",     settingMbus4Type);
+  Debugf("  SM Fase Info (0=No, 1=Yes) : %s\r\n",     settingSmHasFaseInfo ? "Yes":"No");
   Debugf("   Telegram Process Interval : %d\r\n",     settingTelegramInterval);
   Debugf("         OLED Type (0, 1, 2) : %d\r\n",     settingOledType);
   Debugf("OLED Sleep Min. (0=oneindig) : %d\r\n",     settingOledSleep);
@@ -305,12 +329,17 @@ void updateSetting(const char *field, const char *newValue)
     Debugln();
     DebugTf("Need reboot before new %s.local will be available!\r\n\n", settingHostname);
   }
+  if (!stricmp(field, "pre_DSMR40"))        settingPreDSMR40    = String(newValue).toInt();  
   if (!stricmp(field, "ed_tariff1"))        settingEDT1         = String(newValue).toFloat();  
   if (!stricmp(field, "ed_tariff2"))        settingEDT2         = String(newValue).toFloat();  
   if (!stricmp(field, "er_tariff1"))        settingERT1         = String(newValue).toFloat();  
   if (!stricmp(field, "er_tariff2"))        settingERT2         = String(newValue).toFloat();  
   if (!stricmp(field, "electr_netw_costs")) settingENBK         = String(newValue).toFloat();
 
+  if (!stricmp(field, "mbus1_type"))        settingMbus1Type    = String(newValue).toInt();  
+  if (!stricmp(field, "mbus2_type"))        settingMbus2Type    = String(newValue).toInt();  
+  if (!stricmp(field, "mbus3_type"))        settingMbus3Type    = String(newValue).toInt();  
+  if (!stricmp(field, "mbus4_type"))        settingMbus4Type    = String(newValue).toInt();  
   if (!stricmp(field, "gd_tariff"))         settingGDT          = String(newValue).toFloat();  
   if (!stricmp(field, "gas_netw_costs"))    settingGNBK         = String(newValue).toFloat();
 
@@ -372,7 +401,7 @@ void updateSetting(const char *field, const char *newValue)
     CHANGE_INTERVAL_MS(reconnectMQTTtimer, 100); // try reconnecting cyclus timer
   }
   if (!stricmp(field, "mqtt_passwd")) {
-    strCopy(settingMQTTpasswd  ,25, newValue);  
+    strCopy(settingMQTTpasswd  ,35, newValue);  
     mqttIsConnected = false;
     CHANGE_INTERVAL_MS(reconnectMQTTtimer, 100); // try reconnecting cyclus timer
   }

@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
 **  Program  : convertPRD2RING, part of DSMRloggerAPI
-**  Version  : v2.0.1
+**  Version  : v3.0
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -14,20 +14,20 @@ void convertPRD2RING()
 {
     if (DSMRfileExist("PRDhours.csv",  false) )
     {
-      SPIFFS.remove(HOURS_FILE);
+      FSYS.remove(HOURS_FILE);
       convertPRDfile(HOURS);
     }
     if (DSMRfileExist("PRDdays.csv",   false) )
     {
-      SPIFFS.remove(DAYS_FILE);
+      FSYS.remove(DAYS_FILE);
       convertPRDfile(DAYS);
     }
     if (DSMRfileExist("PRDmonths.csv", false) )
     {
-      SPIFFS.remove(MONTHS_FILE);
+      FSYS.remove(MONTHS_FILE);
       convertPRDfile(MONTHS);
     }
-    SPIFFS.remove("/!PRDconvert");
+    FSYS.remove("/!PRDconvert");
 
 } // convertPRD2RING()
 
@@ -56,7 +56,7 @@ void convertPRDfile(int8_t fileType)
                   
   } // switch()
 
-  File PRDfile  = SPIFFS.open(PRDfileName, "r");    // open for Read 
+  File PRDfile  = FSYS.open(PRDfileName, "r");    // open for Read 
   if (!PRDfile) 
   {
     DebugTf("File [%s] does not exist, skip\r\n", PRDfileName);

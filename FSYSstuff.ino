@@ -1,7 +1,7 @@
 /* 
 ***************************************************************************  
-**  Program  : SPIFFSstuff, part of DSMRloggerAPI
-**  Version  : v2.0.1
+**  Program  : FSYSstuff, part of DSMRloggerAPI
+**  Version  : v3.0
 **
 **  Copyright (c) 2020 Willem Aandewiel
 **
@@ -20,7 +20,7 @@ void readLastStatus()
   char dummy[50] = "";
   char spiffsTimestamp[20] = "";
   
-  File _file = SPIFFS.open("/DSMRstatus.csv", "r");
+  File _file = FSYS.open("/DSMRstatus.csv", "r");
   if (!_file)
   {
     DebugTln("read(): No /DSMRstatus.csv found ..");
@@ -58,7 +58,7 @@ void writeLastStatus()
   char buffer[50] = "";
   DebugTf("writeLastStatus() => %s; %u; %u;\r\n", actTimestamp, nrReboots, slotErrors);
   writeToSysLog("writeLastStatus() => %s; %u; %u;", actTimestamp, nrReboots, slotErrors);
-  File _file = SPIFFS.open("/DSMRstatus.csv", "w");
+  File _file = FSYS.open("/DSMRstatus.csv", "w");
   if (!_file)
   {
     DebugTln("write(): No /DSMRstatus.csv found ..");
@@ -87,11 +87,7 @@ bool buildDataRecordFromSM(char *recIn)
                                           , (float)DSMRdata.energy_delivered_tariff2
                                           , (float)DSMRdata.energy_returned_tariff1
                                           , (float)DSMRdata.energy_returned_tariff2
-#ifdef USE_PRE40_PROTOCOL
-                                          , (float)DSMRdata.gas_delivered2);
-#else
-                                          , (float)DSMRdata.gas_delivered);
-#endif
+                                          , (float)gasDelivered);
   // DATA + \n + \0                                        
   fillRecord(record, DATA_RECLEN);
 
@@ -163,7 +159,7 @@ void writeDataToFile(const char *fileName, const char *record, uint16_t slot, in
     return;
   }
   
-  if (!SPIFFS.exists(fileName))
+  if (!FSYS.exists(fileName))
   {
     switch(fileType) {
       case HOURS:   createFile(fileName, _NO_HOUR_SLOTS_);
@@ -175,7 +171,7 @@ void writeDataToFile(const char *fileName, const char *record, uint16_t slot, in
     }
   }
 
-  File dataFile = SPIFFS.open(fileName, "r+");  // read and write ..
+  File dataFile = FSYS.open(fileName, "r+");  // read and write ..
   if (!dataFile) 
   {
     DebugTf("Error opening [%s]\r\n", fileName);
@@ -242,13 +238,13 @@ void readOneSlot(int8_t fileType, const char *fileName, uint8_t recNr
                   break;
   }
 
-  if (!SPIFFS.exists(fileName))
+  if (!FSYS.exists(fileName))
   {
     DebugTf("File [%s] does not excist!\r\n", fileName);
     return;
   }
 
-  File dataFile = SPIFFS.open(fileName, "r+");  // read and write ..
+  File dataFile = FSYS.open(fileName, "r+");  // read and write ..
   if (!dataFile) 
   {
     DebugTf("Error opening [%s]\r\n", fileName);
@@ -353,7 +349,7 @@ bool createFile(const char *fileName, uint16_t noSlots)
 {
     DebugTf("fileName[%s], fileRecLen[%d]\r\n", fileName, DATA_RECLEN);
 
-    File dataFile  = SPIFFS.open(fileName, "a");  // create File
+    File dataFile  = FSYS.open(fileName, "a");  // create File
     // -- first write fileHeader ----------------------------------------
     snprintf(cMsg, sizeof(cMsg), "%s", DATA_CSV_HEADER);  // you cannot modify *fileHeader!!!
     fillRecord(cMsg, DATA_RECLEN);
@@ -382,7 +378,7 @@ bool createFile(const char *fileName, uint16_t noSlots)
     } // for ..
     
     dataFile.close();
-    dataFile  = SPIFFS.open(fileName, "r+");       // open for Read & writing
+    dataFile  = FSYS.open(fileName, "r+");       // open for Read & writing
     if (!dataFile) 
     {
       DebugTf("Something is very wrong writing to [%s]\r\n", fileName);
@@ -484,7 +480,7 @@ int32_t freeSpace()
 {
   int32_t space;
   
-  SPIFFS.info(SPIFFSinfo);
+  FSYS.info(SPIFFSinfo);
 
   space = (int32_t)(SPIFFSinfo.totalBytes - SPIFFSinfo.usedBytes);
 
@@ -493,7 +489,7 @@ int32_t freeSpace()
 } // freeSpace()
 
 //===========================================================================================
-void listSPIFFS() 
+void listFSYS() 
 {
    typedef struct _fileMeta {
     char    Name[20];     
@@ -503,11 +499,15 @@ void listSPIFFS()
   _fileMeta dirMap[30];
   int fileNr = 0;
   
-  Dir dir = SPIFFS.openDir("/");         // List files on SPIFFS
+  Dir dir = FSYS.openDir("/");         // List files on SPIFFS
   while (dir.next())  
   {
     dirMap[fileNr].Name[0] = '\0';
+  #if defined( USE_LITTLEFS )
+    strncat(dirMap[fileNr].Name, dir.fileName().substring(0).c_str(), 19); 
+  #else // SPIFFS
     strncat(dirMap[fileNr].Name, dir.fileName().substring(1).c_str(), 19); // remove leading '/'
+  #endif
     dirMap[fileNr].Size = dir.fileSize();
     fileNr++;
   }
@@ -534,19 +534,19 @@ void listSPIFFS()
     yield();
   }
 
-  SPIFFS.info(SPIFFSinfo);
+  FSYS.info(SPIFFSinfo);
 
   Debugln(F("\r"));
   if (freeSpace() < (10 * SPIFFSinfo.blockSize))
-        Debugf("Available SPIFFS space [%6d]kB (LOW ON SPACE!!!)\r\n", (freeSpace() / 1024));
-  else  Debugf("Available SPIFFS space [%6d]kB\r\n", (freeSpace() / 1024));
-  Debugf("           SPIFFS Size [%6d]kB\r\n", (SPIFFSinfo.totalBytes / 1024));
-  Debugf("     SPIFFS block Size [%6d]bytes\r\n", SPIFFSinfo.blockSize);
-  Debugf("      SPIFFS page Size [%6d]bytes\r\n", SPIFFSinfo.pageSize);
-  Debugf(" SPIFFS max.Open Files [%6d]\r\n\r\n", SPIFFSinfo.maxOpenFiles);
+        Debugf("Available FSYS space [%6d]kB (LOW ON SPACE!!!)\r\n", (freeSpace() / 1024));
+  else  Debugf("Available FSYS space [%6d]kB\r\n", (freeSpace() / 1024));
+  Debugf("           FSYS Size [%6d]kB\r\n", (SPIFFSinfo.totalBytes / 1024));
+  Debugf("     FSYS block Size [%6d]bytes\r\n", SPIFFSinfo.blockSize);
+  Debugf("      FSYS page Size [%6d]bytes\r\n", SPIFFSinfo.pageSize);
+  Debugf(" FSYS max.Open Files [%6d]\r\n\r\n", SPIFFSinfo.maxOpenFiles);
 
 
-} // listSPIFFS()
+} // listFSYS()
 
 
 //===========================================================================================
@@ -576,10 +576,10 @@ bool eraseFile()
   //--- add leading slash on position 0
   eName[0] = '/';
 
-  if (SPIFFS.exists(eName))
+  if (FSYS.exists(eName))
   {
-    Debugf("\r\nErasing [%s] from SPIFFS\r\n\n", eName);
-    SPIFFS.remove(eName);
+    Debugf("\r\nErasing [%s] from FSYS\r\n\n", eName);
+    FSYS.remove(eName);
   }
   else
   {
@@ -610,10 +610,10 @@ bool DSMRfileExist(const char* fileName, bool doDisplay)
   {
     oled_Print_Msg(1, "Bestaat:", 10);
     oled_Print_Msg(2, fName, 10);
-    oled_Print_Msg(3, "op SPIFFS?", 250);
+    oled_Print_Msg(3, "op FSYS?", 250);
   }
 
-  if (!SPIFFS.exists(fName) )
+  if (!FSYS.exists(fName) )
   {
     if (doDisplay)
     {

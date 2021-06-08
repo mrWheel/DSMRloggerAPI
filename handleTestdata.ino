@@ -8,7 +8,8 @@ enum runStates { SInit, SMonth, SDay, SHour, SNormal };
 enum runStates runMode = SNormal;
 
 char        telegramLine[MAXLINELENGTH] = "";
-char        telegram[1000] = "";
+char        telegram[MAX_TLGRM_LENGTH] = "";
+int16_t     testTlgrmLines = 2; // needs value > 0
 uint16_t    currentCRC; 
 int16_t     calcCRC;
 uint32_t    actInterval = 5, nextMinute = 0, nextESPcheck = 0, nextGuiUpdate;
@@ -19,7 +20,8 @@ double      ED_T1=0, ED_T2=0, ER_T1=0, ER_T2=0, V_l1=0, V_l2=0, V_l3=0, C_l1=0, 
 uint8_t     ETariffInd=1;
 float       PDelivered, PReturned;
 float       IPD_l1, IPD_l2, IPD_l3, IPR_l1, IPR_l2, IPR_l3;
-float       GDelivered;
+float       CUR_l1, CUR_l2, CUR_l3;
+float       GDelivered = 321.123;
 bool        forceBuildRingFiles = false;
 int16_t     forceBuildRecs;
 
@@ -101,32 +103,38 @@ void handleTestdata()
   currentCRC = 0;
   memset(telegram,0,sizeof(telegram));
   
-#if defined( USE_PRE40_PROTOCOL )
-    for (int16_t line = 0; line < 20; line++) {
+  if (settingPreDSMR40 == 1)
+  {
+    for (int16_t line = 0; line <= testTlgrmLines; line++) {
       yield();
       int16_t len = buildTelegram30(line, telegramLine);  // also: prints to DSMRsend
 //    calcCRC = decodeTelegram(len);  // why??
     }
     if (Verbose2) Debugf("!\r\n");
     strConcat(telegram, sizeof(telegram), "!\r\n");
-
-#else
-    for (int16_t line = 0; line < 38; line++) {
+  }
+  else
+  {
+    for (int16_t line = 0; line <= testTlgrmLines; line++) {
       yield();
-      int16_t len = buildTelegram40(line, telegramLine);  // also: prints to DSMRsend
+      int16_t len = buildTelegram(line, telegramLine);  // also: prints to DSMRsend
       calcCRC = decodeTelegram(len);
     } 
     snprintf(cMsg, sizeof(cMsg), "!%04X\r\n\r\n", (calcCRC & 0xFFFF));
     if (Verbose2) Debug(cMsg);
     strConcat(telegram, sizeof(telegram), cMsg);
-    
-#endif
+  }
 
   DebugFlush();
   telegramCount++;
 
   DSMRdata = {};
-  ParseResult<void> res = P1Parser::parse(&DSMRdata, telegram, lengthof(telegram));
+  ParseResult<void> res;
+
+  if (settingPreDSMR40 == 1)
+        res = P1Parser::parse(&DSMRdata, telegram, lengthof(telegram), false, false);
+  else  res = P1Parser::parse(&DSMRdata, telegram, lengthof(telegram), false, true);
+
   if (res.err) 
   {
     // Parsing error, show it
@@ -137,6 +145,19 @@ void handleTestdata()
     if (Verbose2) DebugTln("DSMR: Some fields are missing");
   } 
   // Succesfully parsed, now process the data!
+  DebugTln("Processing telegram ..");
+  // Succesfully parsed, now process the data!
+  if (!DSMRdata.timestamp_present)
+  {
+    sprintf(cMsg, "%02d%02d%02d%02d%02d%02dW\0\0"       
+                        , (year(nt) - 2000), month(nt), day(nt)   
+                        , hour(nt), minute(nt), second(nt));      
+    DSMRdata.timestamp         = cMsg;                  
+    DSMRdata.timestamp_present = true;                   
+   }
+  
+  gasDelivered = modifyMbusDelivered();
+  modifySmFaseInfo();
 
   processTelegram();
   
@@ -146,13 +167,13 @@ void handleTestdata()
 
 
 //==================================================================================================
-int16_t buildTelegram40(int16_t line, char telegramLine[]) 
+int16_t buildTelegram(int16_t line, char telegramLine[]) 
 {
   int16_t len = 0;
 
   float val;
 
-  switch (line) {
+ switch (line) {
                                      //XMX5LGBBLB2410065887
     case 0:   sprintf(telegramLine, "/XMX5LGBBLB2410065887\r\n");
               break;
@@ -190,7 +211,12 @@ int16_t buildTelegram40(int16_t line, char telegramLine[])
               sprintf(telegramLine, "0-0:96.7.9(00000)\r\n", val);
               break;
     case 14:  // Power Failure Event Log (long power failures)
-              sprintf(telegramLine, "1-0:99.97.0(0)(0-0:96.7.19)\r\n", val);
+              sprintf(telegramLine, "1-0:99.97.0(10)(0-0:96.7.19)(190508094303S)(0000055374*s)"
+                          "(190507165813S)(0000007991*s)(190507141021S)(0000000274*s)"
+                          "(190507135954S)(0000000649*s)(190507134811S)(0000083213*s)"
+                          "(190506143928S)(0000090080*s)(190505123501S)(0000073433*s)"
+                          "(190504152603S)(0000003719*s)(190504120844S)(0000337236*s)"
+                          "(190430142638S)(0000165493*s)\r\n", val);
               break;
     case 15:  // Number of voltage sags in phase L1
               sprintf(telegramLine, "1-0:32.32.0(00002)\r\n", val);
@@ -223,13 +249,13 @@ int16_t buildTelegram40(int16_t line, char telegramLine[])
               sprintf(telegramLine, "1-0:72.7.0(%03d.0*V)\r\n", (236 + random(-3,3)));
               break;
     case 25:  // Instantaneous current L1 in A resolution
-              sprintf(telegramLine, "1-0:31.7.0(%03d*A)\r\n", random(0,4));
+              sprintf(telegramLine, "1-0:31.7.0(%s*A)\r\n", Format(CUR_l1, 6, 2).c_str());
               break;
     case 26:  // Instantaneous current L2 in A resolution
               sprintf(telegramLine, "1-0:51.7.0(%03d*A)\r\n",  random(0,4));
               break;
     case 27:  // Instantaneous current L3 in A resolution
-              sprintf(telegramLine, "1-0:71.7.0(000*A)\r\n", val);
+              sprintf(telegramLine, "1-0:71.7.0(%s*A)\r\n", Format(CUR_l3, 6, 2).c_str());
               break;
     case 28:  // Instantaneous active power L1 (+P) in W resolution
               sprintf(telegramLine, "1-0:21.7.0(%s*kW)\r\n", Format(IPD_l1, 6, 3).c_str());
@@ -249,7 +275,8 @@ int16_t buildTelegram40(int16_t line, char telegramLine[])
     case 33:  // Instantaneous active power L3 (-P) in W resolution
               sprintf(telegramLine, "1-0:62.7.0(%s*kW)\r\n", Format(IPR_l3, 6, 3).c_str());
               break;
-    case 34:  // Gas Device-Type
+              
+    case 34:  // [1] Gas Device-Type
               sprintf(telegramLine, "0-1:24.1.0(003)\r\n", val);
               break;
     case 35:  // Equipment identifier (Gas)
@@ -260,12 +287,42 @@ int16_t buildTelegram40(int16_t line, char telegramLine[])
               sprintf(telegramLine, "0-1:24.2.1(%02d%02d%02d%02d%02d01S)(%s*m3)\r\n", (year() - 2000), month(), day(), hour(), minute(), 
                                                                             Format(GDelivered, 9, 3).c_str());
               break;
-    case 37:  sprintf(telegramLine, "!xxxx\r\n");   
+    
+    case 37:  // [2] Device-Type
+              sprintf(telegramLine, "0-2:24.1.0(005)\r\n", val);
+              break;
+    case 38:  // Equipment identifier [4]
+              sprintf(telegramLine, "0-2:96.1.0(4730303339303031322222222222222222)\r\n", val);
+              break;
+    case 39:  //  0-2:24.4.0(1) - spare [4] valve_position
+              sprintf(telegramLine, "0-2:24.4.0(%1d)\r\n", (telegramCount%2));
+              break;
+    case 40:  // [2]
+              sprintf(telegramLine, "0-2:24.2.1(%02d%02d%02d%02d%02d01S)(%s*GJ)\r\n", (year() - 2000), month(), day(), hour(), minute(), 
+                                                                            Format((GDelivered / 5), 9, 3).c_str());
+              break;
+
+    case 41:  // [4] Device-Type
+              sprintf(telegramLine, "0-4:24.1.0(003)\r\n", val);
+              break;
+    case 42:  // Equipment identifier [4]
+              sprintf(telegramLine, "0-4:96.1.0(4730303339303031344444444444444444)\r\n", val);
+              break;
+    case 43:  //  0-4:24.4.0(1) - spare [4] valve_position
+              sprintf(telegramLine, "0-4:24.4.0(%1d)\r\n", (telegramCount%2));
+              break;
+    case 44:  // [4]
+              sprintf(telegramLine, "0-4:24.2.1(%02d%02d%02d%02d%02d01S)(%s*GJ)\r\n", (year() - 2000), month(), day(), hour(), minute(), 
+                                                                            Format((GDelivered / 3), 9, 3).c_str());
+              break;
+
+    case 45:  sprintf(telegramLine, "!xxxx\r\n");   
               break;
               
   } // switch(line)
-
-  if (line < 37) {
+  
+  testTlgrmLines   = 45;
+  if (line < testTlgrmLines) {
     if (Verbose2) Debug(telegramLine); 
     strConcat(telegram, sizeof(telegram), telegramLine);
   }
@@ -274,7 +331,7 @@ int16_t buildTelegram40(int16_t line, char telegramLine[])
   
   return len;
 
-} // buildTelegram40()
+} // buildTelegram()
 
 
 //==================================================================================================
@@ -366,8 +423,8 @@ int16_t buildTelegram30(int16_t line, char telegramLine[])
               break;
               
   } // switch(line)
-
-  if (line < 19) {
+  testTlgrmLines = 19;
+  if (line < testTlgrmLines) {
     if (Verbose2) Debug(telegramLine); 
     strConcat(telegram, sizeof(telegram), telegramLine);
   }
@@ -424,6 +481,9 @@ void updateMeterValues(uint8_t period)
   }
   PDelivered  = (float)(IPD_l1 + IPD_l2 + IPD_l3) / 1.0;       // Power Delivered
   PReturned   = (float)(IPR_l1 + IPR_l2 + IPR_l3) / 1.0;       // Power Returned
+  CUR_l1      = (float)(random(0,3000) * 0.001);
+  CUR_l2      = (float)(random(0,25000) * 0.001);
+  CUR_l3      = (float)(random(500,3000) * 0.001);
 
   if (Verbose2) Debugf("l1[%5d], l2[%5d], l3[%5d] ==> l1+l2+l3[%9.3f]\n"
                                                           , (int)(IPD_l1 * 1000)
