@@ -2,7 +2,7 @@
 ***************************************************************************  
 **  Program  : DSMRloggerAPI (restAPI)
 */
-#define _FW_VERSION "v3.0.Beta2 (07-06-2020)"
+#define _FW_VERSION "v3.0.Beta2 (08-06-2020)"
 /*
 **  Copyright (c) 2020, 2021 Willem Aandewiel
 **
@@ -173,9 +173,23 @@ void setup()
   }
   
 //================ FSYS ===========================================
+#if defined( USE_LITTLEFS )
+  LittleFSConfig cfg;
+#else
+  SPIFFSConfig cfg;
+#endif
+  cfg.setAutoFormat(false);
+  FSYS.setConfig(cfg);
+  
   if (FSYS.begin()) 
   {
-    DebugTln(F("FSYS Mount succesfull\r"));
+    #if defined( USE_LITTLEFS )
+      DebugTln(F("LittleFS Mount succesfull\r"));
+    #else
+      DebugTln(F("SPIFFS Mount succesfull\r"));
+    #endif
+    File nF = FSYS.open("/doNotFormat!", "w");
+    nF.close();
     FSYSmounted = true;
     if (settingOledType > 0)
     {
@@ -183,7 +197,11 @@ void setup()
       oled_Print_Msg(3, "FSYS mounted", 1500);
     }    
   } else { 
-    DebugTln(F("FSYS Mount failed\r"));   // Serious problem with FSYS 
+    #if defined( USE_LITTLEFS )
+      DebugTln(F("LittleFS Mount failed\r")); // Serious problem with LittleFS 
+    #else
+      DebugTln(F("SPIFFS Mount failed\r"));   // Serious problem with SPIFFS 
+    #endif
     FSYSmounted = false;
     if (settingOledType > 0)
     {
@@ -276,6 +294,14 @@ void setup()
     ESP.restart();
     delay(3000);
   }
+  
+  setSyncProvider(getNtpTime);
+  snprintf(cMsg, sizeof(cMsg), "%02d-%02d-%02d %02d:%02d:%02d (%s)"
+                        , year(ntpTime), month(ntpTime), day(ntpTime) 
+                        , hour(ntpTime), minute(ntpTime), second(ntpTime)
+                        , DSTactive ? "CEST":"CET");   
+  DebugTf("NTP time is [%s]\r\n", cMsg);
+
   if (settingOledType > 0)
   {
     oled_Print_Msg(0, " <DSMRloggerAPI>", 0);
@@ -342,16 +368,19 @@ void setup()
 
 //=================================================================
 
-  time_t t = now(); // store the current time in time variable t                    //USE_NTP
-  snprintf(cMsg, sizeof(cMsg), "%02d%02d%02d%02d%02d%02dW\0\0"                      //USE_NTP
+  time_t t = now(); // store the current time in time variable t 
+  check4DST(t);
+  snprintf(cMsg, sizeof(cMsg), "%02d%02d%02d%02d%02d%02d\0\0"                      //USE_NTP
                                                , (year(t) - 2000), month(t), day(t) //USE_NTP
                                                , hour(t), minute(t), second(t));    //USE_NTP
+  if (DSTactive)  strConcat(cMsg, 15, "S");
+  else            strConcat(cMsg, 15, "W");
   pTimestamp = cMsg;                                                                //USE_NTP
   DebugTf("Time is set to [%s] from NTP\r\n", cMsg);                                //USE_NTP
 
   if (settingOledType > 0)
   {
-    snprintf(cMsg, sizeof(cMsg), "DT: %02d%02d%02d%02d0101W", thisYear
+    snprintf(cMsg, sizeof(cMsg), "DT: %02d%02d%02d%02d0101x", thisYear
                                                             , thisMonth, thisDay, thisHour);
     oled_Print_Msg(0, " <DSMRloggerAPI>", 0);
     oled_Print_Msg(3, cMsg, 1500);
@@ -400,22 +429,22 @@ void setup()
       httpServer.serveStatic("/DSMRgraphics.js",  FSYS, "/DSMRgraphics.js");
     }
   } else {
-    DebugTln(F("Oeps! not all files found on FSYS -> present FSexplorer!\r"));
+    DebugTln(F("Oeps! not all files found on FSYS -> Start FSmanager!\r"));
     FSYSnotPopulated = true;
     if (settingOledType > 0)
     {
       oled_Print_Msg(0, "!OEPS! niet alle", 0);
       oled_Print_Msg(1, "files op FSYS", 0);
       oled_Print_Msg(2, "gevonden! (fout!)", 0);
-      oled_Print_Msg(3, "Start FSexplorer", 2000);
+      oled_Print_Msg(3, "Start FSmanager", 2000);
     }
   }
 
   setupFsManager();
-  httpServer.serveStatic("/FSexplorer.png",   FSYS, "/FSexplorer.png");
+  //httpServer.serveStatic("/FSexplorer.png",   FSYS, "/FSexplorer.png");
 
   httpServer.on("/api", HTTP_GET, processAPI);
-  // all other api calls are catched in FSexplorer onNotFounD!
+  // all other api calls are catched in FSmanager onNotFounD!
 
   httpServer.begin();
   DebugTln( "HTTP server gestart\r" );
@@ -477,12 +506,12 @@ void setup()
     }
     else
     {                //PRE40
-     DebugTln("Serial will be set to 9600 baud / 7N1");
-     DebugFlush();
-     Serial.end();
-     delay(100);
-     Serial.begin(9600, SERIAL_7E1);
-     slimmeMeter.doChecksum(false);
+      DebugTln("Serial will be set to 9600 baud / 7N1");
+      DebugFlush();
+      Serial.end();
+      delay(100);
+      Serial.begin(9600, SERIAL_7E1);
+      slimmeMeter.doChecksum(false);
     }                                    
     Serial.swap();
     
@@ -604,8 +633,9 @@ void loop ()
 //--- see if NTP needs synchronizing
   if DUE(synchrNTP)
   {
-      setSyncProvider(getNtpTime);
-      setSyncInterval(600);
+    setSyncProvider(getNtpTime);
+    setSyncInterval(600);
+    check4DST(ntpTime);
   }
   yield();
   

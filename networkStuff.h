@@ -90,15 +90,13 @@ void startWiFi(const char* hostname, int timeOut)
       oled_Print_Msg(3, "**** NO WIFI ****", 0);
     }
 
-    //reset and try again, or maybe put it to deep sleep
-    //delay(3000);
-    //ESP.reset();
-    //delay(2000);
     DebugTf(" took [%d] milli-seconds ==> ERROR!\r\n", (millis() - lTime));
-    return;
+    //return;
   }
-  
-  DebugTf("Connected with IP-address [%s]\r\n\r\n", WiFi.localIP().toString().c_str());
+  else
+  {
+    DebugTf("Connected with IP-address [%s]\r\n\r\n", WiFi.localIP().toString().c_str());
+  }
   if (settingOledType > 0)
   {
     oled_Clear();

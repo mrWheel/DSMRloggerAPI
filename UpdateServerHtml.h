@@ -12,9 +12,9 @@ static const char UpdateServerIndex[] PROGMEM =
           <input type='submit' value='Flash Firmware'>
       </form>
       <form method='POST' action='?cmd=100' enctype='multipart/form-data'> 
-          Selecteer een "<b>.{ spiffs | mklittlefs }.bin</b>" bestand<br/>
+          Selecteer een "<b>.mklittlefs.bin</b>" bestand<br/>
           <input type='file' accept='.bin' name='filesystem'>
-          <input type='submit' value='Flash Spiffs'>
+          <input type='submit' value='Flash FileSystem'>
       </form>
       <hr>
       <br/><font color='red'>Let op!!!</font>

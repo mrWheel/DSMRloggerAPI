@@ -145,9 +145,11 @@ void processSlimmemeter()
       
       if (!DSMRdata.timestamp_present)
       { 
-        sprintf(cMsg, "%02d%02d%02d%02d%02d%02dW\0\0"
+        sprintf(cMsg, "%02d%02d%02d%02d%02d%02d\0\0"
                         , (year() - 2000), month(), day()
                         , hour(), minute(), second());
+        if (DSTactive)  strConcat(cMsg, 15, "S");
+        else            strConcat(cMsg, 15, "W");
         DSMRdata.timestamp         = cMsg;
         DSMRdata.timestamp_present = true;
       }

@@ -37,7 +37,23 @@
 #include <list>
 #include <tuple>
 
-const char WARNING[] PROGMEM = R"(<h2>Check! Sketch is compiled with "FS:none"!)";
+const char WARNING[] PROGMEM = R"(
+  <body style="background-color:#F08080;">
+  <h2>ERROR! No File System found on the DSMR-logger!</h2>
+  <hr>
+  <form action='/format' method='GET'>
+    <input type='submit' name='SUBMIT' value='Format FileSystem'/>
+  </form>
+  <hr>
+  <b>Format</b> File System will <b>erase all your files!!!</b>
+  <hr>
+  <br/>
+  <p>Did you flashed the FileSystem????</p>
+  <br/>You can use the <i>Flash Utility</i> to flash the FileSystem!
+  <form action='/update' method='GET'>
+    <input type='submit' name='SUBMIT' value='Flash Utility'/>
+  </form>
+)";
 const char HELPER[]  PROGMEM = R"(
   <br>You first need to upload these two files:
   <ul>
@@ -50,7 +66,7 @@ const char HELPER[]  PROGMEM = R"(
     <input type="submit" value="Upload">
   </form>
   <hr>
-  <br/><b>or</b> you can use the <i>Flash Utility</i> to flash firmware or litleFS!
+  <br/><b>or</b> you can use the <i>Flash Utility</i> to flash firmware or FileSystem!
   <form action='/update' method='GET'>
     <input type='submit' name='SUBMIT' value='Flash Utility'/>
   </form>
@@ -86,7 +102,12 @@ void setupFsManager()
       if (Verbose1) DebugTf("next: processAPI(%s)\r\n", String(httpServer.uri()).c_str());
       processAPI();
     }
+    else if (httpServer.uri().indexOf("/format") == 0) 
+    {
+      formatFS();
+    }
     else
+
     {
       DebugTf("next: handleFile(%s)\r\n"
                       , String(httpServer.urlDecode(httpServer.uri())).c_str());
@@ -334,9 +355,30 @@ void handleUpload()
 //=====================================================================================
 void formatFS()      // Formatiert das Filesystem
 {
-  DebugTln("formatting littleFS ..");
-  //FSYS.format();
-  sendResponce();
+  if (FSYS.exists("/doNotFormat!"))
+  {
+    DebugTln("Found '/doNotFormat!' file ..");
+    DebugTln("Formatting Blocked! Bailout!");
+    doRedirect("Formatting Blocked! Bailout! ..", 5, "/", false);
+    return;
+  }
+  else
+  {
+    DebugTln("No '/doNotFormat!' file found.. OK!");
+  }
+
+  #if defined( USE_LITTLEFS )
+    DebugTln("formatting littleFS ..");
+  #else
+    DebugTln("formatting SPIFFS ..");
+  #endif
+  FSYS.format();
+  DebugT("Create '/doNotFormat!' file ..");
+  File nF = FSYS.open("/doNotFormat!", "w");
+  nF.close();
+  Debugln("done!");
+
+  doRedirect("Reboot DSMR-logger ..", 30, "/", true);
 
 } //  formatFS()
 
@@ -466,7 +508,7 @@ void doRedirect(String msg, int wait, const char* URL, bool reboot)
   }
   
   DebugTln(msg);
-  Debugln(redirectHTML);
+  //Debugln(redirectHTML);
   
   httpServer.send(200, "text/html", redirectHTML);
   if (reboot) 

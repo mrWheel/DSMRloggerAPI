@@ -10,6 +10,7 @@
 */  
 
 #include <TimeLib.h>            // https://github.com/PaulStoffregen/Time
+
 #include <TelnetStream.h>       // https://github.com/jandrassy/TelnetStream/commit/1294a9ee5cc9b1f7e51005091e351d60c8cddecf
 #include "safeTimers.h"
 
@@ -41,7 +42,7 @@
 //  https://github.com/mrWheel/dsmr2Lib.git             //PRE40
 #include <dsmr2.h>               // Version 0.1 - Commit f79c906 on 18 Sep 2018
 
-#define _DEFAULT_HOSTNAME  "DSMR-API"  
+#define _DEFAULT_HOSTNAME  "DSMR-API3b"  
 #define DTR_ENABLE         12
 
 #define SETTINGS_FILE      "/DSMRsettings.ini"
@@ -196,12 +197,13 @@ void delayms(unsigned long);
   WiFiClient  wifiClient;
   MyData      DSMRdata;
   uint32_t    readTimer;
-  time_t      actT, newT;
+  time_t      actT, newT, ntpTime;
+  bool        DSTactive;
   char        actTimestamp[20] = "";
   char        newTimestamp[20] = "";
   uint32_t    slotErrors = 0;
   uint32_t    nrReboots  = 0;
-  uint32_t    loopCount = 0;
+  uint32_t    loopCount  = 0;
   uint32_t    telegramCount = 0, telegramErrors = 0;
   bool        showRaw = false;
   int8_t      showRawCount = 0;

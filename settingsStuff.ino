@@ -30,6 +30,7 @@ void writeSettings()
   DebugT(F("Start writing setting data "));
 
   file.print("Hostname = ");          file.println(settingHostname);            Debug(F("."));
+  file.print("preDSMR40 = ");         file.println(settingPreDSMR40);           Debug(F("."));
   file.print("EnergyDeliveredT1 = "); file.println(String(settingEDT1, 5));     Debug(F("."));
   file.print("EnergyDeliveredT2 = "); file.println(String(settingEDT2, 5));     Debug(F("."));
   file.print("EnergyReturnedT1 = ");  file.println(String(settingERT1, 5));     Debug(F("."));
@@ -172,7 +173,7 @@ void readSettings(bool show)
     if (!file) 
     {
       if (T == 0) DebugTf(" .. something went wrong opening [%s]\r\n", SETTINGS_FILE);
-      else        DebugT(T);
+      else        DebugTln(T);
       delay(100);
     }
   } // try T times ..

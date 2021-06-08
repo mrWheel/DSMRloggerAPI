@@ -131,23 +131,25 @@ time_t epoch(const char *timeStamp, int8_t len, bool syncTime)
   if (Verbose2) DebugTf("epoch(%s) strlen([%d])\r\n", fullTimeStamp, strlen(fullTimeStamp));  
   switch(strlen(fullTimeStamp)) {
     case  4:  //--- timeStamp is YYMM
-              strConcat(fullTimeStamp, 15, "01010101X");
+              //trConcat(fullTimeStamp, 15, "01010101X");
+              strConcat(fullTimeStamp, 15, "01010101");
               break;
     case  6:  //--- timeStamp is YYMMDD
-              strConcat(fullTimeStamp, 15, "010101X");
+              strConcat(fullTimeStamp, 15, "010101");
               break;
     case  8:  //--- timeStamp is YYMMDDHH
-              strConcat(fullTimeStamp, 15, "0101X");
+              strConcat(fullTimeStamp, 15, "0101");
               break;
     case  10:  //--- timeStamp is YYMMDDHHMM
-              strConcat(fullTimeStamp, 15, "01X");
+              strConcat(fullTimeStamp, 15, "01");
               break;
     case  12:  //--- timeStamp is YYMMDDHHMMSS
-              strConcat(fullTimeStamp, 15, "X");
+              //strConcat(fullTimeStamp, 15, "X");
               break;
     //default:  return now();
   }
-  
+  if (DSTactive)  strConcat(fullTimeStamp, 15, "S");
+  else            strConcat(fullTimeStamp, 15, "W");
   if (strlen(fullTimeStamp) < 13) return now();
   
   if (Verbose2) DebugTf("DateTime: [%02d]-[%02d]-[%02d] [%02d]:[%02d]:[%02d]\r\n"
@@ -175,6 +177,7 @@ time_t epoch(const char *timeStamp, int8_t len, bool syncTime)
   {
     setTime(savEpoch);
   }
+  
   return nT;
 
 } // epoch()

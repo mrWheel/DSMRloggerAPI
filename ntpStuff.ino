@@ -7,12 +7,17 @@
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
+*      
+*   BE AWARE!
+*   Printing to Serial (Debug) will crash the system!
+*   
+*   You can only print to the TelnetStream!   
 */
 
 #include <WiFiUdp.h>            // - part of ESP8266 Core https://github.com/esp8266/Arduino
 WiFiUDP           Udp;
 
-const int         timeZone = 1;       // Central European (Winter) Time
+int8_t            UTCtime = 1;        // Central European (Winter) Time
 unsigned int      localPort = 8888;   // local port to listen for UDP packets
 
 // NTP Servers:
@@ -32,7 +37,6 @@ byte              packetBuffer[NTP_PACKET_SIZE]; //buffer to hold incoming & out
 static int        ntpServerNr = 0;
 static bool       externalNtpTime = false;
 static IPAddress  ntpServerIP; // NTP server's ip address
-
 
 //=======================================================================
 bool startNTP() 
@@ -61,6 +65,7 @@ time_t getNtpTime()
   while(true) 
   {
     yield;
+    UTCtime = 1;
     ntpPoolIndx++;
     if ( ntpPoolIndx > (sizeof(ntpPool) / sizeof(ntpPool[0]) -1) ) 
     {
@@ -80,6 +85,7 @@ time_t getNtpTime()
     RESTART_TIMER(waitForPackage);
     while (!DUE(waitForPackage))
     {
+      yield();
       int size = Udp.parsePacket();
       if (size >= NTP_PACKET_SIZE) 
       {
@@ -91,11 +97,21 @@ time_t getNtpTime()
         secsSince1900 |= (unsigned long)packetBuffer[41] << 16;
         secsSince1900 |= (unsigned long)packetBuffer[42] << 8;
         secsSince1900 |= (unsigned long)packetBuffer[43];
-        time_t t = (secsSince1900 - 2208988800UL + timeZone * SECS_PER_HOUR);
-        snprintf(cMsg, sizeof(cMsg), "%02d:%02d:%02d", hour(t), minute(t), second(t));   
-        TelnetStream.printf("[%s] Received NTP Response => new time [%s]  (Winter)\r\n", cMsg, cMsg);
+        ntpTime = (secsSince1900 - 2208988800UL + (UTCtime * SECS_PER_HOUR));
+        snprintf(cMsg, sizeof(cMsg), "%02d-%02d-%02d %02d:%02d:%02d"
+                        , year(ntpTime), month(ntpTime), day(ntpTime) 
+                        , hour(ntpTime), minute(ntpTime), second(ntpTime));   
+        TelnetStream.printf("Received NTP Response => new time [%s (CET)]\r\n", cMsg);
+        check4DST(ntpTime);
+        ntpTime = (secsSince1900 - 2208988800UL + (UTCtime * SECS_PER_HOUR));
+        snprintf(cMsg, sizeof(cMsg), "%02d-%02d-%02d %02d:%02d:%02d (%s)"
+                        , year(ntpTime), month(ntpTime), day(ntpTime) 
+                        , hour(ntpTime), minute(ntpTime), second(ntpTime)
+                        , DSTactive ?"CEST":"CET");   
+        TelnetStream.printf("NTP time is [%s]\r\n", cMsg);
         // return epoch ..
-        return secsSince1900 - 2208988800UL + timeZone * SECS_PER_HOUR;
+        //return secsSince1900 - 2208988800UL + (UTCtime * SECS_PER_HOUR);
+        return ntpTime;
       }
     }
     TelnetStream.println("No NTP Response :-(");
@@ -105,6 +121,31 @@ time_t getNtpTime()
   return 0; // return 0 if unable to get the time
 
 } // getNtpTime()
+
+
+//=======================================================================
+void check4DST(time_t t) 
+{
+  int thisTime;
+  int DSTstart = 033103;
+  int DSTeind  = 103103;
+  
+  snprintf(cMsg, sizeof(cMsg), "%02d%02d%02d", month(t), day(t), hour(t));
+  thisTime = atoi(cMsg);
+  if (DSTstart < thisTime < DSTeind) 
+  {
+    UTCtime   = 2;
+    DSTactive = true;
+    TelnetStream.println("Daylight Saving Time");
+  }
+  else 
+  {
+    UTCtime   = 1;
+    DSTactive = false;
+    TelnetStream.println("Standard Time");
+  }
+   
+} //  check4DST()
 
 
 // send an NTP request to the time server at the given address
