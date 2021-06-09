@@ -355,16 +355,16 @@ void handleUpload()
 //=====================================================================================
 void formatFS()      // Formatiert das Filesystem
 {
-  if (FSYS.exists("/doNotFormat!"))
+  if (FSYS.exists("/!doNotFormat"))
   {
-    DebugTln("Found '/doNotFormat!' file ..");
+    DebugTln("Found '/!doNotFormat' file ..");
     DebugTln("Formatting Blocked! Bailout!");
     doRedirect("Formatting Blocked! Bailout! ..", 5, "/", false);
     return;
   }
   else
   {
-    DebugTln("No '/doNotFormat!' file found.. OK!");
+    DebugTln("No '/!doNotFormat' file found.. OK!");
   }
 
   #if defined( USE_LITTLEFS )
@@ -373,8 +373,8 @@ void formatFS()      // Formatiert das Filesystem
     DebugTln("formatting SPIFFS ..");
   #endif
   FSYS.format();
-  DebugT("Create '/doNotFormat!' file ..");
-  File nF = FSYS.open("/doNotFormat!", "w");
+  DebugT("Create '/!doNotFormat' file ..");
+  File nF = FSYS.open("/!doNotFormat", "w");
   nF.close();
   Debugln("done!");
 

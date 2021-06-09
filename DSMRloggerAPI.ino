@@ -2,7 +2,7 @@
 ***************************************************************************  
 **  Program  : DSMRloggerAPI (restAPI)
 */
-#define _FW_VERSION "v3.0.Beta2 (08-06-2021)"
+#define _FW_VERSION "v3.0.Beta3 (09-06-2021)"
 /*
 **  Copyright (c) 2020, 2021 Willem Aandewiel
 **
@@ -40,7 +40,7 @@
 #define USE_MINDERGAS             // define if you want to update mindergas (configure through webinterface)
 //  #define USE_SYSLOGGER             // define if you want to use the sysLog library for debugging
 //  #define SHOW_PASSWRDS             // well .. show the PSK key and MQTT password, what else?
-#define USE_LITTLEFS              // if not: use SPIFFS
+#define USE_LITTLEFS              // if not #defined: use SPIFFS
 /******************** don't change anything below this comment **********************/
 
 #include "DSMRloggerAPI.h"
@@ -188,7 +188,7 @@ void setup()
     #else
       DebugTln(F("SPIFFS Mount succesfull\r"));
     #endif
-    File nF = FSYS.open("/doNotFormat!", "w");
+    File nF = FSYS.open("/!doNotFormat", "w");
     nF.close();
     FSYSmounted = true;
     if (settingOledType > 0)

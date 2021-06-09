@@ -9,7 +9,7 @@
       document.addEventListener('DOMContentLoaded', () => {
 	      list(JSON.parse(localStorage.getItem('sortBy')));
 		    format.addEventListener('click', () => {
-	        if (!confirm(`Do you really want to format? All data will be lost.\nYou need to upload littleFSexplorer.html.`)) event.preventDefault();   
+	        if (!confirm(`Do you really want to format? All data will be lost.\nYou need to upload FSmanager.html.`)) event.preventDefault();   
 	      });
 		    listFS.addEventListener('click', () => {});
 		    updateFW.addEventListener('click', () => {});
@@ -22,6 +22,7 @@
         }).then((json) => {
 		      myList.innerHTML = '<nav><input type="radio" id="/" name="group" checked="checked"><label for="/"> &#128193;</label><span id="cr">+&#128193;</nav></span><span id="si"></span>';
 		      document.querySelector('form').setAttribute('action', '/upload?f=');
+          document.getElementById("format").disabled = false;
           for (var i = 0; i < json.length - 1; i++) 
           {
             let dir = '', f = json[i].folder, n = json[i].name;
@@ -32,11 +33,21 @@
 			      }
             if (n != '') 
             {
+              if (n == "!doNotFormat")
+              {
+                document.getElementById("format").disabled = true;
+              }
               dir += `<div class="row">`
-              dir += `<div class="row colFname">${n}</div>`;
+              if (n.endsWith(".html"))
+                   dir += `<div class="row colFname"><a href ="${n}" target="_blank" style="text-decoration: none">${n}</a></div>`;
+              else dir += `<div class="row colFname">${n}</div>`;
               dir += `<div class="row colFsize"><small>&nbsp;${json[i].size}</small></div>`;
               dir += `<div class="row colButton linkButton"><a href="${f}/${n}"download="${n}">&nbsp;Download&nbsp;</a></div>`;
-              dir += `<div class="row colButton linkButton"><a href="?delete=${f}/${n}">&nbsp;Delete&nbsp;</a></div>`;
+              if (n.startsWith("FSmanager") || n.startsWith("DSMR") || n == "favicon.ico") 
+              {
+                dir +=`<div class="row colButton linkButton">&nbsp;Locked&nbsp;</div>`;
+              }
+              else  dir += `<div class="row colButton linkButton"><a href="?delete=${f}/${n}">&nbsp;Delete&nbsp;</a></div>`;
               dir += `</div>`
             }
             myList.insertAdjacentHTML('beforeend', dir);
