@@ -15,6 +15,7 @@ Documentation can be found [here](https://mrwheel-docs.gitbook.io/dsmrloggerapi/
       <br>Instelling DSMR protocol nu via settings
       <br>Belgische Slimme Meters werken nu zonder aanpassingen (dsmr2Lib)
       <br>Selectie MBus waar de Slimme Meter op is aangesloten via settings
+      <br>SPIFFS is vervangen door LittleFS
    </td>
 </tr>
 <tr>
