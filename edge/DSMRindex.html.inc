@@ -355,10 +355,10 @@
 
   </span> <!-- end Settings Page -->
   
-  <!--
+  <!-- -->
   <script src="https://cdn.jsdelivr.net/gh/mrWheel/DSMRloggerAPI@master/edge/DSMRindex.min.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/mrWheel/DSMRloggerAPI@master/edge/DSMRgraphics.min.js"></script>
-  -->
+  <!-- -->
 
 <!--
 ***************************************************************************
