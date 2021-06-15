@@ -36,20 +36,20 @@
       <a id='bFieldsTab'    class='nav-item tabButton'>all Fields</a>
       <a id='bSysInfoTab'   class='nav-item tabButton'>Systeem Info</a>
       <a id='bAPIdocTab'    class='nav-item tabButton'>API Docs</a>
-<!--
-      <a id='FSmanager'    class='nav-img'>
-                      <img src='/FSmanager.png' alt='FSmanager'></a>
-      <a id='Settings'      class='nav-img'>
-                      <img src='/settings.png' alt='Settings'></a>
+      <a id='FSmanager'     class='nav-img'>&#128452; &nbsp;</a>
+
+      <a id='Settings'      class='nav-img'>&#9935; &nbsp;</a>
+
+<!--      
+      <div class="wrapper">
+        <div id='FSmanager2'  class='default'>&nbsp; &#128452; &nbsp;</div>
+        <div id='FSmanager'   class='hover'>&nbsp; &#128452; &nbsp;</div>
+      </div>
+      <div class="wrapper">
+        <div id='Settings2'   class='default'>&nbsp; &#9935; &nbsp;</div>
+        <div id='Settings'    class='hover'>&nbsp; &#9935; &nbsp;</div>
+      </div>
 -->
-      <div class="wrapper">
-      <div id='FSmanager2'    class='default'>&#128452; &nbsp;</div>
-      <div id='FSmanager'   class='hover'>&#128452; &nbsp;</div>
-      </div>
-      <div class="wrapper">
-      <div id='Settings2'    class='default'>&#9935; &nbsp;</div>
-      <div id='Settings'    class='hover'>&#9935; &nbsp;</div>
-      </div>
     </div>
   </div>
   <!-- END Tabbladen -->
@@ -355,10 +355,10 @@
 
   </span> <!-- end Settings Page -->
   
-  <!-- -->
-  <script src="https://cdn.jsdelivr.net/gh/mrWheel/DSMRloggerAPI@master/edge/DSMRindex.min.js"></script>
+  <!--
+  <script src="https://cdn.jsdelivr.net/gh/mrWheel/DSMRloggerAPI@master/edge/DSMRedge.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/mrWheel/DSMRloggerAPI@master/edge/DSMRgraphics.min.js"></script>
-  <!-- -->
+  -->
 
 <!--
 ***************************************************************************

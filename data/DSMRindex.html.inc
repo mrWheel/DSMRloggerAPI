@@ -36,11 +36,9 @@
       <a id='bFieldsTab'    class='nav-item tabButton'>all Fields</a>
       <a id='bSysInfoTab'   class='nav-item tabButton'>Systeem Info</a>
       <a id='bAPIdocTab'    class='nav-item tabButton'>API Docs</a>
-      <a id='FSmanager'    class='nav-img'>
-                      <img src='/FSmanager.png' alt=''>&#128452;</a>
+      <a id='FSmanager'     class='nav-img'>&#128452; &nbsp;</a>
 
-      <a id='Settings'      class='nav-img'>
-                      <img src='/settings.png' alt=''>&#9935;</a>
+      <a id='Settings'      class='nav-img'>&#9935; &nbsp;</a>
 
 <!--      
       <div class="wrapper">
