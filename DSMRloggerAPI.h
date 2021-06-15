@@ -3,7 +3,7 @@
 **  Program  : DSMRloggerAPI.h - definitions for DSMRloggerAPI
 **  Version  : v3.0
 **
-**  Copyright (c) 2020 Willem Aandewiel
+**  Copyright (c) 2021 Willem Aandewiel
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
@@ -39,10 +39,10 @@
   #define writeToSysLog(...)  // nothing
 #endif
 
-//  https://github.com/mrWheel/dsmr2Lib.git             //PRE40
-#include <dsmr2.h>               // Version 0.1 - Commit f79c906 on 18 Sep 2018
+//  https://github.com/mrWheel/dsmr2Lib.git             
+#include <dsmr2.h>               // commit 0ed3916813850af43200863853bfb4b26e9655eb on 7 juni 2021
 
-#define _DEFAULT_HOSTNAME  "DSMR-API3b"  
+#define _DEFAULT_HOSTNAME  "DSMR-API"  
 #define DTR_ENABLE         12
 
 #define SETTINGS_FILE      "/DSMRsettings.ini"

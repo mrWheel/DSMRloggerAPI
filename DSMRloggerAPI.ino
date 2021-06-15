@@ -2,7 +2,7 @@
 ***************************************************************************  
 **  Program  : DSMRloggerAPI (restAPI)
 */
-#define _FW_VERSION "v3.0.Beta3 (15-06-2021)"
+#define _FW_VERSION "v3.0.1 (15-06-2021)"
 /*
 **  Copyright (c) 2020, 2021 Willem Aandewiel
 **
@@ -34,13 +34,13 @@
 **   https://mrwheel.github.io/DSMRloggerWS/
 */
 /******************** compiler options  ********************************************/
+#define USE_LITTLEFS              // if not #defined: use SPIFFS
 #define USE_UPDATE_SERVER         // define if there is enough memory and updateServer to be used
-//  #define HAS_NO_SLIMMEMETER        // define for testing only!
 #define USE_MQTT                  // define if you want to use MQTT (configure through webinterface)
 #define USE_MINDERGAS             // define if you want to update mindergas (configure through webinterface)
 //  #define USE_SYSLOGGER             // define if you want to use the sysLog library for debugging
 //  #define SHOW_PASSWRDS             // well .. show the PSK key and MQTT password, what else?
-#define USE_LITTLEFS              // if not #defined: use SPIFFS
+//  #define HAS_NO_SLIMMEMETER        // define for testing only!
 /******************** don't change anything below this comment **********************/
 
 #include "DSMRloggerAPI.h"
