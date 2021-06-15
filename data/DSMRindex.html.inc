@@ -36,20 +36,22 @@
       <a id='bFieldsTab'    class='nav-item tabButton'>all Fields</a>
       <a id='bSysInfoTab'   class='nav-item tabButton'>Systeem Info</a>
       <a id='bAPIdocTab'    class='nav-item tabButton'>API Docs</a>
-<!--
       <a id='FSmanager'    class='nav-img'>
-                      <img src='/FSmanager.png' alt='FSmanager'></a>
+                      <img src='/FSmanager.png' alt=''>&#128452;</a>
+
       <a id='Settings'      class='nav-img'>
-                      <img src='/settings.png' alt='Settings'></a>
+                      <img src='/settings.png' alt=''>&#9935;</a>
+
+<!--      
+      <div class="wrapper">
+        <div id='FSmanager2'  class='default'>&nbsp; &#128452; &nbsp;</div>
+        <div id='FSmanager'   class='hover'>&nbsp; &#128452; &nbsp;</div>
+      </div>
+      <div class="wrapper">
+        <div id='Settings2'   class='default'>&nbsp; &#9935; &nbsp;</div>
+        <div id='Settings'    class='hover'>&nbsp; &#9935; &nbsp;</div>
+      </div>
 -->
-      <div class="wrapper">
-      <div id='FSmanager2'    class='default'>&#128452; &nbsp;</div>
-      <div id='FSmanager'   class='hover'>&#128452; &nbsp;</div>
-      </div>
-      <div class="wrapper">
-      <div id='Settings2'    class='default'>&#9935; &nbsp;</div>
-      <div id='Settings'    class='hover'>&#9935; &nbsp;</div>
-      </div>
     </div>
   </div>
   <!-- END Tabbladen -->

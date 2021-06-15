@@ -244,10 +244,12 @@ input {
 }
 
 /* animated icons on menu bar */
+/*
 .default,
 .hover {
   font-size: 20px;
   cursor:pointer;
+  -webkit-appearance: none;
 }
 .hover {
   overflow: hidden;
@@ -257,15 +259,21 @@ input {
   left: 0;
   top: 0;
   white-space: nowrap;
+  cursor:pointer;
+  -webkit-appearance: none;
 }
 .wrapper {
   position: relative;
   display: inline-block;
+  cursor:pointer;
+  -webkit-appearance: none;
 }
 .wrapper:hover .hover {
   width: 100%;
+  cursor:pointer;
+  -webkit-appearance: none;
 }
-
+*/
 /* define tag selectors () -------------------------------------------------- */
 
 button { width: 100px; }
