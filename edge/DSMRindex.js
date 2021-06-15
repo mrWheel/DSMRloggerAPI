@@ -2084,6 +2084,7 @@ http://DSMR-API.local/api/v1/dev/settings</pre>", false);
           ,[ "ssid",                      "WiFi SSID" ]
           ,[ "wifirssi",                  "WiFi RSSI" ]
           ,[ "uptime",                    "Up Time [dagen] - [hh:mm]" ]
+          ,[ "uptime_secs",               "Up Time in Seconds" ]
           ,[ "reboots",                   "Aantal keer opnieuw opgestart" ]
           ,[ "lastreset",                 "Laatste Reset reden" ]
           

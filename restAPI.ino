@@ -385,7 +385,7 @@ void sendDeviceInfo()
   sendNestedJsonObj("flashchiprealsize", formatFloat((ESP.getFlashChipRealSize() / 1024.0 / 1024.0), 3), "MB");
 
   FSYS.info(SPIFFSinfo);
-  sendNestedJsonObj("spiffssize", formatFloat( (SPIFFSinfo.totalBytes / (1024.0 * 1024.0)), 0), "MB");
+  sendNestedJsonObj("filesystem_size", formatFloat( (SPIFFSinfo.totalBytes / (1024.0 * 1024.0)), 0), "MB");
 
   sendNestedJsonObj("flashchipspeed", formatFloat((ESP.getFlashChipSpeed() / 1000.0 / 1000.0), 0), "MHz");
 
@@ -412,6 +412,7 @@ void sendDeviceInfo()
 #endif
   sendNestedJsonObj("wifirssi", WiFi.RSSI());
   sendNestedJsonObj("uptime", upTime());
+  sendNestedJsonObj("uptime_secs",      (int)upTimeSeconds, "sec");
   sendNestedJsonObj("oled_type",        (int)settingOledType);
   sendNestedJsonObj("oled_flip_screen", (int)settingOledFlip);
   sendNestedJsonObj("smhasfaseinfo",    (int)settingSmHasFaseInfo);
@@ -448,6 +449,8 @@ void sendDeviceTime()
   sendNestedJsonObj("timestamp", actTimestamp); 
   sendNestedJsonObj("time", buildDateTimeString(actTimestamp, sizeof(actTimestamp)).c_str()); 
   sendNestedJsonObj("epoch", (int)now());
+  sendNestedJsonObj("uptime", upTime());
+  sendNestedJsonObj("uptime_secs", (int)upTimeSeconds, "sec");
 
   sendEndJsonObj();
 
