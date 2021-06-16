@@ -10,8 +10,8 @@ Documentation can be found [here](https://mrwheel-docs.gitbook.io/dsmrloggerapi/
 <table>
 <tr><th>Versie</th><th align="Left">Opmerking</th></tr>
 <tr>
-   <td valign="top">3.0.Beta2</td>
-   <td>v3-Beta2 Release
+   <td valign="top">3.0.2</td>
+   <td>"One Fits All" Release
       <br>Instelling DSMR protocol nu via settings
       <br>Belgische Slimme Meters werken nu zonder aanpassingen (dsmr2Lib)
       <br>Selectie MBus waar de Slimme Meter op is aangesloten via settings
