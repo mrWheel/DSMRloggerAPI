@@ -1769,7 +1769,7 @@ http://DSMR-API.local/api/v1/dev/settings</pre>", false);
   {
     if (GitHubVersion != 0) return;
     
-    fetch("https://cdn.jsdelivr.net/gh/mrWheel/DSMRloggerAPI@master/data/DSMRversion.dat")
+    fetch("https://cdn.jsdelivr.net/gh/mrWheel/DSMRloggerAPI@master/data/DSMRversion.dat", {cache: "no-store"})
       .then(response => {
         if (response.ok) {
           return response.text();
@@ -1780,10 +1780,13 @@ http://DSMR-API.local/api/v1/dev/settings</pre>", false);
       })
       .then(text => {
         var tmpGHF     = text.replace(/(\r\n|\n|\r)/gm, "");
+        console.log("parsed: tmpGHF is ["+tmpGHF+"]");
         GitHubVersion_dspl = tmpGHF;
-        console.log("parsed: GitHubVersion is ["+GitHubVersion_dspl+"]");
+        //console.log("parsed: GitHubVersion is ["+GitHubVersion_dspl+"]");
         tmpX = tmpGHF.substring(1, tmpGHF.indexOf(' '));
+        //console.log("parsed: tmpX is ["+tmpX+"]");
         tmpN = tmpX.split(".");
+        console.log("parsed: tmpN is ["+tmpN[0]+"|"+tmpN[1]+"|"+tmpN[2]+"]");
         GitHubVersion = tmpN[0]*10000 + tmpN[1]*1;
         
         console.log("firmwareVersion["+firmwareVersion+"] >= GitHubVersion["+GitHubVersion+"]");
