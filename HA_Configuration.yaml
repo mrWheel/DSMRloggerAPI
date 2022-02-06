@@ -1,0 +1,89 @@
+rest:
+  - resource: http://dsmr-api.local/api/v1/sm/actual  
+    scan_interval: 10
+    sensor:
+      - name: DSMR LastUpdate
+        value_template: >
+         {{ as_local(strptime(value_json.actual[0].value[0:12], "%y%m%d%H%M%S")) }}
+        device_class: "Timestamp"
+      - name: DSMR Energy Consumption Tariff 1
+        value_template: "{{ value_json.actual | selectattr('name', 'eq', 'energy_delivered_tariff1') | map(attribute='value') | first | float }}"
+        device_class: "energy"
+        state_class: "total_increasing"
+        unit_of_measurement: "kWh"
+      - name: DSMR Energy Consumption Tariff 2
+        value_template: "{{ value_json.actual | selectattr('name', 'eq', 'energy_delivered_tariff2') | map(attribute='value') | first | float }}"
+        device_class: "energy"
+        unit_of_measurement: "kWh"
+        state_class: "total_increasing"
+      - name: DSMR Energy Returned Tariff 1
+        value_template: "{{ value_json.actual | selectattr('name', 'eq', 'energy_returned_tariff1') | map(attribute='value') | first | float }}"
+        device_class: "energy"
+        unit_of_measurement: "kWh"
+        state_class: "total_increasing"
+      - name: DSMR Energy Returned Tariff 2
+        value_template: "{{ value_json.actual | selectattr('name', 'eq', 'energy_returned_tariff2') | map(attribute='value') | first | float }}"
+        device_class: "energy"
+        unit_of_measurement: "kWh"
+        state_class: "total_increasing"
+      - name: DSMR Power Consumption Actual Total
+        value_template: "{{ value_json.actual | selectattr('name', 'eq', 'power_delivered') | map(attribute='value') | first | float }}"
+        device_class: "power"
+        unit_of_measurement: "kW"
+      - name: DSMR Power Returned Actual Total
+        value_template: "{{ value_json.actual | selectattr('name', 'eq', 'power_returned') | map(attribute='value') | first | float }}"
+        device_class: "power"
+        unit_of_measurement: "kW"
+      - name: DSMR Voltage Phase 1
+        value_template: "{{ value_json.actual | selectattr('name', 'eq', 'voltage_l1') | map(attribute='value') | first | float }}"
+        device_class: "voltage"
+        unit_of_measurement: "V"
+      - name: DSMR Voltage Phase 2
+        value_template: "{{ value_json.actual | selectattr('name', 'eq', 'voltage_l2') | map(attribute='value') | first | float }}"
+        device_class: "voltage"
+        unit_of_measurement: "V"
+      - name: DSMR Voltage Phase 3
+        value_template: "{{ value_json.actual | selectattr('name', 'eq', 'voltage_l3') | map(attribute='value') | first | float }}"
+        device_class: "voltage"
+        unit_of_measurement: "V"
+      - name: DSMR Current Phase 1
+        value_template: "{{ value_json.actual | selectattr('name', 'eq', 'current_l1') | map(attribute='value') | first | float }}"
+        device_class: "current"
+        unit_of_measurement: "A"
+      - name: DSMR Current Phase 2
+        value_template: "{{ value_json.actual | selectattr('name', 'eq', 'current_l2') | map(attribute='value') | first | float }}"
+        device_class: "current"
+        unit_of_measurement: "A"
+      - name: DSMR Current Phase 3
+        value_template: "{{ value_json.actual | selectattr('name', 'eq', 'current_l3') | map(attribute='value') | first | float }}"
+        device_class: "current"
+        unit_of_measurement: "A"
+      - name: DSMR Power Consumption Phase 1
+        value_template: "{{ value_json.actual | selectattr('name', 'eq', 'power_delivered_l1') | map(attribute='value') | first | float }}"
+        device_class: "power"
+        unit_of_measurement: "kW"
+      - name: DSMR Power Consumption Phase 2
+        value_template: "{{ value_json.actual | selectattr('name', 'eq', 'power_delivered_l2') | map(attribute='value') | first | float }}"
+        device_class: "power"
+        unit_of_measurement: "kW"
+      - name: DSMR Power Consumption Phase 3
+        value_template: "{{ value_json.actual | selectattr('name', 'eq', 'power_delivered_l3') | map(attribute='value') | first | float }}"
+        device_class: "power"
+        unit_of_measurement: "kW"
+      - name: DSMR Power Returned Phase 1
+        value_template: "{{ value_json.actual | selectattr('name', 'eq', 'power_returned_l1') | map(attribute='value') | first | float }}"
+        device_class: "power"
+        unit_of_measurement: "kW"
+      - name: DSMR Power Returned Phase 2
+        value_template: "{{ value_json.actual | selectattr('name', 'eq', 'power_returned_l2') | map(attribute='value') | first | float }}"
+        device_class: "power"
+        unit_of_measurement: "kW"
+      - name: DSMR Power Returned Phase 3
+        value_template: "{{ value_json.actual | selectattr('name', 'eq', 'power_returned_l3') | map(attribute='value') | first | float }}"
+        device_class: "power"
+        unit_of_measurement: "kW"
+      - name: DSMR Gas Consumption
+        value_template: "{{ value_json.actual | selectattr('name', 'eq', 'gas_delivered') | map(attribute='value') | first | float }}"
+        device_class: "gas"
+        state_class: "total_increasing"
+        unit_of_measurement: "m³"
