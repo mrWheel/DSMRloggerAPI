@@ -497,7 +497,7 @@ void setup()
     DebugFlush();
     if (settingPreDSMR40 == 0)
     {
-      DebugTln("Serial will be set to 115200 baud / 7N1");
+      DebugTln("Serial will be set to 115200 baud / 8N1");
       DebugFlush();
       Serial.end();
       delay(100);
@@ -506,7 +506,7 @@ void setup()
     }
     else
     {                //PRE40
-      DebugTln("Serial will be set to 9600 baud / 7N1");
+      DebugTln("Serial will be set to 9600 baud / 7E1");
       DebugFlush();
       Serial.end();
       delay(100);
