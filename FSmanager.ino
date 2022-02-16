@@ -1,10 +1,10 @@
-/* 
-***************************************************************************  
+/*
+***************************************************************************
 **  Program  : FSmanager, part of DSMRloggerAPI
 **  Version  : v3.0
 **
 **  Mostly stolen from: https://fipsok.de/Esp8266-Webserver/littlefs-esp8266-270.tab
-*/  
+*/
 // ****************************************************************
 // Sketch Esp8266 Filesystem Manager spezifisch sortiert Modular(Tab)
 // created: Jens Fleischer, 2020-06-08
@@ -75,7 +75,8 @@ const char HELPER[]  PROGMEM = R"(
 
 //=====================================================================================
 void setupFsManager() 
-{                                                                       // Funktionsaufruf "setupFS();" muss im Setup eingebunden werden
+{ 
+  //-- Funktionsaufruf "setupFS();" muss im Setup eingebunden werden
   FSYS.begin();
   httpServer.on("/format", formatFS);
   httpServer.on("/listFS", listFS);
@@ -126,7 +127,6 @@ bool handleList()
 { // Senden aller Daten an den Client
   // Füllt FSInfo Struktur mit Informationen über das Dateisystem
 #if defined( USE_LITTLEFS )
-  #warning LittleFS selected!!!
   FSInfo fs_info;  FSYS.info(fs_info);
   Dir dir = FSYS.openDir("/");
   using namespace std;
@@ -239,75 +239,78 @@ bool handleList()
   {
     if (temp != "[") temp += ",";
   //temp += R"({\"folder\":\"/\","name":")" + String(dirMap[f].Name) + R"(","size":")" + formatBytes(dirMap[f].Size) + R"("})";
-    temp += R"({"folder":"","name":")" + String(dirMap[f].Name) + R"(","size":")" + formatBytes(dirMap[f].Size) + R"("})";
-  //temp += "{\"folder\":\"/"\",\"name\":\"" + get<1>(t) + "\",\"size\":\"" + formatBytes(get<2>(t)) + "\"}";
-  }
-  FSYS.info(SPIFFSinfo);
-  temp += R"(,{"usedBytes":")" + formatBytes(SPIFFSinfo.usedBytes * 1.05) + R"(",)" +       // Berechnet den verwendeten Speicherplatz + 5% Sicherheitsaufschlag
-          R"("totalBytes":")" + formatBytes(SPIFFSinfo.totalBytes) + R"(","freeBytes":")" + // Zeigt die Größe des Speichers
-          (SPIFFSinfo.totalBytes - (SPIFFSinfo.usedBytes * 1.05)) + R"("}])";               // Berechnet den freien Speicherplatz + 5% Sicherheitsaufschlag
+temp += R"({"folder":"","name":")" + String(dirMap[f].Name) + R"(","size":")" + formatBytes(dirMap[f].Size) + R"("})";
+//temp += "{\"folder\":\"/"\",\"name\":\"" + get<1>(t) + "\",\"size\":\"" + formatBytes(get<2>(t)) + "\"}";
+}
+FSYS.info(SPIFFSinfo);
+temp += R"(,{"usedBytes":")" + formatBytes(SPIFFSinfo.usedBytes * 1.05) + R"(",)" +       // Berechnet den verwendeten Speicherplatz + 5% Sicherheitsaufschlag
+        R"("totalBytes":")" + formatBytes(SPIFFSinfo.totalBytes) + R"(","freeBytes":")" + // Zeigt die Größe des Speichers
+        (SPIFFSinfo.totalBytes - (SPIFFSinfo.usedBytes * 1.05)) + R"("}])";               // Berechnet den freien Speicherplatz + 5% Sicherheitsaufschlag
 
 #endif
 
-  httpServer.send(200, "application/json", temp);
-  return true;
-  
-} //  handleList() 
+httpServer.send(200, "application/json", temp);
+return true;
+
+} //  handleList()
 
 
 #if defined( USE_LITTLEFS)
 //=====================================================================================
-  void deleteRecursive(const String &path) 
+void deleteRecursive(const String &path)
+{
+  if (FSYS.remove(path))
   {
-    if (FSYS.remove(path)) 
-    {
-      FSYS.open(path.substring(0, path.lastIndexOf('/')) + "/", "w");
-      return;
-    }
-    Dir dir = FSYS.openDir(path);
-    while (dir.next()) 
-    {
-      yield();
-      deleteRecursive(path + '/' + dir.fileName());
-    }
-    FSYS.rmdir(path);
-    
-  } //  deleteRecursive()
+    FSYS.open(path.substring(0, path.lastIndexOf('/')) + "/", "w");
+    return;
+  }
+  Dir dir = FSYS.openDir(path);
+  while (dir.next())
+  {
+    yield();
+    deleteRecursive(path + '/' + dir.fileName());
+  }
+  FSYS.rmdir(path);
+
+} //  deleteRecursive()
 #endif
 
 //=====================================================================================
-bool handleFile(String &&path) 
+bool handleFile(String &&path)
 {
-  if (httpServer.hasArg("new")) 
+  if (httpServer.hasArg("new"))
   {
     String folderName {httpServer.arg("new")};
-    for (auto& c : {34, 37, 38, 47, 58, 59, 92}) for (auto& e : folderName) if (e == c) e = 95;    // Ersetzen der nicht erlaubten Zeichen
+    for (auto &c :
+         {
+           34, 37, 38, 47, 58, 59, 92
+         }) for (auto &e : folderName) if (e == c) e = 95;    // Ersetzen der nicht erlaubten Zeichen
     FSYS.mkdir(folderName);
   }
   if (httpServer.hasArg("sort")) return handleList();
-  if (httpServer.hasArg("delete")) 
+  if (httpServer.hasArg("delete"))
   {
-    #if defined( USE_LITTLEFS )
-      deleteRecursive(httpServer.arg("delete"));
-    #else
-      // remove "undefined" (9 positions)
-      String fileName = httpServer.arg("delete");
-      //fileName.remove(0,9);
-      DebugTf("remove [%s] ..\r\n", fileName.c_str());
-      FSYS.remove(fileName);    // Datei löschen
-    #endif
+#if defined( USE_LITTLEFS )
+    deleteRecursive(httpServer.arg("delete"));
+#else
+    // remove "undefined" (9 positions)
+    String fileName = httpServer.arg("delete");
+    //fileName.remove(0,9);
+    DebugTf("remove [%s] ..\r\n", fileName.c_str());
+    FSYS.remove(fileName);    // Datei löschen
+#endif
     sendResponce();
     return true;
   }
-  if (!FSYS.exists("/FSmanager.html")) 
+  if (!FSYS.exists("/FSmanager.html"))
   {
     // ermöglicht das hochladen der FSmanager.html
-    httpServer.send(200, "text/html", FSYS.begin() ? HELPER : WARNING);     
+    httpServer.send(200, "text/html", FSYS.begin() ? HELPER : WARNING);
   }
   if (path.endsWith("/")) path += "/index.html";
   // Vorrübergehend für den Admin Tab
-  //if (path == "/FSmanager.html") sendResponce(); 
-  if (path == "/admin.html") sendResponce(); 
+  //if (path == "/FSmanager.html") sendResponce();
+  if (path == "/admin.html") sendResponce();
 
 #if defined( USE_LITTLEFS )
   return FSYS.exists(path) ? ({File f = FSYS.open(path, "r"); httpServer.streamFile(f, mime::getContentType(path)); f.close(); true;}) : false;
@@ -320,35 +323,37 @@ bool handleFile(String &&path)
 
 
 //=====================================================================================
-void handleUpload() 
-{                            // Dateien ins Filesystem schreiben
+void handleUpload()
+{
+  // Dateien ins Filesystem schreiben
   static File fsUploadFile;
-  
-  HTTPUpload& upload = httpServer.upload();
-  if (upload.status == UPLOAD_FILE_START) 
+
+  HTTPUpload &upload = httpServer.upload();
+  if (upload.status == UPLOAD_FILE_START)
   {
-    if (upload.filename.length() > 31) 
-    {  // Dateinamen kürzen
+    if (upload.filename.length() > 31)
+    {
+      // Dateinamen kürzen
       upload.filename = upload.filename.substring(upload.filename.length() - 31, upload.filename.length());
     }
     printf(PSTR("handleFileUpload Name: /%s\r\n"), upload.filename.c_str());
-  #if defined( USE_LITTLEFS )
+#if defined( USE_LITTLEFS )
     fsUploadFile = FSYS.open(httpServer.arg(0) + "/" + httpServer.urlDecode(upload.filename), "w");
-  #else
+#else
     fsUploadFile = FSYS.open(httpServer.arg(0) + httpServer.urlDecode(upload.filename), "w");
-  #endif
-  } 
-  else if (upload.status == UPLOAD_FILE_WRITE) 
+#endif
+  }
+  else if (upload.status == UPLOAD_FILE_WRITE)
   {
     printf(PSTR("handleFileUpload Data: %u\r\n"), upload.currentSize);
     fsUploadFile.write(upload.buf, upload.currentSize);
-  } 
-  else if (upload.status == UPLOAD_FILE_END) 
+  }
+  else if (upload.status == UPLOAD_FILE_END)
   {
     printf(PSTR("handleFileUpload Size: %u\r\n"), upload.totalSize);
     fsUploadFile.close();
   }
-  
+
 } //  handleUpload()
 
 
@@ -367,11 +372,11 @@ void formatFS()      // Formatiert das Filesystem
     DebugTln("No '/!doNotFormat' file found.. OK!");
   }
 
-  #if defined( USE_LITTLEFS )
-    DebugTln("formatting littleFS ..");
-  #else
-    DebugTln("formatting SPIFFS ..");
-  #endif
+#if defined( USE_LITTLEFS )
+  DebugTln("formatting littleFS ..");
+#else
+  DebugTln("formatting SPIFFS ..");
+#endif
   FSYS.format();
   DebugT("Create '/!doNotFormat' file ..");
   File nF = FSYS.open("/!doNotFormat", "w");
@@ -383,16 +388,16 @@ void formatFS()      // Formatiert das Filesystem
 } //  formatFS()
 
 //=====================================================================================
-void listFS() 
+void listFS()
 {
   DebugTln("send littleFS data ..");
   sendResponce();
-  
+
 } //  listFS()
 
 
 //=====================================================================================
-void sendResponce() 
+void sendResponce()
 {
   httpServer.sendHeader("Location", "/FSmanager.html");
   httpServer.send(303, "message/http");
@@ -401,33 +406,34 @@ void sendResponce()
 
 
 //=====================================================================================
-const String formatBytes(size_t const& bytes) 
-{                                        // lesbare Anzeige der Speichergrößen
+const String formatBytes(size_t const &bytes)
+{
+  // lesbare Anzeige der Speichergrößen
   return bytes < 1024 ? static_cast<String>(bytes) + " Byte" : bytes < 1048576 ? static_cast<String>(bytes / 1024.0) + " KB" : static_cast<String>(bytes / 1048576.0) + " MB";
 
 } //  formatBytes()
 
 
 #if !defined( USE_LITTLEFS )
-  //=====================================================================================
-  const String &contentType(String& filename) 
-  {       
-    if (filename.endsWith(".htm") || filename.endsWith(".html")) filename = "text/html";
-    else if (filename.endsWith(".css"))   filename = "text/css";
-    else if (filename.endsWith(".js"))    filename = "application/javascript";
-    else if (filename.endsWith(".json"))  filename = "application/json";
-    else if (filename.endsWith(".png"))   filename = "image/png";
-    else if (filename.endsWith(".gif"))   filename = "image/gif";
-    else if (filename.endsWith(".jpg"))   filename = "image/jpeg";
-    else if (filename.endsWith(".ico"))   filename = "image/x-icon";
-    else if (filename.endsWith(".xml"))   filename = "text/xml";
-    else if (filename.endsWith(".pdf"))   filename = "application/x-pdf";
-    else if (filename.endsWith(".zip"))   filename = "application/x-zip";
-    else if (filename.endsWith(".gz"))    filename = "application/x-gzip";
-    else                                  filename = "text/plain";
-    return filename;
-  
-  } // &contentType()
+//=====================================================================================
+const String &contentType(String &filename)
+{
+  if (filename.endsWith(".htm") || filename.endsWith(".html")) filename = "text/html";
+  else if (filename.endsWith(".css"))   filename = "text/css";
+  else if (filename.endsWith(".js"))    filename = "application/javascript";
+  else if (filename.endsWith(".json"))  filename = "application/json";
+  else if (filename.endsWith(".png"))   filename = "image/png";
+  else if (filename.endsWith(".gif"))   filename = "image/gif";
+  else if (filename.endsWith(".jpg"))   filename = "image/jpeg";
+  else if (filename.endsWith(".ico"))   filename = "image/x-icon";
+  else if (filename.endsWith(".xml"))   filename = "text/xml";
+  else if (filename.endsWith(".pdf"))   filename = "application/x-pdf";
+  else if (filename.endsWith(".zip"))   filename = "application/x-zip";
+  else if (filename.endsWith(".gz"))    filename = "application/x-gzip";
+  else                                  filename = "text/plain";
+  return filename;
+
+} // &contentType()
 #endif
 
 
@@ -440,7 +446,7 @@ void updateFirmware()
 #else
   doRedirect("UpdateServer not available", 10, "/", false);
 #endif
-      
+
 } // updateFirmware()
 
 //=====================================================================================
@@ -448,13 +454,13 @@ void reBootESP()
 {
   DebugTln(F("Redirect and ReBoot .."));
   doRedirect("Reboot DSMR-logger ..", 30, "/", true);
-      
+
 } // reBootESP()
 
 //=====================================================================================
-void doRedirect(String msg, int wait, const char* URL, bool reboot)
+void doRedirect(String msg, int wait, const char *URL, bool reboot)
 {
-  String redirectHTML = 
+  String redirectHTML =
     "<!DOCTYPE HTML><html lang='en-US'>"
     "<head>"
     "<meta charset='UTF-8'>"
@@ -467,7 +473,7 @@ void doRedirect(String msg, int wait, const char* URL, bool reboot)
 
   if (wait > 0)
   {
-    redirectHTML += 
+    redirectHTML +=
       "<h1>"+String(settingHostname)+"</h1>"
       "<h3>"+msg+"</h3>"
       "<br><div style='width: 500px; position: relative; font-size: 25px;'>"
@@ -490,9 +496,9 @@ void doRedirect(String msg, int wait, const char* URL, bool reboot)
       "  </script> "
       "</body></html>\r\n";
   }
-  else  
+  else
   {
-    redirectHTML += 
+    redirectHTML +=
       "  <div style='position:absolute; bottom:0; right:0;' id='counter'>3</div>"
       "  <script>"
       "      setInterval(function() {"
@@ -506,17 +512,17 @@ void doRedirect(String msg, int wait, const char* URL, bool reboot)
       "  </script> "
       "</body></html>\r\n";
   }
-  
+
   DebugTln(msg);
   //Debugln(redirectHTML);
-  
+
   httpServer.send(200, "text/html", redirectHTML);
-  if (reboot) 
+  if (reboot)
   {
     delay(5000);
     ESP.restart();
     delay(5000);
   }
-  
+
 } // doRedirect()
 /* eof */

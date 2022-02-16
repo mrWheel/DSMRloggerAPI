@@ -1,14 +1,14 @@
 /*
-***************************************************************************  
+***************************************************************************
 **  Program  : DSMRloggerAPI (restAPI)
 */
-#define _FW_VERSION "v3.0.1 (15-06-2021)"
+#define _FW_VERSION "v3.0.2 (16-02-2022)"
 /*
-**  Copyright (c) 2020, 2021 Willem Aandewiel
+**  Copyright (c) 2020, 2021, 2022 Willem Aandewiel
 **
-**  TERMS OF USE: MIT License. See bottom of file.                                                            
-***************************************************************************      
-*      
+**  TERMS OF USE: MIT License. See bottom of file.
+***************************************************************************
+*
   Arduino-IDE settings for DSMR-logger Version 4 (ESP-12):
 
     - Board: "Generic ESP8266 Module"
@@ -19,16 +19,33 @@
     - DebugT Level: "None"
     - IwIP Variant: "v2 Lower Memory"
     - Reset Method: "none"   // but will depend on the programmer!
-    - Crystal Frequency: "26 MHz" 
+    - Crystal Frequency: "26 MHz"
     - VTables: "Flash"
     - Flash Frequency: "40MHz"
     - CPU Frequency: "80 MHz" (or 160MHz)
-    - Upload Speed: "115200"                                                                                                                                                                                                                                                 
+    - Upload Speed: "115200"
     - Erase Flash: "Only Sketch"
     - Port: <select correct port>
+
+
+  Coding Style  ( http://astyle.sourceforge.net/astyle.html#_Quick_Start )
+   - Allman style (-A1)
+   - tab 2 spaces (-s2)
+   - Indent 'switch' blocks (-S)
+   - Indent preprocessor blocks (-xW)
+   - Indent multi-line preprocessor definitions ending with a backslash (-w)
+   - Indent C++ comments beginning in column one (-Y)
+   - Insert space padding after commas (-xg)
+   - Attach a pointer or reference operator (-k3)
+
+  use:  astyle -A1 -s2 -S -xW -w -Y -xg- k3 *.{ino|h}
+
+  remove <filename>.orig afterwards
+    
 */
+
 /*
-**  You can find more info in the following links (all in Dutch): 
+**  You can find more info in the following links (all in Dutch):
 **   https://willem.aandewiel.nl/index.php/2020/02/28/restapis-zijn-hip-nieuwe-firmware-voor-de-dsmr-logger/
 **   https://mrwheel-docs.gitbook.io/dsmrloggerapi/
 **   https://mrwheel.github.io/DSMRloggerWS/
@@ -45,10 +62,12 @@
 
 #include "DSMRloggerAPI.h"
 
-struct showValues {
+struct showValues
+{
   template<typename Item>
-  void apply(Item &i) {
-    if (i.present()) 
+  void apply(Item &i)
+  {
+    if (i.present())
     {
       DebugT(Item::name);
       Debug(F(": "));
@@ -61,28 +80,34 @@ struct showValues {
 
 
 //===========================================================================================
-void displayStatus() 
+void displayStatus()
 {
   if (settingOledType > 0)
   {
-    switch(msgMode) { 
-      case 1:   snprintf(cMsg, sizeof(cMsg), "Up:%-15.15s", upTime().c_str());
-                break;
-      case 2:   snprintf(cMsg, sizeof(cMsg), "WiFi RSSI:%4d dBm", WiFi.RSSI());
-                break;
-      case 3:   snprintf(cMsg, sizeof(cMsg), "Heap:%7d Bytes", ESP.getFreeHeap());
-                break;
-      case 4:   if (WiFi.status() != WL_CONNECTED)
-                      snprintf(cMsg, sizeof(cMsg), "**** NO  WIFI ****");
-                else  snprintf(cMsg, sizeof(cMsg), "IP %s", WiFi.localIP().toString().c_str());
-                break;
-      default:  snprintf(cMsg, sizeof(cMsg), "Telgrms:%6d/%3d", telegramCount, telegramErrors);
-                break;
+    switch(msgMode)
+    {
+      case 1:
+        snprintf(cMsg, sizeof(cMsg), "Up:%-15.15s", upTime().c_str());
+        break;
+      case 2:
+        snprintf(cMsg, sizeof(cMsg), "WiFi RSSI:%4d dBm", WiFi.RSSI());
+        break;
+      case 3:
+        snprintf(cMsg, sizeof(cMsg), "Heap:%7d Bytes", ESP.getFreeHeap());
+        break;
+      case 4:
+        if (WiFi.status() != WL_CONNECTED)
+          snprintf(cMsg, sizeof(cMsg), "**** NO  WIFI ****");
+        else  snprintf(cMsg, sizeof(cMsg), "IP %s", WiFi.localIP().toString().c_str());
+        break;
+      default:
+        snprintf(cMsg, sizeof(cMsg), "Telgrms:%6d/%3d", telegramCount, telegramErrors);
+        break;
     }
 
     oled_Print_Msg(3, cMsg, 0);
     msgMode= (msgMode+1) % 5; //modular 5 = number of message displayed (hence it cycles thru the messages
-  }  
+  }
 } // displayStatus()
 
 
@@ -90,8 +115,8 @@ void displayStatus()
 //===========================================================================================
 void openSysLog(bool empty)
 {
-  if (sysLog.begin(500, 100, empty))  // 500 lines use existing sysLog file
-  {   
+  if (sysLog.begin(500, 100, empty))   // 500 lines use existing sysLog file
+  {
     DebugTln("Succes opening sysLog!");
     if (settingOledType > 0)
     {
@@ -113,14 +138,14 @@ void openSysLog(bool empty)
   sysLog.setOutput(&TelnetStream);
   sysLog.status();
   sysLog.write("\r\n");
-  for (int q=0;q<3;q++)
+  for (int q=0; q<3; q++)
   {
     sysLog.write("******************************************************************************************************");
   }
   writeToSysLog("Last Reset Reason [%s]", ESP.getResetReason().c_str());
   writeToSysLog("actTimestamp[%s], nrReboots[%u], Errors[%u]", actTimestamp
-                                                             , nrReboots
-                                                             , slotErrors);
+                , nrReboots
+                , slotErrors);
 
   sysLog.write(" ");
 
@@ -128,17 +153,17 @@ void openSysLog(bool empty)
 #endif
 
 //===========================================================================================
-void setup() 
+void setup()
 {
   Serial.begin(115200, SERIAL_8N1); // for now. Look at end of setup()
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(FLASH_BUTTON, INPUT);
   pinMode(DTR_ENABLE, OUTPUT);
-  
+
   //--- setup randomseed the right way
   //--- This is 8266 HWRNG used to seed the Random PRNG
   //--- Read more: https://config9.com/arduino/getting-a-truly-random-number-in-arduino/
-  randomSeed(RANDOM_REG32); 
+  randomSeed(RANDOM_REG32);
   snprintf(settingHostname, sizeof(settingHostname), "%s", _DEFAULT_HOSTNAME);
   Serial.printf("\n\nBooting....[%s]\r\n\r\n", String(_FW_VERSION).c_str());
 
@@ -148,15 +173,15 @@ void setup()
     oled_Clear();  // clear the screen so we can paint the menu.
     oled_Print_Msg(0, " <DSMRloggerAPI>", 0);
     int8_t sPos = String(_FW_VERSION).indexOf(' ');
-    snprintf(cMsg, sizeof(cMsg), "(c)2020 [%s]", String(_FW_VERSION).substring(0,sPos).c_str());
+    snprintf(cMsg, sizeof(cMsg), "(c)2020 [%s]", String(_FW_VERSION).substring(0, sPos).c_str());
     oled_Print_Msg(1, cMsg, 0);
     oled_Print_Msg(2, " Willem Aandewiel", 0);
     oled_Print_Msg(3, " >> Have fun!! <<", 1000);
     yield();
   }
-  else  // don't blink if oled-screen attatched
+  else     // don't blink if oled-screen attatched
   {
-    for(int I=0; I<8; I++) 
+    for(int I=0; I<8; I++)
     {
       digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
       delay(500);
@@ -171,8 +196,8 @@ void setup()
     oled_Print_Msg(0, " <DSMRloggerAPI>", 0);
     oled_Print_Msg(3, "telnet (poort 23)", 2500);
   }
-  
-//================ FSYS ===========================================
+
+  //================ FSYS ===========================================
 #if defined( USE_LITTLEFS )
   LittleFSConfig cfg;
 #else
@@ -180,14 +205,14 @@ void setup()
 #endif
   cfg.setAutoFormat(false);
   FSYS.setConfig(cfg);
-  
-  if (FSYS.begin()) 
+
+  if (FSYS.begin())
   {
-    #if defined( USE_LITTLEFS )
-      DebugTln(F("LittleFS Mount succesfull\r"));
-    #else
-      DebugTln(F("SPIFFS Mount succesfull\r"));
-    #endif
+#if defined( USE_LITTLEFS )
+    DebugTln(F("LittleFS Mount succesfull\r"));
+#else
+    DebugTln(F("SPIFFS Mount succesfull\r"));
+#endif
     File nF = FSYS.open("/!doNotFormat", "w");
     nF.close();
     FSYSmounted = true;
@@ -195,13 +220,15 @@ void setup()
     {
       oled_Print_Msg(0, " <DSMRloggerAPI>", 0);
       oled_Print_Msg(3, "FSYS mounted", 1500);
-    }    
-  } else { 
-    #if defined( USE_LITTLEFS )
-      DebugTln(F("LittleFS Mount failed\r")); // Serious problem with LittleFS 
-    #else
-      DebugTln(F("SPIFFS Mount failed\r"));   // Serious problem with SPIFFS 
-    #endif
+    }
+  }
+  else
+  {
+#if defined( USE_LITTLEFS )
+    DebugTln(F("LittleFS Mount failed\r")); // Serious problem with LittleFS
+#else
+    DebugTln(F("SPIFFS Mount failed\r"));   // Serious problem with SPIFFS
+#endif
     FSYSmounted = false;
     if (settingOledType > 0)
     {
@@ -210,7 +237,7 @@ void setup()
     }
   }
 
-//------ read status file for last Timestamp --------------------
+  //------ read status file for last Timestamp --------------------
   strcpy(actTimestamp, "040302010101X");
   //==========================================================//
   // writeLastStatus();  // only for firsttime initialization //
@@ -219,16 +246,16 @@ void setup()
   // set the time to actTimestamp!
   actT = epoch(actTimestamp, strlen(actTimestamp), true);
   DebugTf("===> actTimestamp[%s]-> nrReboots[%u] - Errors[%u]\r\n\n", actTimestamp
-                                                                    , nrReboots++
-                                                                    , slotErrors);                                                                    
+          , nrReboots++
+          , slotErrors);
   readSettings(true);
   oled_Init();
-  
-//=============start Networkstuff==================================
+
+  //=============start Networkstuff==================================
   if (settingOledType > 0)
   {
     if (settingOledFlip)  oled_Init();  // only if true restart(init) oled screen
-    oled_Clear();                       // clear the screen 
+    oled_Clear();                       // clear the screen
     oled_Print_Msg(0, " <DSMRloggerAPI>", 0);
     oled_Print_Msg(1, "Verbinden met WiFi", 500);
   }
@@ -243,25 +270,29 @@ void setup()
     oled_Print_Msg(2, cMsg, 1500);
   }
   digitalWrite(LED_BUILTIN, LED_OFF);
-  
+
   Debugln();
-  Debug (F("Connected to " )); Debugln (WiFi.SSID());
-  Debug (F("IP address: " ));  Debugln (WiFi.localIP());
-  Debug (F("IP gateway: " ));  Debugln (WiFi.gatewayIP());
+  Debug (F("Connected to " ));
+  Debugln (WiFi.SSID());
+  Debug (F("IP address: " ));
+  Debugln (WiFi.localIP());
+  Debug (F("IP gateway: " ));
+  Debugln (WiFi.gatewayIP());
   Debugln();
 
-  for (int L=0; L < 10; L++) {
+  for (int L=0; L < 10; L++)
+  {
     digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
     delay(200);
   }
   digitalWrite(LED_BUILTIN, LED_OFF);
 
-//-----------------------------------------------------------------
+  //-----------------------------------------------------------------
 #ifdef USE_SYSLOGGER
   openSysLog(false);
   snprintf(cMsg, sizeof(cMsg), "SSID:[%s],  IP:[%s], Gateway:[%s]", WiFi.SSID().c_str()
-                                                                  , WiFi.localIP().toString().c_str()
-                                                                  , WiFi.gatewayIP().toString().c_str());
+           , WiFi.localIP().toString().c_str()
+           , WiFi.gatewayIP().toString().c_str());
   writeToSysLog("%s", cMsg);
 
 #endif
@@ -271,14 +302,14 @@ void setup()
   {
     oled_Print_Msg(3, "mDNS gestart", 1500);
   }
-  
-//=============end Networkstuff======================================
 
-//================ startNTP =========================================
+  //=============end Networkstuff======================================
+
+  //================ startNTP =========================================
   if (settingOledType > 0)
   {
     oled_Print_Msg(3, "setup NTP server", 100);
-  } 
+  }
 
   if (!startNTP())
   {
@@ -287,19 +318,19 @@ void setup()
     {
       oled_Print_Msg(0, " <DSMRloggerAPI>", 0);
       oled_Print_Msg(2, "geen reactie van", 100);
-      oled_Print_Msg(2, "NTP server's", 100); 
+      oled_Print_Msg(2, "NTP server's", 100);
       oled_Print_Msg(3, "Reboot DSMR-logger", 2000);
     }
     delay(2000);
     ESP.restart();
     delay(3000);
   }
-  
+
   setSyncProvider(getNtpTime);
   snprintf(cMsg, sizeof(cMsg), "%02d-%02d-%02d %02d:%02d:%02d (%s)"
-                        , year(ntpTime), month(ntpTime), day(ntpTime) 
-                        , hour(ntpTime), minute(ntpTime), second(ntpTime)
-                        , DSTactive ? "CEST":"CET");   
+           , year(ntpTime), month(ntpTime), day(ntpTime)
+           , hour(ntpTime), minute(ntpTime), second(ntpTime)
+           , DSTactive ? "CEST":"CET");
   DebugTf("NTP time is [%s]\r\n", cMsg);
 
   if (settingOledType > 0)
@@ -309,7 +340,7 @@ void setup()
   }
   prevNtpHour = hour();
 
-//================ end NTP =========================================
+  //================ end NTP =========================================
 
   snprintf(cMsg, sizeof(cMsg), "Last reset reason: [%s]\r", ESP.getResetReason().c_str());
   DebugTln(cMsg);
@@ -318,7 +349,7 @@ void setup()
   Serial.print (WiFi.localIP());
   Serial.println("' voor verdere debugging\r\n");
 
-//=============now test if FS is correct populated!============
+  //=============now test if FS is correct populated!============
   if (DSMRfileExist(settingIndexPage, false) )
   {
     if (strcmp(settingIndexPage, "DSMRindex.html") != 0)
@@ -351,28 +382,28 @@ void setup()
   {
     FSYSnotPopulated = true;
   }
-//=============end FSYS =========================================
+  //=============end FSYS =========================================
 #ifdef USE_SYSLOGGER
   if (FSYSnotPopulated)
   {
     sysLog.write("FSYS is not correct populated (files are missing)");
   }
 #endif
-  
-//=============now test if "convertPRD" file exists================
+
+  //=============now test if "convertPRD" file exists================
 
   if (FSYS.exists("/!PRDconvert") )
   {
     convertPRD2RING();
   }
 
-//=================================================================
+  //=================================================================
 
-  time_t t = now(); // store the current time in time variable t 
+  time_t t = now(); // store the current time in time variable t
   check4DST(t);
   snprintf(cMsg, sizeof(cMsg), "%02d%02d%02d%02d%02d%02d\0\0"                      //USE_NTP
-                                               , (year(t) - 2000), month(t), day(t) //USE_NTP
-                                               , hour(t), minute(t), second(t));    //USE_NTP
+           , (year(t) - 2000), month(t), day(t) //USE_NTP
+           , hour(t), minute(t), second(t));    //USE_NTP
   if (DSTactive)  strConcat(cMsg, 15, "S");
   else            strConcat(cMsg, 15, "W");
   pTimestamp = cMsg;                                                                //USE_NTP
@@ -381,32 +412,34 @@ void setup()
   if (settingOledType > 0)
   {
     snprintf(cMsg, sizeof(cMsg), "DT: %02d%02d%02d%02d0101x", thisYear
-                                                            , thisMonth, thisDay, thisHour);
+             , thisMonth, thisDay, thisHour);
     oled_Print_Msg(0, " <DSMRloggerAPI>", 0);
     oled_Print_Msg(3, cMsg, 1500);
   }
 
-//================ Start MQTT  ======================================
+  //================ Start MQTT  ======================================
 
 #ifdef USE_MQTT                                                 //USE_MQTT
   connectMQTT();                                                //USE_MQTT
   if (settingOledType > 0)                                      //USE_MQTT
-  {                                                             //USE_MQTT
-    oled_Print_Msg(0, " <DSMRloggerAPI>", 0);                    //USE_MQTT
+  {
+    //USE_MQTT
+    oled_Print_Msg(0, " <DSMRloggerAPI>", 0);                   //USE_MQTT
     oled_Print_Msg(3, "MQTT server set!", 1500);                //USE_MQTT
   }                                                             //USE_MQTT
 #endif                                                          //USE_MQTT
 
-//================ End of Start MQTT  ===============================
+  //================ End of Start MQTT  ===============================
 
 
-//================ Start HTTP Server ================================
+  //================ Start HTTP Server ================================
 
-  if (!FSYSnotPopulated) {
+  if (!FSYSnotPopulated)
+  {
     DebugTln(F("FSYS correct populated -> normal operation!\r"));
     if (settingOledType > 0)
     {
-      oled_Print_Msg(0, " <DSMRloggerAPI>", 0); 
+      oled_Print_Msg(0, " <DSMRloggerAPI>", 0);
       oled_Print_Msg(1, "OK, FSYS correct", 0);
       oled_Print_Msg(2, "Verder met normale", 0);
       oled_Print_Msg(3, "Verwerking ;-)", 2500);
@@ -428,7 +461,9 @@ void setup()
       httpServer.serveStatic("/DSMRindex.js",     FSYS, "/DSMRindex.js");
       httpServer.serveStatic("/DSMRgraphics.js",  FSYS, "/DSMRgraphics.js");
     }
-  } else {
+  }
+  else
+  {
     DebugTln(F("Oeps! not all files found on FSYS -> Start FSmanager!\r"));
     FSYSnotPopulated = true;
     if (settingOledType > 0)
@@ -449,33 +484,34 @@ void setup()
   httpServer.begin();
   DebugTln( "HTTP server gestart\r" );
   if (settingOledType > 0)                                  //HAS_OLED
-  {                                                         //HAS_OLED
+  {
+    //HAS_OLED
     oled_Clear();                                           //HAS_OLED
     oled_Print_Msg(0, " <DSMRloggerAPI>", 0);                //HAS_OLED
     oled_Print_Msg(2, "HTTP server ..", 0);                 //HAS_OLED
     oled_Print_Msg(3, "gestart (poort 80)", 0);             //HAS_OLED
   }                                                         //HAS_OLED
 
-  for (int i = 0; i< 10; i++) 
+  for (int i = 0; i< 10; i++)
   {
     digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
     delay(250);
   }
-//================ Start HTTP Server ================================
+  //================ Start HTTP Server ================================
 
   //test(); monthTabel
-  
+
 #ifdef USE_MINDERGAS
-    handleMindergas();
+  handleMindergas();
 #endif
 
-  DebugTf("Startup complete! actTimestamp[%s]\r\n", actTimestamp);  
-  writeToSysLog("Startup complete! actTimestamp[%s]", actTimestamp);  
+  DebugTf("Startup complete! actTimestamp[%s]\r\n", actTimestamp);
+  writeToSysLog("Startup complete! actTimestamp[%s]", actTimestamp);
 
-//================ End of Slimmer Meter ============================
+  //================ End of Slimmer Meter ============================
 
 
-//================ The final part of the Setup =====================
+  //================ The final part of the Setup =====================
 
   snprintf(cMsg, sizeof(cMsg), "Last reset reason: [%s]\r", ESP.getResetReason().c_str());
   DebugTln(cMsg);
@@ -488,33 +524,34 @@ void setup()
     oled_Print_Msg(3, "telegram .....", 500);
   }
 
-//================ Start Slimme Meter ===============================
+  //================ Start Slimme Meter ===============================
 
   DebugTln(F("Enable slimmeMeter..\r"));
 
 #if !defined( HAS_NO_SLIMMEMETER )
-    DebugTf("Swapping serial port to Smart Meter, debug output will continue on telnet\r\n");
+  DebugTf("Swapping serial port to Smart Meter, debug output will continue on telnet\r\n");
+  DebugFlush();
+  if (settingPreDSMR40 == 0)
+  {
+    DebugTln("Serial will be set to 115200 baud / 7N1");
     DebugFlush();
-    if (settingPreDSMR40 == 0)
-    {
-      DebugTln("Serial will be set to 115200 baud / 8N1");
-      DebugFlush();
-      Serial.end();
-      delay(100);
-      Serial.begin(115200, SERIAL_8N1);
-      slimmeMeter.doChecksum(true);
-    }
-    else
-    {                //PRE40
-      DebugTln("Serial will be set to 9600 baud / 7E1");
-      DebugFlush();
-      Serial.end();
-      delay(100);
-      Serial.begin(9600, SERIAL_7E1);
-      slimmeMeter.doChecksum(false);
-    }                                    
-    Serial.swap();
-    
+    Serial.end();
+    delay(100);
+    Serial.begin(115200, SERIAL_8N1);
+    slimmeMeter.doChecksum(true);
+  }
+  else
+  {
+    //PRE40
+    DebugTln("Serial will be set to 9600 baud / 7N1");
+    DebugFlush();
+    Serial.end();
+    delay(100);
+    Serial.begin(9600, SERIAL_7E1);
+    slimmeMeter.doChecksum(false);
+  }
+  Serial.swap();
+
 #endif // HAS_NO_SLIMME_METER
 
   delay(100);
@@ -533,26 +570,29 @@ void delayms(unsigned long delay_ms)
   {
     doSystemTasks();
   }
-    
+
 } // delayms()
 
-//========================================================================================
 
 //==[ Do Telegram Processing ]===============================================================
 void doTaskTelegram()
 {
   if (Verbose1) DebugTln("doTaskTelegram");
-  #if defined(HAS_NO_SLIMMEMETER)
-    handleTestdata();
-  #else
-    //-- enable DTR to read a telegram from the Slimme Meter
-    slimmeMeter.enable(true); 
-    slimmeMeter.loop();
-    handleSlimmemeter();
-  #endif
+#if defined(HAS_NO_SLIMMEMETER)
+  handleTestdata();
+#else
+  //-- enable DTR to read a telegram from the Slimme Meter
+  slimmeMeter.enable(true);
+  slimmeMeter.loop();
+  handleSlimmemeter();
+#endif
   if (WiFi.status() != WL_CONNECTED)
   {
-    for(int b=0; b<10; b++) { digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN)); delay(75);}
+    for(int b=0; b<10; b++)
+    {
+      digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
+      delay(75);
+    }
   }
   digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
 }
@@ -560,12 +600,12 @@ void doTaskTelegram()
 //===[ Do System tasks ]=============================================================
 void doSystemTasks()
 {
-  #ifndef HAS_NO_SLIMMEMETER
-    slimmeMeter.loop();
-  #endif
-  #ifdef USE_MQTT
-    MQTTclient.loop();
-  #endif
+#ifndef HAS_NO_SLIMMEMETER
+  slimmeMeter.loop();
+#endif
+#ifdef USE_MQTT
+  MQTTclient.loop();
+#endif
   httpServer.handleClient();
   MDNS.update();
   handleKeyInput();
@@ -578,10 +618,11 @@ void doSystemTasks()
 
 } // doSystemTasks()
 
-  
-void loop () 
-{  
-  //--- do the tasks that has to be done 
+
+//========================================================================================
+void loop ()
+{
+  //--- do the tasks that has to be done
   //--- as often as possible
   doSystemTasks();
 
@@ -599,7 +640,7 @@ void loop ()
     upTimeSeconds++;
   }
 
-//--- if an OLED screen attached, display the status
+  //--- if an OLED screen attached, display the status
   if (settingOledType > 0)
   {
     if DUE(updateDisplay)
@@ -608,7 +649,7 @@ void loop ()
     }
   }
 
-//--- if mindergas then check
+  //--- if mindergas then check
 #ifdef USE_MINDERGAS
   if ( DUE(minderGasTimer) )
   {
@@ -622,23 +663,24 @@ void loop ()
     writeToSysLog("Restart wifi with [%s]...", settingHostname);
     startWiFi(settingHostname, 10);
     if (WiFi.status() != WL_CONNECTED)
-          writeToSysLog("%s", "Wifi still not connected!");
-    else {
-          snprintf(cMsg, sizeof(cMsg), "IP:[%s], Gateway:[%s]", WiFi.localIP().toString().c_str()
-                                                              , WiFi.gatewayIP().toString().c_str());
-          writeToSysLog("%s", cMsg);
+      writeToSysLog("%s", "Wifi still not connected!");
+    else
+    {
+      snprintf(cMsg, sizeof(cMsg), "IP:[%s], Gateway:[%s]", WiFi.localIP().toString().c_str()
+               , WiFi.gatewayIP().toString().c_str());
+      writeToSysLog("%s", cMsg);
     }
   }
 
-//--- see if NTP needs synchronizing
+  //--- see if NTP needs synchronizing
   if DUE(synchrNTP)
   {
     setSyncProvider(getNtpTime);
-    setSyncInterval(600);
+    setSyncInterval(3600);
     check4DST(ntpTime);
   }
   yield();
-  
+
 } // loop()
 
 
@@ -662,5 +704,5 @@ void loop ()
 * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT
 * OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 * THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-* 
+*
 ***************************************************************************/

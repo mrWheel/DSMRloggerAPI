@@ -40,7 +40,7 @@ static const char UpdateServerIndex[] PROGMEM =
      </script>
      </html>)";
 
-static const char UpdateServerSuccess[] PROGMEM = 
+static const char UpdateServerSuccess[] PROGMEM =
   R"(<html charset="UTF-8">
      <style type='text/css'>
         body {background-color: lightgray;}

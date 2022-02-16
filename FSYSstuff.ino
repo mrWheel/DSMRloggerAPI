@@ -1,12 +1,12 @@
-/* 
-***************************************************************************  
+/*
+***************************************************************************
 **  Program  : FSYSstuff, part of DSMRloggerAPI
 **  Version  : v3.0
 **
-**  Copyright (c) 2020 Willem Aandewiel
+**  Copyright (c) 2020 .. 2022 Willem Aandewiel
 **
-**  TERMS OF USE: MIT License. See bottom of file.                                                            
-***************************************************************************      
+**  TERMS OF USE: MIT License. See bottom of file.
+***************************************************************************
 */
 
 int16_t   bytesWritten;
@@ -19,37 +19,39 @@ void readLastStatus()
   char buffer[50] = "";
   char dummy[50] = "";
   char spiffsTimestamp[20] = "";
-  
+
   File _file = FSYS.open("/DSMRstatus.csv", "r");
   if (!_file)
   {
     DebugTln("read(): No /DSMRstatus.csv found ..");
   }
-  if(_file.available()) {
+  if(_file.available())
+  {
     int l = _file.readBytesUntil('\n', buffer, sizeof(buffer));
     buffer[l] = 0;
     DebugTf("read lastUpdate[%s]\r\n", buffer);
     sscanf(buffer, "%[^;]; %u; %u; %[^;]", spiffsTimestamp, &nrReboots, &slotErrors, dummy);
     DebugTf("values timestamp[%s], nrReboots[%u], slotErrors[%u], dummy[%s]\r\n"
-                                                    , spiffsTimestamp
-                                                    , nrReboots
-                                                    , slotErrors
-                                                    , dummy);
+            , spiffsTimestamp
+            , nrReboots
+            , slotErrors
+            , dummy);
     yield();
   }
   _file.close();
-  if (strlen(spiffsTimestamp) != 13) {
+  if (strlen(spiffsTimestamp) != 13)
+  {
     strcpy(spiffsTimestamp, "010101010101X");
   }
   snprintf(actTimestamp, sizeof(actTimestamp), "%s", spiffsTimestamp);
-  
+
 }  // readLastStatus()
 
 
 //====================================================================
 void writeLastStatus()
 {
-  if (ESP.getFreeHeap() < 8500) // to prevent firmware from crashing!
+  if (ESP.getFreeHeap() < 8500)   // to prevent firmware from crashing!
   {
     DebugTf("Bailout due to low heap (%d bytes)\r\n", ESP.getFreeHeap());
     writeToSysLog("Bailout low heap (%d bytes)", ESP.getFreeHeap());
@@ -64,31 +66,31 @@ void writeLastStatus()
     DebugTln("write(): No /DSMRstatus.csv found ..");
   }
   snprintf(buffer, sizeof(buffer), "%-13.13s; %010u; %010u; %s;\n", actTimestamp
-                                          , nrReboots
-                                          , slotErrors
-                                          , "meta data");
+           , nrReboots
+           , slotErrors
+           , "meta data");
   _file.print(buffer);
   _file.flush();
   _file.close();
-  
+
 } // writeLastStatus()
 
 //===========================================================================================
-bool buildDataRecordFromSM(char *recIn) 
+bool buildDataRecordFromSM(char *recIn)
 {
   static float GG = 1;
   char record[DATA_RECLEN + 1] = "";
   char key[10] = "";
- 
+
   uint16_t recSlot = timestampToHourSlot(actTimestamp, strlen(actTimestamp));
   strCopy(key, 10, actTimestamp, 0, 8);
 
-  snprintf(record, sizeof(record), (char*)DATA_FORMAT, key , (float)DSMRdata.energy_delivered_tariff1
-                                          , (float)DSMRdata.energy_delivered_tariff2
-                                          , (float)DSMRdata.energy_returned_tariff1
-                                          , (float)DSMRdata.energy_returned_tariff2
-                                          , (float)gasDelivered);
-  // DATA + \n + \0                                        
+  snprintf(record, sizeof(record), (char *)DATA_FORMAT, key, (float)DSMRdata.energy_delivered_tariff1
+           , (float)DSMRdata.energy_delivered_tariff2
+           , (float)DSMRdata.energy_returned_tariff1
+           , (float)DSMRdata.energy_returned_tariff2
+           , (float)gasDelivered);
+  // DATA + \n + \0
   fillRecord(record, DATA_RECLEN);
 
   strcpy(recIn, record);
@@ -96,7 +98,7 @@ bool buildDataRecordFromSM(char *recIn)
 } // buildDataRecordFromSM()
 
 //===========================================================================================
-uint16_t buildDataRecordFromJson(char *recIn, String jsonIn) 
+uint16_t buildDataRecordFromJson(char *recIn, String jsonIn)
 {
   //static float GG = 1;
   char      record[DATA_RECLEN + 1] = "";
@@ -129,15 +131,15 @@ uint16_t buildDataRecordFromJson(char *recIn, String jsonIn)
   }
   strConcat(uKey, 15, "0101X");
   recSlot = timestampToMonthSlot(uKey, strlen(uKey));
- 
-  DebugTf("MONTHS: Write [%s] to slot[%02d] in %s\r\n", uKey, recSlot, MONTHS_FILE);
-  snprintf(record, sizeof(record), (char*)DATA_FORMAT, uKey , (float)uEDT1
-                                           , (float)uEDT2
-                                           , (float)uERT1
-                                           , (float)uERT2
-                                           , (float)uGDT);
 
-  // DATA + \n + \0                                        
+  DebugTf("MONTHS: Write [%s] to slot[%02d] in %s\r\n", uKey, recSlot, MONTHS_FILE);
+  snprintf(record, sizeof(record), (char *)DATA_FORMAT, uKey, (float)uEDT1
+           , (float)uEDT2
+           , (float)uERT1
+           , (float)uERT2
+           , (float)uGDT);
+
+  // DATA + \n + \0
   fillRecord(record, DATA_RECLEN);
 
   strcpy(recIn, record);
@@ -148,7 +150,7 @@ uint16_t buildDataRecordFromJson(char *recIn, String jsonIn)
 
 
 //===========================================================================================
-void writeDataToFile(const char *fileName, const char *record, uint16_t slot, int8_t fileType) 
+void writeDataToFile(const char *fileName, const char *record, uint16_t slot, int8_t fileType)
 {
   uint16_t offset = 0;
 
@@ -158,21 +160,25 @@ void writeDataToFile(const char *fileName, const char *record, uint16_t slot, in
     slotErrors++;
     return;
   }
-  
+
   if (!FSYS.exists(fileName))
   {
-    switch(fileType) {
-      case HOURS:   createFile(fileName, _NO_HOUR_SLOTS_);
-                    break;
-      case DAYS:    createFile(fileName, _NO_DAY_SLOTS_);
-                    break;
-      case MONTHS:  createFile(fileName, _NO_MONTH_SLOTS_);
-                    break;
+    switch(fileType)
+    {
+      case HOURS:
+        createFile(fileName, _NO_HOUR_SLOTS_);
+        break;
+      case DAYS:
+        createFile(fileName, _NO_DAY_SLOTS_);
+        break;
+      case MONTHS:
+        createFile(fileName, _NO_MONTH_SLOTS_);
+        break;
     }
   }
 
   File dataFile = FSYS.open(fileName, "r+");  // read and write ..
-  if (!dataFile) 
+  if (!dataFile)
   {
     DebugTf("Error opening [%s]\r\n", fileName);
     return;
@@ -180,9 +186,9 @@ void writeDataToFile(const char *fileName, const char *record, uint16_t slot, in
   // slot goes from 0 to _NO_OF_SLOTS_
   // we need to add 1 to slot to skip header record!
   offset = ((slot + 1) * DATA_RECLEN);
-  dataFile.seek(offset, SeekSet); 
+  dataFile.seek(offset, SeekSet);
   int32_t bytesWritten = dataFile.print(record);
-  if (bytesWritten != DATA_RECLEN) 
+  if (bytesWritten != DATA_RECLEN)
   {
     DebugTf("ERROR! slot[%02d]: written [%d] bytes but should have been [%d]\r\n", slot, bytesWritten, DATA_RECLEN);
     writeToSysLog("ERROR! slot[%02d]: written [%d] bytes but should have been [%d]", slot, bytesWritten, DATA_RECLEN);
@@ -193,7 +199,7 @@ void writeDataToFile(const char *fileName, const char *record, uint16_t slot, in
 
 
 //===========================================================================================
-void writeDataToFiles() 
+void writeDataToFiles()
 {
   char record[DATA_RECLEN + 1] = "";
   uint16_t recSlot;
@@ -206,7 +212,7 @@ void writeDataToFiles()
   if (Verbose1) DebugTf("HOURS:  Write to slot[%02d] in %s\r\n", recSlot, HOURS_FILE);
   writeDataToFile(HOURS_FILE, record, recSlot, HOURS);
   writeToSysLog("HOURS: actTimestamp[%s], recSlot[%d]", actTimestamp, recSlot);
-  
+
   // update DAYS
   recSlot = timestampToDaySlot(actTimestamp, strlen(actTimestamp));
   if (Verbose1) DebugTf("DAYS:   Write to slot[%02d] in %s\r\n", recSlot, DAYS_FILE);
@@ -222,20 +228,24 @@ void writeDataToFiles()
 
 //===========================================================================================
 void readOneSlot(int8_t fileType, const char *fileName, uint8_t recNr
-                          , uint8_t readSlot, bool doJson, const char *rName) 
+                 , uint8_t readSlot, bool doJson, const char *rName)
 {
   uint16_t  slot, maxSlots = 0, offset;
   char      buffer[DATA_RECLEN +2] = "";
   char      recID[10]  = "";
   float     EDT1, EDT2, ERT1, ERT2, GDT;
 
-  switch(fileType) {
-    case HOURS:   maxSlots    = _NO_HOUR_SLOTS_;
-                  break;
-    case DAYS:    maxSlots    = _NO_DAY_SLOTS_;
-                  break;
-    case MONTHS:  maxSlots    = _NO_MONTH_SLOTS_;
-                  break;
+  switch(fileType)
+  {
+    case HOURS:
+      maxSlots    = _NO_HOUR_SLOTS_;
+      break;
+    case DAYS:
+      maxSlots    = _NO_DAY_SLOTS_;
+      break;
+    case MONTHS:
+      maxSlots    = _NO_MONTH_SLOTS_;
+      break;
   }
 
   if (!FSYS.exists(fileName))
@@ -245,42 +255,42 @@ void readOneSlot(int8_t fileType, const char *fileName, uint8_t recNr
   }
 
   File dataFile = FSYS.open(fileName, "r+");  // read and write ..
-  if (!dataFile) 
+  if (!dataFile)
   {
     DebugTf("Error opening [%s]\r\n", fileName);
     return;
   }
 
-    slot    = (readSlot % maxSlots);
-    // slot goes from 0 to _NO_OF_SLOTS_
-    // we need to add 1 to slot to skip header record!
-    offset  = ((slot +1) * DATA_RECLEN);
-    dataFile.seek(offset, SeekSet); 
-    int l = dataFile.readBytesUntil('\n', buffer, sizeof(buffer));
-    buffer[l] = 0;
-    if (l >= (DATA_RECLEN -1))  // '\n' is skipped by readBytesUntil()
+  slot    = (readSlot % maxSlots);
+  // slot goes from 0 to _NO_OF_SLOTS_
+  // we need to add 1 to slot to skip header record!
+  offset  = ((slot +1) * DATA_RECLEN);
+  dataFile.seek(offset, SeekSet);
+  int l = dataFile.readBytesUntil('\n', buffer, sizeof(buffer));
+  buffer[l] = 0;
+  if (l >= (DATA_RECLEN -1))   // '\n' is skipped by readBytesUntil()
+  {
+    if (!isNumericp(buffer, 8))   // first 8 bytes is YYMMDDHH
     {
-      if (!isNumericp(buffer, 8)) // first 8 bytes is YYMMDDHH
       {
-        {
-          Debugf("slot[%02d]==>timeStamp [%-13.13s] not valid!!\r\n", slot, buffer);
-          writeToSysLog("slot[%02d]==>timeStamp [%-13.13s] not valid!!", slot, buffer);
-        }
+        Debugf("slot[%02d]==>timeStamp [%-13.13s] not valid!!\r\n", slot, buffer);
+        writeToSysLog("slot[%02d]==>timeStamp [%-13.13s] not valid!!", slot, buffer);
+      }
+    }
+    else
+    {
+      if (doJson)
+      {
+        sscanf(buffer, "%[^;];%f;%f;%f;%f;%f", recID
+               , &EDT1, &EDT2, &ERT1, &ERT2, &GDT);
+        sendNestedJsonObj(recNr++, recID, slot, EDT1, EDT2, ERT1, ERT2, GDT);
+
       }
       else
       {
-        if (doJson)
-        {
-          sscanf(buffer, "%[^;];%f;%f;%f;%f;%f", recID
-                                               , &EDT1, &EDT2, &ERT1, &ERT2, &GDT);
-          sendNestedJsonObj(recNr++, recID, slot, EDT1, EDT2, ERT1, ERT2, GDT);
-
-        }
-        else
-        {
-          Debugf("slot[%02d]->[%s]\r\n", slot, buffer);
-        }
+        Debugf("slot[%02d]->[%s]\r\n", slot, buffer);
       }
+    }
 
   }
   dataFile.close();
@@ -290,22 +300,26 @@ void readOneSlot(int8_t fileType, const char *fileName, uint8_t recNr
 
 //===========================================================================================
 void readSlotFromTimestamp(int8_t fileType, const char *fileName, const char *timeStamp
-                          , bool doJson, const char *rName) 
+                           , bool doJson, const char *rName)
 {
   uint16_t firstSlot = 0, maxSlots = 0;
 
   DebugTf("timeStamp[%s]\r\n", timeStamp);
-  
-  switch(fileType) {
-    case HOURS:   firstSlot   = timestampToHourSlot(timeStamp, strlen(timeStamp));
-                  maxSlots    = _NO_HOUR_SLOTS_;
-                  break;
-    case DAYS:    firstSlot   = timestampToDaySlot(timeStamp, strlen(timeStamp));
-                  maxSlots    = _NO_DAY_SLOTS_;
-                  break;
-    case MONTHS:  firstSlot   = timestampToMonthSlot(timeStamp, strlen(timeStamp));
-                  maxSlots    = _NO_MONTH_SLOTS_;
-                  break;
+
+  switch(fileType)
+  {
+    case HOURS:
+      firstSlot   = timestampToHourSlot(timeStamp, strlen(timeStamp));
+      maxSlots    = _NO_HOUR_SLOTS_;
+      break;
+    case DAYS:
+      firstSlot   = timestampToDaySlot(timeStamp, strlen(timeStamp));
+      maxSlots    = _NO_DAY_SLOTS_;
+      break;
+    case MONTHS:
+      firstSlot   = timestampToMonthSlot(timeStamp, strlen(timeStamp));
+      maxSlots    = _NO_MONTH_SLOTS_;
+      break;
   }
 
   firstSlot += maxSlots;
@@ -317,20 +331,24 @@ void readSlotFromTimestamp(int8_t fileType, const char *fileName, const char *ti
 
 //===========================================================================================
 void readAllSlots(int8_t fileType, const char *fileName, const char *timeStamp
-                          , bool doJson, const char *rName) 
+                  , bool doJson, const char *rName)
 {
   int16_t startSlot, endSlot, nrSlots, recNr = 0;
-  
-  switch(fileType) {
-    case HOURS:   startSlot       = timestampToHourSlot(timeStamp, strlen(timeStamp));
-                  nrSlots         = _NO_HOUR_SLOTS_;
-                  break;
-    case DAYS:    startSlot       = timestampToDaySlot(timeStamp, strlen(timeStamp));
-                  nrSlots         = _NO_DAY_SLOTS_;
-                  break;
-    case MONTHS:  startSlot       = timestampToMonthSlot(timeStamp, strlen(timeStamp));
-                  nrSlots         = _NO_MONTH_SLOTS_;
-                  break;
+
+  switch(fileType)
+  {
+    case HOURS:
+      startSlot       = timestampToHourSlot(timeStamp, strlen(timeStamp));
+      nrSlots         = _NO_HOUR_SLOTS_;
+      break;
+    case DAYS:
+      startSlot       = timestampToDaySlot(timeStamp, strlen(timeStamp));
+      nrSlots         = _NO_DAY_SLOTS_;
+      break;
+    case MONTHS:
+      startSlot       = timestampToMonthSlot(timeStamp, strlen(timeStamp));
+      nrSlots         = _NO_MONTH_SLOTS_;
+      break;
   }
 
   endSlot   = nrSlots + startSlot;
@@ -340,86 +358,94 @@ void readAllSlots(int8_t fileType, const char *fileName, const char *timeStamp
   {
     readOneSlot(fileType, fileName, s, recNr++, false, "");
   }
-  
+
 } // readAllSlots()
 
 
 //===========================================================================================
-bool createFile(const char *fileName, uint16_t noSlots) 
+bool createFile(const char *fileName, uint16_t noSlots)
 {
-    DebugTf("fileName[%s], fileRecLen[%d]\r\n", fileName, DATA_RECLEN);
+  DebugTf("fileName[%s], fileRecLen[%d]\r\n", fileName, DATA_RECLEN);
 
-    File dataFile  = FSYS.open(fileName, "a");  // create File
-    // -- first write fileHeader ----------------------------------------
-    snprintf(cMsg, sizeof(cMsg), "%s", DATA_CSV_HEADER);  // you cannot modify *fileHeader!!!
-    fillRecord(cMsg, DATA_RECLEN);
-    DebugT(cMsg); Debugln(F("\r"));
+  File dataFile  = FSYS.open(fileName, "a");  // create File
+  // -- first write fileHeader ----------------------------------------
+  snprintf(cMsg, sizeof(cMsg), "%s", DATA_CSV_HEADER);  // you cannot modify *fileHeader!!!
+  fillRecord(cMsg, DATA_RECLEN);
+  DebugT(cMsg);
+  Debugln(F("\r"));
+  bytesWritten = dataFile.print(cMsg);
+  if (bytesWritten != DATA_RECLEN)
+  {
+    DebugTf("ERROR!! slotNr[%d]: written [%d] bytes but should have been [%d] for Header\r\n", 0, bytesWritten, DATA_RECLEN);
+  }
+  DebugTln(F(".. that went well! Now add next record ..\r"));
+  // -- as this file is empty, write one data record ------------
+  snprintf(cMsg, sizeof(cMsg), "%02d%02d%02d%02d", 0, 0, 0, 0);
+
+  snprintf(cMsg, sizeof(cMsg), DATA_FORMAT, cMsg, 0.000, 0.000, 0.000, 0.000, 0.000);
+
+  fillRecord(cMsg, DATA_RECLEN);
+  for(int r = 1; r <= noSlots; r++)
+  {
+    DebugTf("Write [%s] Data[%-9.9s]\r\n", fileName, cMsg);
+    dataFile.seek((r * DATA_RECLEN), SeekSet);
     bytesWritten = dataFile.print(cMsg);
-    if (bytesWritten != DATA_RECLEN) 
+    if (bytesWritten != DATA_RECLEN)
     {
-      DebugTf("ERROR!! slotNr[%d]: written [%d] bytes but should have been [%d] for Header\r\n", 0, bytesWritten, DATA_RECLEN);
+      DebugTf("ERROR!! recNo[%d]: written [%d] bytes but should have been [%d] \r\n", r, bytesWritten, DATA_RECLEN);
     }
-    DebugTln(F(".. that went well! Now add next record ..\r"));
-    // -- as this file is empty, write one data record ------------
-    snprintf(cMsg, sizeof(cMsg), "%02d%02d%02d%02d", 0, 0, 0, 0);
-    
-    snprintf(cMsg, sizeof(cMsg), DATA_FORMAT, cMsg, 0.000, 0.000, 0.000, 0.000, 0.000);
+  } // for ..
 
-    fillRecord(cMsg, DATA_RECLEN);
-    for(int r = 1; r <= noSlots; r++)
-    {
-      DebugTf("Write [%s] Data[%-9.9s]\r\n", fileName, cMsg);
-      dataFile.seek((r * DATA_RECLEN), SeekSet);
-      bytesWritten = dataFile.print(cMsg);
-      if (bytesWritten != DATA_RECLEN) 
-      {
-        DebugTf("ERROR!! recNo[%d]: written [%d] bytes but should have been [%d] \r\n", r, bytesWritten, DATA_RECLEN);
-      }
-    } // for ..
-    
-    dataFile.close();
-    dataFile  = FSYS.open(fileName, "r+");       // open for Read & writing
-    if (!dataFile) 
-    {
-      DebugTf("Something is very wrong writing to [%s]\r\n", fileName);
-      return false;
-    }
-    dataFile.close();
+  dataFile.close();
+  dataFile  = FSYS.open(fileName, "r+");       // open for Read & writing
+  if (!dataFile)
+  {
+    DebugTf("Something is very wrong writing to [%s]\r\n", fileName);
+    return false;
+  }
+  dataFile.close();
 
-    return true;
-  
+  return true;
+
 } //  createFile()
 
 
 //===========================================================================================
-void fillRecord(char *record, int8_t len) 
+void fillRecord(char *record, int8_t len)
 {
   int8_t s = 0, l = 0;
-  while (record[s] != '\0' && record[s]  != '\n') {s++;}
+  while (record[s] != '\0' && record[s]  != '\n')
+  {
+    s++;
+  }
   if (Verbose1) DebugTf("Length of record is [%d] bytes\r\n", s);
-  for (l = s; l < (len - 2); l++) {
+  for (l = s; l < (len - 2); l++)
+  {
     record[l] = ' ';
   }
   record[l]   = ';';
   record[l+1] = '\n';
   record[len] = '\0';
 
-  while (record[l] != '\0') {l++;}
+  while (record[l] != '\0')
+  {
+    l++;
+  }
   if (Verbose1) DebugTf("Length of record is now [%d] bytes\r\n", l);
-  
+
 } // fillRecord()
 
 
 //====================================================================
-uint16_t timestampToHourSlot(const char * TS, int8_t len)
+uint16_t timestampToHourSlot(const char *TS, int8_t len)
 {
   //char      aSlot[5];
-  time_t    t1 = epoch((char*)TS, strlen(TS), false);
+  time_t    t1 = epoch((char *)TS, strlen(TS), false);
   uint32_t  nrHours = t1 / SECS_PER_HOUR;
   //sprintf(aSlot, "%d", ((nrDays % KEEP_DAYS_HOURS) *24) + hour(t1));
   //uint8_t   uSlot  = String(aSlot).toInt();
   uint8_t   recSlot = (nrHours % _NO_HOUR_SLOTS_);
-  
+
   if (Verbose1) DebugTf("===>>>>>  HOUR[%02d] => recSlot[%02d]\r\n", hour(t1), recSlot);
 
   if (recSlot < 0 || recSlot >= _NO_HOUR_SLOTS_)
@@ -429,18 +455,18 @@ uint16_t timestampToHourSlot(const char * TS, int8_t len)
     slotErrors++;
   }
   return recSlot;
-  
+
 } // timestampToHourSlot()
 
 
 //====================================================================
-uint16_t timestampToDaySlot(const char * TS, int8_t len)
+uint16_t timestampToDaySlot(const char *TS, int8_t len)
 {
   //char      aSlot[5];
-  time_t    t1 = epoch((char*)TS, strlen(TS), false);
+  time_t    t1 = epoch((char *)TS, strlen(TS), false);
   uint32_t  nrDays = t1 / SECS_PER_DAY;
   uint16_t  recSlot = (nrDays % _NO_DAY_SLOTS_);
-  
+
   if (Verbose1) DebugTf("===>>>>>   DAY[%02d] => recSlot[%02d]\r\n", day(t1), recSlot);
 
   if (recSlot < 0 || recSlot >= _NO_DAY_SLOTS_)
@@ -450,18 +476,18 @@ uint16_t timestampToDaySlot(const char * TS, int8_t len)
     slotErrors++;
   }
   return recSlot;
-  
+
 } // timestampToDaySlot()
 
 
 //====================================================================
-uint16_t timestampToMonthSlot(const char * TS, int8_t len)
+uint16_t timestampToMonthSlot(const char *TS, int8_t len)
 {
   //char      aSlot[5];
-  time_t    t1 = epoch((char*)TS, strlen(TS), false);
+  time_t    t1 = epoch((char *)TS, strlen(TS), false);
   uint32_t  nrMonths = ( (year(t1) -1) * 12) + month(t1);    // eg: year(2023) * 12 = 24276 + month(9) = 202309
   uint16_t  recSlot = (nrMonths % _NO_MONTH_SLOTS_); // eg: 24285 % _NO_MONTH_SLOT_
-  
+
   if (Verbose1) DebugTf("===>>>>> MONTH[%02d] => recSlot[%02d]\r\n", month(t1), recSlot);
 
   if (recSlot < 0 || recSlot >= _NO_MONTH_SLOTS_)
@@ -471,53 +497,56 @@ uint16_t timestampToMonthSlot(const char * TS, int8_t len)
     slotErrors++;
   }
   return recSlot;
-  
+
 } // timestampToMonthSlot()
 
 
 //===========================================================================================
-int32_t freeSpace() 
+int32_t freeSpace()
 {
   int32_t space;
-  
+
   FSYS.info(SPIFFSinfo);
 
   space = (int32_t)(SPIFFSinfo.totalBytes - SPIFFSinfo.usedBytes);
 
   return space;
-  
+
 } // freeSpace()
 
 //===========================================================================================
-void listFSYS() 
+void listFSYS()
 {
-   typedef struct _fileMeta {
-    char    Name[20];     
+  typedef struct _fileMeta
+  {
+    char    Name[20];
     int32_t Size;
   } fileMeta;
 
   _fileMeta dirMap[30];
   int fileNr = 0;
-  
+
   Dir dir = FSYS.openDir("/");         // List files on SPIFFS
-  while (dir.next())  
+  while (dir.next())
   {
     dirMap[fileNr].Name[0] = '\0';
-  #if defined( USE_LITTLEFS )
-    strncat(dirMap[fileNr].Name, dir.fileName().substring(0).c_str(), 19); 
-  #else // SPIFFS
+#if defined( USE_LITTLEFS )
+    strncat(dirMap[fileNr].Name, dir.fileName().substring(0).c_str(), 19);
+#else // SPIFFS
     strncat(dirMap[fileNr].Name, dir.fileName().substring(1).c_str(), 19); // remove leading '/'
-  #endif
+#endif
     dirMap[fileNr].Size = dir.fileSize();
     fileNr++;
   }
 
   // -- bubble sort dirMap op .Name--
-  for (int8_t y = 0; y < fileNr; y++) {
+  for (int8_t y = 0; y < fileNr; y++)
+  {
     yield();
-    for (int8_t x = y + 1; x < fileNr; x++)  {
+    for (int8_t x = y + 1; x < fileNr; x++)
+    {
       //DebugTf("y[%d], x[%d] => seq[x][%s] ", y, x, dirMap[x].Name);
-      if (compare(String(dirMap[x].Name), String(dirMap[y].Name)))  
+      if (compare(String(dirMap[x].Name), String(dirMap[y].Name)))
       {
         fileMeta temp = dirMap[y];
         dirMap[y]     = dirMap[x];
@@ -538,7 +567,7 @@ void listFSYS()
 
   Debugln(F("\r"));
   if (freeSpace() < (10 * SPIFFSinfo.blockSize))
-        Debugf("Available FSYS space [%6d]kB (LOW ON SPACE!!!)\r\n", (freeSpace() / 1024));
+    Debugf("Available FSYS space [%6d]kB (LOW ON SPACE!!!)\r\n", (freeSpace() / 1024));
   else  Debugf("Available FSYS space [%6d]kB\r\n", (freeSpace() / 1024));
   Debugf("           FSYS Size [%6d]kB\r\n", (SPIFFSinfo.totalBytes / 1024));
   Debugf("     FSYS block Size [%6d]bytes\r\n", SPIFFSinfo.blockSize);
@@ -550,12 +579,12 @@ void listFSYS()
 
 
 //===========================================================================================
-bool eraseFile() 
+bool eraseFile()
 {
   char eName[30] = "";
 
   //--- erase buffer
-  while (TelnetStream.available() > 0) 
+  while (TelnetStream.available() > 0)
   {
     yield();
     (char)TelnetStream.read();
@@ -563,12 +592,12 @@ bool eraseFile()
 
   Debug("Enter filename to erase: ");
   TelnetStream.setTimeout(10000);
-  TelnetStream.readBytesUntil('\n', eName, sizeof(eName)); 
+  TelnetStream.readBytesUntil('\n', eName, sizeof(eName));
   TelnetStream.setTimeout(1000);
 
   //--- remove control chars like \r and \n ----
   //--- and shift all char's one to the right --
-  for(int i=strlen(eName); i>0; i--) 
+  for(int i=strlen(eName); i>0; i--)
   {
     eName[i] = eName[i-1];
     if (eName[i] < ' ') eName[i] = '\0';
@@ -586,7 +615,7 @@ bool eraseFile()
     Debugf("\r\nfile [%s] not found..\r\n\n", eName);
   }
   //--- empty buffer ---
-  while (TelnetStream.available() > 0) 
+  while (TelnetStream.available() > 0)
   {
     yield();
     (char)TelnetStream.read();
@@ -596,7 +625,7 @@ bool eraseFile()
 
 
 //===========================================================================================
-bool DSMRfileExist(const char* fileName, bool doDisplay) 
+bool DSMRfileExist(const char *fileName, bool doDisplay)
 {
   char fName[30] = "";
   if (fileName[0] != '/')
@@ -604,7 +633,7 @@ bool DSMRfileExist(const char* fileName, bool doDisplay)
     strConcat(fName, 5, "/");
   }
   strConcat(fName, 29, fileName);
-  
+
   DebugTf("check if [%s] exists .. ", fName);
   if (settingOledType > 0)
   {
@@ -635,8 +664,8 @@ bool DSMRfileExist(const char* fileName, bool doDisplay)
       writeToSysLog("File [%s] not found!", fName);
       return false;
     }
-  } 
-  else 
+  }
+  else
   {
     Debugln(F("Yes! OK!"));
     if (settingOledType > 0)
@@ -645,7 +674,7 @@ bool DSMRfileExist(const char* fileName, bool doDisplay)
     }
   }
   return true;
-  
+
 } //  DSMRfileExist()
 
 
@@ -669,5 +698,5 @@ bool DSMRfileExist(const char* fileName, bool doDisplay)
 * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT
 * OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 * THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-* 
+*
 ***************************************************************************/

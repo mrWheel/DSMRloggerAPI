@@ -1,17 +1,17 @@
 /*
-***************************************************************************  
+***************************************************************************
 **  Program  : ntpStuff, part of DSMRloggerAPI
 **  Version  : v3.0
 **
-**  Copyright (c) 2020 Willem Aandewiel
+**  Copyright (c) 2020 .. 2022 Willem Aandewiel
 **
-**  TERMS OF USE: MIT License. See bottom of file.                                                            
-***************************************************************************      
-*      
+**  TERMS OF USE: MIT License. See bottom of file.
+***************************************************************************
+*
 *   BE AWARE!
 *   Printing to Serial (Debug) will crash the system!
-*   
-*   You can only print to the TelnetStream!   
+*
+*   You can only print to the TelnetStream!
 */
 
 #include <WiFiUdp.h>            // - part of ESP8266 Core https://github.com/esp8266/Arduino
@@ -26,7 +26,7 @@ static const char ntpPool[][30] = { "time.google.com",
                                     "0.nl.pool.ntp.org",
                                     "1.nl.pool.ntp.org",
                                     "3.nl.pool.ntp.org"
-                                   };
+                                  };
 static int        ntpPoolIndx = 0;
 
 char              ntpServerName[50];
@@ -39,7 +39,7 @@ static bool       externalNtpTime = false;
 static IPAddress  ntpServerIP; // NTP server's ip address
 
 //=======================================================================
-bool startNTP() 
+bool startNTP()
 {
   DebugTln(F("Starting UDP"));
   Udp.begin(localPort);
@@ -47,7 +47,7 @@ bool startNTP()
   Debugln(String(Udp.localPort()));
   DebugTln(F("waiting for NTP sync"));
   setSyncProvider(getNtpTime);
-  setSyncInterval(60);  // seconds!
+  setSyncInterval(3600);  // seconds!
   if (timeStatus() == timeSet)      // time is set,
   {
     return true;                    // exit with time set
@@ -58,16 +58,16 @@ bool startNTP()
 
 
 //=======================================================================
-time_t getNtpTime() 
+time_t getNtpTime()
 {
-  DECLARE_TIMER_MS(waitForPackage, 1500);   
+  DECLARE_TIMER_MS(waitForPackage, 1500);
 
-  while(true) 
+  while(true)
   {
     yield;
     UTCtime = 1;
     ntpPoolIndx++;
-    if ( ntpPoolIndx > (sizeof(ntpPool) / sizeof(ntpPool[0]) -1) ) 
+    if ( ntpPoolIndx > (sizeof(ntpPool) / sizeof(ntpPool[0]) -1) )
     {
       ntpPoolIndx = 0;
     }
@@ -87,7 +87,7 @@ time_t getNtpTime()
     {
       yield();
       int size = Udp.parsePacket();
-      if (size >= NTP_PACKET_SIZE) 
+      if (size >= NTP_PACKET_SIZE)
       {
         //TelnetStream.print("Receive NTP Response: ");
         Udp.read(packetBuffer, NTP_PACKET_SIZE);  // read packet into the buffer
@@ -99,15 +99,15 @@ time_t getNtpTime()
         secsSince1900 |= (unsigned long)packetBuffer[43];
         ntpTime = (secsSince1900 - 2208988800UL + (UTCtime * SECS_PER_HOUR));
         snprintf(cMsg, sizeof(cMsg), "%02d-%02d-%02d %02d:%02d:%02d"
-                        , year(ntpTime), month(ntpTime), day(ntpTime) 
-                        , hour(ntpTime), minute(ntpTime), second(ntpTime));   
+                 , year(ntpTime), month(ntpTime), day(ntpTime)
+                 , hour(ntpTime), minute(ntpTime), second(ntpTime));
         TelnetStream.printf("Received NTP Response => new time [%s (CET)]\r\n", cMsg);
         check4DST(ntpTime);
         ntpTime = (secsSince1900 - 2208988800UL + (UTCtime * SECS_PER_HOUR));
         snprintf(cMsg, sizeof(cMsg), "%02d-%02d-%02d %02d:%02d:%02d (%s)"
-                        , year(ntpTime), month(ntpTime), day(ntpTime) 
-                        , hour(ntpTime), minute(ntpTime), second(ntpTime)
-                        , DSTactive ?"CEST":"CET");   
+                 , year(ntpTime), month(ntpTime), day(ntpTime)
+                 , hour(ntpTime), minute(ntpTime), second(ntpTime)
+                 , DSTactive ?"CEST":"CET");
         TelnetStream.printf("NTP time is [%s]\r\n", cMsg);
         // return epoch ..
         //return secsSince1900 - 2208988800UL + (UTCtime * SECS_PER_HOUR);
@@ -117,40 +117,40 @@ time_t getNtpTime()
     TelnetStream.println("No NTP Response :-(");
 
   } // while true ..
-  
+
   return 0; // return 0 if unable to get the time
 
 } // getNtpTime()
 
 
 //=======================================================================
-void check4DST(time_t t) 
+void check4DST(time_t t)
 {
   int thisTime;
   int DSTstart = 033103;
   int DSTeind  = 103103;
-  
+
   snprintf(cMsg, sizeof(cMsg), "%02d%02d%02d", month(t), day(t), hour(t));
   thisTime = atoi(cMsg);
-  if (DSTstart < thisTime < DSTeind) 
+  if (DSTstart < thisTime < DSTeind)
   {
     UTCtime   = 2;
     DSTactive = true;
     TelnetStream.println("Daylight Saving Time");
   }
-  else 
+  else
   {
     UTCtime   = 1;
     DSTactive = false;
     TelnetStream.println("Standard Time");
   }
-   
+
 } //  check4DST()
 
 
 // send an NTP request to the time server at the given address
 //=======================================================================
-void sendNTPpacket(IPAddress &address) 
+void sendNTPpacket(IPAddress &address)
 {
   // set all bytes in the buffer to 0
   memset(packetBuffer, 0, NTP_PACKET_SIZE);
@@ -170,52 +170,52 @@ void sendNTPpacket(IPAddress &address)
   Udp.beginPacket(address, 123); //NTP requests are to port 123
   Udp.write(packetBuffer, NTP_PACKET_SIZE);
   Udp.endPacket();
-  
+
 } // sendNTPpacket()
 
 
 //=======================================================================
-time_t dateTime2Epoch(char const *date, char const *time) 
+time_t dateTime2Epoch(char const *date, char const *time)
 {
-    char s_month[5];
-    int year, day, h, m, s;
-    tmElements_t t;
+  char s_month[5];
+  int year, day, h, m, s;
+  tmElements_t t;
 
-    static const char month_names[] = "JanFebMarAprMayJunJulAugSepOctNovDec";
+  static const char month_names[] = "JanFebMarAprMayJunJulAugSepOctNovDec";
 
-    if (sscanf(date, "%s %d %d", s_month, &day, &year) != 3) 
-    {
-      DebugTf("Not a valid date string [%s]\r\n", date);
-      return 0;
-    }
-    t.Day  = day;
-    // Find where is s_month in month_names. Deduce month value.
-    t.Month = (strstr(month_names, s_month) - month_names) / 3 + 1;
-    
+  if (sscanf(date, "%s %d %d", s_month, &day, &year) != 3)
+  {
+    DebugTf("Not a valid date string [%s]\r\n", date);
+    return 0;
+  }
+  t.Day  = day;
+  // Find where is s_month in month_names. Deduce month value.
+  t.Month = (strstr(month_names, s_month) - month_names) / 3 + 1;
+
   //DebugTf("date=>[%d-%02d-%02d]\r\n", t.Year, t.Month, t.Day);
-    
-    // Find where is s_month in month_names. Deduce month value.
-    t.Month = (strstr(month_names, s_month) - month_names) / 3 + 1;
 
-    if (sscanf(time, "%2d:%2d:%2d", &h, &m, &s) != 3) 
-    {
-      DebugTf("Not a valid time string [%s] (time set to '0')\r\n", time);
-      h = 0;
-      m = 0;
-      s = 0;
-    }
-    t.Hour    = h;
-    t.Minute  = m;
-    t.Second  = s;
-    
+  // Find where is s_month in month_names. Deduce month value.
+  t.Month = (strstr(month_names, s_month) - month_names) / 3 + 1;
+
+  if (sscanf(time, "%2d:%2d:%2d", &h, &m, &s) != 3)
+  {
+    DebugTf("Not a valid time string [%s] (time set to '0')\r\n", time);
+    h = 0;
+    m = 0;
+    s = 0;
+  }
+  t.Hour    = h;
+  t.Minute  = m;
+  t.Second  = s;
+
   //DebugTf("time=>[%02d:%02d:%02d]\r\n", t.Hour, t.Minute, t.Second);
 
-    t.Year = CalendarYrToTm(year);
-    
+  t.Year = CalendarYrToTm(year);
+
   //DebugTf("converted=>[%d-%02d-%02d @ %02d:%02d:%02d]\r\n", t.Year, t.Month, t.Day, t.Hour, t.Minute, t.Second);
 
-    return makeTime(t);
-    
+  return makeTime(t);
+
 } // dateTime2Epoch()
 
 /***************************************************************************
@@ -238,5 +238,5 @@ time_t dateTime2Epoch(char const *date, char const *time)
 * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT
 * OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 * THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-* 
+*
 ***************************************************************************/

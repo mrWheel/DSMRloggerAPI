@@ -1,12 +1,12 @@
 /*
-***************************************************************************  
+***************************************************************************
 **  Program  : networkStuff.h, part of DSMRloggerAPI
 **  Version  : v3.0
 **
-**  Copyright (c) 2020 Willem Aandewiel
+**  Copyright (c) 2020 .. 2022 Willem Aandewiel
 **
-**  TERMS OF USE: MIT License. See bottom of file.                                                            
-***************************************************************************      
+**  TERMS OF USE: MIT License. See bottom of file.
+***************************************************************************
 */
 
 
@@ -32,12 +32,12 @@ ESP8266WebServer        httpServer (80);
 
 
 static      FSInfo SPIFFSinfo;
-bool        FSYSmounted; 
+bool        FSYSmounted;
 bool        isConnected = false;
 
 //gets called when WiFiManager enters configuration mode
 //===========================================================================================
-void configModeCallback (WiFiManager *myWiFiManager) 
+void configModeCallback (WiFiManager *myWiFiManager)
 {
   DebugTln(F("Entered config mode\r"));
   DebugTln(WiFi.softAPIP().toString());
@@ -56,16 +56,16 @@ void configModeCallback (WiFiManager *myWiFiManager)
 
 
 //===========================================================================================
-void startWiFi(const char* hostname, int timeOut) 
+void startWiFi(const char *hostname, int timeOut)
 {
   WiFiManager manageWiFi;
   uint32_t lTime = millis();
   String thisAP = String(hostname) + "-" + WiFi.macAddress();
 
   DebugTln("start ...");
-  
+
   manageWiFi.setDebugOutput(true);
-  
+
   //--- set callback that gets called when connecting to previous WiFi fails, and enters Access Point mode
   manageWiFi.setAPCallback(configModeCallback);
 
@@ -73,12 +73,12 @@ void startWiFi(const char* hostname, int timeOut)
   //--- useful to make it all retry or go to sleep in seconds
   //manageWiFi.setTimeout(240);  // 4 minuten
   manageWiFi.setTimeout(timeOut);  // in seconden ...
-  
+
   //--- fetches ssid and pass and tries to connect
   //--- if it does not connect it starts an access point with the specified name
   //--- here  "DSMR-WS-<MAC>"
   //--- and goes into a blocking loop awaiting configuration
-  if (!manageWiFi.autoConnect(thisAP.c_str())) 
+  if (!manageWiFi.autoConnect(thisAP.c_str()))
   {
     DebugTln(F("failed to connect and hit timeout"));
     if (settingOledType > 0)
@@ -108,12 +108,12 @@ void startWiFi(const char* hostname, int timeOut)
   httpUpdater.setSuccessPage(UpdateServerSuccess);
 #endif
   DebugTf(" took [%d] milli-seconds => OK!\r\n", (millis() - lTime));
-  
+
 } // startWiFi()
 
 
 //===========================================================================================
-void startTelnet() 
+void startTelnet()
 {
   TelnetStream.begin();
   DebugTln(F("\nTelnet server started .."));
@@ -123,19 +123,19 @@ void startTelnet()
 
 
 //=======================================================================
-void startMDNS(const char *Hostname) 
+void startMDNS(const char *Hostname)
 {
   DebugTf("[1] mDNS setup as [%s.local]\r\n", Hostname);
   if (MDNS.begin(Hostname))               // Start the mDNS responder for Hostname.local
   {
     DebugTf("[2] mDNS responder started as [%s.local]\r\n", Hostname);
-  } 
-  else 
+  }
+  else
   {
     DebugTln(F("[3] Error setting up MDNS responder!\r\n"));
   }
   MDNS.addService("http", "tcp", 80);
-  
+
 } // startMDNS()
 
 /***************************************************************************
@@ -158,5 +158,5 @@ void startMDNS(const char *Hostname)
 * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT
 * OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 * THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-* 
+*
 ***************************************************************************/

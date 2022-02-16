@@ -1,12 +1,12 @@
-/* 
-***************************************************************************  
+/*
+***************************************************************************
 **  Program  : restAPI, part of DSMRloggerAPI
 **  Version  : v3.0
 **
-**  Copyright (c) 2020 Willem Aandewiel
+**  Copyright (c) 2020 .. 2022 Willem Aandewiel
 **
-**  TERMS OF USE: MIT License. See bottom of file.                                                            
-***************************************************************************      
+**  TERMS OF USE: MIT License. See bottom of file.
+***************************************************************************
 */
 
 // ******* Global Vars *******
@@ -14,41 +14,43 @@ uint32_t  antiWearTimer = 0;
 
 char fieldName[40] = "";
 
-char fieldsArray[50][35] = {{0}}; // to lookup fields 
+char fieldsArray[50][35] = {{0}}; // to lookup fields
 int  fieldsElements      = 0;
 
 char actualArray[][35] = { "timestamp"
-                          ,"energy_delivered_tariff1","energy_delivered_tariff2"
-                          ,"energy_returned_tariff1","energy_returned_tariff2"
-                          ,"power_delivered","power_returned"
-                          ,"voltage_l1","voltage_l2","voltage_l3"
-                          ,"current_l1","current_l2","current_l3"
-                          ,"power_delivered_l1","power_delivered_l2","power_delivered_l3"
-                          ,"power_returned_l1","power_returned_l2","power_returned_l3"
-                          ,"mbus1_delivered"
-                          ,"mbus2_delivered"
-                          ,"mbus3_delivered"
-                          ,"mbus4_delivered"
-                          ,"\0"};
-                          
+                           , "energy_delivered_tariff1", "energy_delivered_tariff2"
+                           , "energy_returned_tariff1", "energy_returned_tariff2"
+                           , "power_delivered", "power_returned"
+                           , "voltage_l1", "voltage_l2", "voltage_l3"
+                           , "current_l1", "current_l2", "current_l3"
+                           , "power_delivered_l1", "power_delivered_l2", "power_delivered_l3"
+                           , "power_returned_l1", "power_returned_l2", "power_returned_l3"
+                           , "mbus1_delivered"
+                           , "mbus2_delivered"
+                           , "mbus3_delivered"
+                           , "mbus4_delivered"
+                           , "\0"
+                         };
+
 int  actualElements = (sizeof(actualArray)/sizeof(actualArray[0]))-1;
 
-char infoArray[][35]   = { "identification","p1_version", "p1_version_be"
-                          ,"equipment_id"
-                          ,"electricity_tariff"
-//                        ,"gas_device_type","gas_equipment_id"
-                          ,"mbus1_device_type","mbus1_equipment"
-                          ,"mbus2_device_type","mbus2_equipment"
-                          ,"mbus3_device_type","mbus3_equipment"
-                          ,"mbus4_device_type","mbus4_equipment"
-                          , "\0" };
+char infoArray[][35]   = { "identification", "p1_version", "p1_version_be"
+                           , "equipment_id"
+                           , "electricity_tariff"
+                           //                        ,"gas_device_type","gas_equipment_id"
+                           , "mbus1_device_type", "mbus1_equipment"
+                           , "mbus2_device_type", "mbus2_equipment"
+                           , "mbus3_device_type", "mbus3_equipment"
+                           , "mbus4_device_type", "mbus4_equipment"
+                           , "\0"
+                         };
 
 int  infoElements = (sizeof(infoArray)/sizeof(infoArray[0]))-1;
-  
+
 bool onlyIfPresent  = false;
 
 //=======================================================================
-void processAPI() 
+void processAPI()
 {
   char fName[40] = "";
   char URI[50]   = "";
@@ -57,12 +59,12 @@ void processAPI()
   strncpy( URI, httpServer.uri().c_str(), sizeof(URI) );
 
   if (httpServer.method() == HTTP_GET)
-        DebugTf("from[%s] URI[%s] method[GET] \r\n"
-                                  , httpServer.client().remoteIP().toString().c_str()
-                                        , URI); 
-  else  DebugTf("from[%s] URI[%s] method[PUT] \r\n" 
-                                  , httpServer.client().remoteIP().toString().c_str()
-                                        , URI); 
+    DebugTf("from[%s] URI[%s] method[GET] \r\n"
+            , httpServer.client().remoteIP().toString().c_str()
+            , URI);
+  else  DebugTf("from[%s] URI[%s] method[PUT] \r\n"
+                  , httpServer.client().remoteIP().toString().c_str()
+                  , URI);
 
 #ifdef USE_SYSLOGGER
   if (ESP.getFreeHeap() < 5000) // to prevent firmware from crashing!
@@ -72,16 +74,16 @@ void processAPI()
   {
     DebugTf("==> Bailout due to low heap (%d bytes))\r\n", ESP.getFreeHeap() );
     writeToSysLog("from[%s][%s] Bailout low heap (%d bytes)"
-                                  , httpServer.client().remoteIP().toString().c_str()
-                                  , URI
-                                  , ESP.getFreeHeap() );
-    httpServer.send(500, "text/plain", "500: internal server error (low heap)\r\n"); 
+                  , httpServer.client().remoteIP().toString().c_str()
+                  , URI
+                  , ESP.getFreeHeap() );
+    httpServer.send(500, "text/plain", "500: internal server error (low heap)\r\n");
     return;
   }
 
   int8_t wc = splitString(URI, '/', words, 10);
-  
-  if (Verbose2) 
+
+  if (Verbose2)
   {
     DebugT(">>");
     for (int w=0; w<wc; w++)
@@ -124,7 +126,7 @@ void processAPI()
     handleSmV1Api(URI, words[4].c_str(), words[5].c_str(), words[6].c_str());
   }
   else sendApiNotFound(URI);
-  
+
 } // processAPI()
 
 
@@ -144,11 +146,11 @@ void handleDevV1Api(const char *URI, const char *word4, const char *word5, const
   {
     if (httpServer.method() == HTTP_PUT || httpServer.method() == HTTP_POST)
     {
-      //------------------------------------------------------------ 
-      // json string: {"name":"settingInterval","value":9}  
-      // json string: {"name":"settingTelegramInterval","value":123.45}  
-      // json string: {"name":"settingTelegramInterval","value":"abc"}  
-      //------------------------------------------------------------ 
+      //------------------------------------------------------------
+      // json string: {"name":"settingInterval","value":9}
+      // json string: {"name":"settingTelegramInterval","value":123.45}
+      // json string: {"name":"settingTelegramInterval","value":"abc"}
+      //------------------------------------------------------------
       // so, why not use ArduinoJSON library?
       // I say: try it yourself ;-) It won't be easy
       String wOut[5];
@@ -183,7 +185,7 @@ void handleDevV1Api(const char *URI, const char *word4, const char *word5, const
     sendDeviceDebug(URI, word5);
   }
   else sendApiNotFound(URI);
-  
+
 } // handleDevV1Api()
 
 
@@ -192,7 +194,7 @@ void handleHistV1Api(const char *URI, const char *word4, const char *word5, cons
 {
   int8_t  fileType     = 0;
   char    fileName[20] = "";
-  
+
   //DebugTf("word4[%s], word5[%s], word6[%s]\r\n", word4, word5, word6);
   if (   strcmp(word4, "hours") == 0 )
   {
@@ -209,39 +211,39 @@ void handleHistV1Api(const char *URI, const char *word4, const char *word5, cons
     fileType = MONTHS;
     if (httpServer.method() == HTTP_PUT || httpServer.method() == HTTP_POST)
     {
-      //------------------------------------------------------------ 
+      //------------------------------------------------------------
       // json string: {"recid":"29013023"
       //               ,"edt1":2601.146,"edt2":"9535.555"
       //               ,"ert1":378.074,"ert2":208.746
       //               ,"gdt":3314.404}
-      //------------------------------------------------------------ 
+      //------------------------------------------------------------
       char      record[DATA_RECLEN + 1] = "";
       uint16_t  recSlot;
 
       String jsonIn  = httpServer.arg(0).c_str();
       DebugTln(jsonIn);
-      
+
       recSlot = buildDataRecordFromJson(record, jsonIn);
-      
+
       //--- update MONTHS
       writeDataToFile(MONTHS_FILE, record, recSlot, MONTHS);
       //--- send OK response --
       httpServer.send(200, "application/json", httpServer.arg(0));
-      
+
       return;
     }
-    else 
+    else
     {
       strCopy(fileName, sizeof(fileName), MONTHS_FILE);
     }
   }
-  else 
+  else
   {
     sendApiNotFound(URI);
     return;
   }
   if (strcmp(word5, "desc") == 0)
-        sendJsonHist(fileType, fileName, actTimestamp, true);
+    sendJsonHist(fileType, fileName, actTimestamp, true);
   else  sendJsonHist(fileType, fileName, actTimestamp, false);
 
 } // handleHistV1Api()
@@ -251,7 +253,7 @@ void handleHistV1Api(const char *URI, const char *word4, const char *word5, cons
 void handleSmV1Api(const char *URI, const char *word4, const char *word5, const char *word6)
 {
   char    tlgrm[MAX_TLGRM_LENGTH] = "";
-  uint8_t p=0;  
+  uint8_t p=0;
   bool    stopParsingTelegram = false;
 
   //DebugTf("word4[%s], word5[%s], word6[%s]\r\n", word4, word5, word6);
@@ -278,10 +280,10 @@ void handleSmV1Api(const char *URI, const char *word4, const char *word5, const 
 
     if (strlen(word5) > 0)
     {
-       memset(fieldsArray,0,sizeof(fieldsArray));
-       strCopy(fieldsArray[0], 34,"timestamp");
-       strCopy(fieldsArray[1], 34, word5);
-       fieldsElements = 2;
+      memset(fieldsArray, 0, sizeof(fieldsArray));
+      strCopy(fieldsArray[0], 34, "timestamp");
+      strCopy(fieldsArray[1], 34, word5);
+      fieldsElements = 2;
     }
     sendJsonV1Fields(word4);
   }
@@ -307,7 +309,7 @@ void handleSmV1Api(const char *URI, const char *word4, const char *word5, const 
       DebugTf("telegram > [%d] bytes. Bailout!\r\n", MAX_TLGRM_LENGTH);
       return;
     }
-    if (l == 0) 
+    if (l == 0)
     {
       httpServer.send(200, "application/plain", "no telegram received");
       showRaw = false;
@@ -320,41 +322,45 @@ void handleSmV1Api(const char *URI, const char *word4, const char *word5, const 
     {
       tlgrm[l++] = (char)Serial.read();
     }
-//  tlgrm[l++]    = '\r';
+    //  tlgrm[l++]    = '\r';
     tlgrm[l++]    = '\n';
     tlgrm[(l +1)] = '\0';
     // shift telegram 1 char to the right (make room at pos [0] for '/')
-    for (int i=strlen(tlgrm); i>=0; i--) { tlgrm[i+1] = tlgrm[i]; yield(); }
-    tlgrm[0] = '/'; 
+    for (int i=strlen(tlgrm); i>=0; i--)
+    {
+      tlgrm[i+1] = tlgrm[i];
+      yield();
+    }
+    tlgrm[0] = '/';
     showRaw = false;
     if (Verbose1) Debugf("Telegram (%d chars):\r\n/%s", strlen(tlgrm), tlgrm);
     httpServer.send(200, "application/plain", tlgrm);
 
   }
   else sendApiNotFound(URI);
-  
+
 } // handleSmV1Api()
 
 
 //=======================================================================
-void sendDeviceInfo() 
+void sendDeviceInfo()
 {
   char compileOptions[200] = "";
 
 #ifdef USE_UPDATE_SERVER
-    strConcat(compileOptions, sizeof(compileOptions), "[USE_UPDATE_SERVER]");
+  strConcat(compileOptions, sizeof(compileOptions), "[USE_UPDATE_SERVER]");
 #endif
 #ifdef USE_MQTT
-    strConcat(compileOptions, sizeof(compileOptions), "[USE_MQTT]");
+  strConcat(compileOptions, sizeof(compileOptions), "[USE_MQTT]");
 #endif
 #ifdef USE_MINDERGAS
-    strConcat(compileOptions, sizeof(compileOptions), "[USE_MINDERGAS]");
+  strConcat(compileOptions, sizeof(compileOptions), "[USE_MINDERGAS]");
 #endif
 #ifdef USE_SYSLOGGER
-    strConcat(compileOptions, sizeof(compileOptions), "[USE_SYSLOGGER]");
+  strConcat(compileOptions, sizeof(compileOptions), "[USE_SYSLOGGER]");
 #endif
 #ifdef HAS_NO_SLIMMEMETER
-    strConcat(compileOptions, sizeof(compileOptions), "[NO_SLIMMEMETER]");
+  strConcat(compileOptions, sizeof(compileOptions), "[NO_SLIMMEMETER]");
 #endif
 
   sendStartJsonObj("devinfo");
@@ -377,8 +383,8 @@ void sendDeviceInfo()
   sendNestedJsonObj("sketchsize", formatFloat( (ESP.getSketchSize() / 1024.0), 3), "kB");
   sendNestedJsonObj("freesketchspace", formatFloat( (ESP.getFreeSketchSpace() / 1024.0), 3), "kB");
 
-  if ((ESP.getFlashChipId() & 0x000000ff) == 0x85) 
-        snprintf(cMsg, sizeof(cMsg), "%08X (PUYA)", ESP.getFlashChipId());
+  if ((ESP.getFlashChipId() & 0x000000ff) == 0x85)
+    snprintf(cMsg, sizeof(cMsg), "%08X (PUYA)", ESP.getFlashChipId());
   else  snprintf(cMsg, sizeof(cMsg), "%08X", ESP.getFlashChipId());
   sendNestedJsonObj("flashchipid", cMsg);  // flashChipId
   sendNestedJsonObj("flashchipsize", formatFloat((ESP.getFlashChipSize() / 1024.0 / 1024.0), 3), "MB");
@@ -393,22 +399,22 @@ void sendDeviceInfo()
   sendNestedJsonObj("flashchipmode", flashMode[ideMode]);
   sendNestedJsonObj("boardtype",
 #ifdef ARDUINO_ESP8266_NODEMCU
-     "ESP8266_NODEMCU"
+                    "ESP8266_NODEMCU"
 #endif
 #ifdef ARDUINO_ESP8266_GENERIC
-     "ESP8266_GENERIC"
+                    "ESP8266_GENERIC"
 #endif
 #ifdef ESP8266_ESP01
-     "ESP8266_ESP01"
+                    "ESP8266_ESP01"
 #endif
 #ifdef ESP8266_ESP12
-     "ESP8266_ESP12"
+                    "ESP8266_ESP12"
 #endif
-  );
+                   );
   sendNestedJsonObj("compileoptions", compileOptions);
   sendNestedJsonObj("ssid", WiFi.SSID().c_str());
 #ifdef SHOW_PASSWRDS
-  sendNestedJsonObj("pskkey", WiFi.psk());   
+  sendNestedJsonObj("pskkey", WiFi.psk());
 #endif
   sendNestedJsonObj("wifirssi", WiFi.RSSI());
   sendNestedJsonObj("uptime", upTime());
@@ -425,7 +431,7 @@ void sendDeviceInfo()
   sendNestedJsonObj("mqttbroker", cMsg);
   sendNestedJsonObj("mqttinterval", settingMQTTinterval);
   if (mqttIsConnected)
-        sendNestedJsonObj("mqttbroker_connected", "yes");
+    sendNestedJsonObj("mqttbroker_connected", "yes");
   else  sendNestedJsonObj("mqttbroker_connected", "no");
 #endif
 #ifdef USE_MINDERGAS
@@ -443,11 +449,11 @@ void sendDeviceInfo()
 
 
 //=======================================================================
-void sendDeviceTime() 
+void sendDeviceTime()
 {
   sendStartJsonObj("devtime");
-  sendNestedJsonObj("timestamp", actTimestamp); 
-  sendNestedJsonObj("time", buildDateTimeString(actTimestamp, sizeof(actTimestamp)).c_str()); 
+  sendNestedJsonObj("timestamp", actTimestamp);
+  sendNestedJsonObj("time", buildDateTimeString(actTimestamp, sizeof(actTimestamp)).c_str());
   sendNestedJsonObj("epoch", (int)now());
   sendNestedJsonObj("uptime", upTime());
   sendNestedJsonObj("uptime_secs", (int)upTimeSeconds, "sec");
@@ -458,12 +464,12 @@ void sendDeviceTime()
 
 
 //=======================================================================
-void sendDeviceSettings() 
+void sendDeviceSettings()
 {
   DebugTln("sending device settings ...\r");
 
   sendStartJsonObj("settings");
-  
+
   sendJsonSettingObj("hostname",          settingHostname,        "s", sizeof(settingHostname) -1);
   sendJsonSettingObj("pre_dsmr40",        settingPreDSMR40,       "i", 0, 1);
   sendJsonSettingObj("ed_tariff1",        settingEDT1,            "f", 0, 10,  5);
@@ -478,7 +484,7 @@ void sendDeviceSettings()
   sendJsonSettingObj("mbus3_type",        settingMbus3Type,       "i", 0, 200);
   sendJsonSettingObj("mbus4_type",        settingMbus4Type,       "i", 0, 200);
   sendJsonSettingObj("sm_has_fase_info",  settingSmHasFaseInfo,   "i", 0, 1);
-  sendJsonSettingObj("tlgrm_interval",    settingTelegramInterval,"i", 2, 60);
+  sendJsonSettingObj("tlgrm_interval",    settingTelegramInterval, "i", 2, 60);
   sendJsonSettingObj("oled_type",         settingOledType,        "i", 0, 2);
   sendJsonSettingObj("oled_screen_time",  settingOledSleep,       "i", 1, 300);
   sendJsonSettingObj("oled_flip_screen",  settingOledFlip,        "i", 0, 1);
@@ -499,7 +505,7 @@ void sendDeviceSettings()
 
 
 //=======================================================================
-void sendDeviceDebug(const char *URI, String tail) 
+void sendDeviceDebug(const char *URI, String tail)
 {
 #ifdef USE_SYSLOGGER
   String lLine = "";
@@ -512,9 +518,9 @@ void sendDeviceDebug(const char *URI, String tail)
   httpServer.sendHeader("Access-Control-Allow-Origin", "*");
   httpServer.setContentLength(CONTENT_LENGTH_UNKNOWN);
   if (tailLines > 0)
-        sysLog.startReading((tailLines * -1));  
-  else  sysLog.startReading(0, 0);  
-  while( (lLine = sysLog.readNextLine()) && !(lLine == "EOF")) 
+    sysLog.startReading((tailLines * -1));
+  else  sysLog.startReading(0, 0);
+  while( (lLine = sysLog.readNextLine()) && !(lLine == "EOF"))
   {
     lineNr++;
     snprintf(cMsg, sizeof(cMsg), "%s\r\n", lLine.c_str());
@@ -532,33 +538,34 @@ void sendDeviceDebug(const char *URI, String tail)
 //=======================================================================
 struct buildJsonV0ApiSmActual
 {
-    bool  skip = false;
-    
-    template<typename Item>
-    void apply(Item &i) {
-      skip = false;
-      String Name = String(Item::name);
-      if (!isInFieldsArray(Name.c_str(), fieldsElements))
+  bool  skip = false;
+
+  template<typename Item>
+  void apply(Item &i)
+  {
+    skip = false;
+    String Name = String(Item::name);
+    if (!isInFieldsArray(Name.c_str(), fieldsElements))
+    {
+      skip = true;
+    }
+    if (!skip)
+    {
+      if (i.present())
       {
-        skip = true;
+        sendNestedJsonV0Obj(Name.c_str(), typecastValue(i.val()));
       }
-      if (!skip)
-      {
-        if (i.present()) 
-        {
-          sendNestedJsonV0Obj(Name.c_str(), typecastValue(i.val()));
-        }
-      }
+    }
   }
 
 };  // buildJsonV0ApiSmActual()
 
 
 //=======================================================================
-void sendJsonV0Fields() 
+void sendJsonV0Fields()
 {
   objSprtr[0]    = '\0';
-  
+
   httpServer.sendHeader("Access-Control-Allow-Origin", "*");
   httpServer.setContentLength(CONTENT_LENGTH_UNKNOWN);
   httpServer.send(200, "application/json", "{\r\n");
@@ -570,44 +577,45 @@ void sendJsonV0Fields()
 
 
 //=======================================================================
-struct buildJsonV1Api 
+struct buildJsonV1Api
 {
-    bool  show;
-    
-    template<typename Item>
-    void apply(Item &i) {
-      String Name = String(Item::name);
-      if (isInFieldsArray(Name.c_str(), fieldsElements))
-            show = true;
-      else  show = false;
-      
-      if (show)
+  bool  show;
+
+  template<typename Item>
+  void apply(Item &i)
+  {
+    String Name = String(Item::name);
+    if (isInFieldsArray(Name.c_str(), fieldsElements))
+      show = true;
+    else  show = false;
+
+    if (show)
+    {
+      if (i.present())
       {
-        if (i.present()) 
+        String Unit = Item::unit();
+
+        if (Unit.length() > 0)
         {
-          String Unit = Item::unit();
-        
-          if (Unit.length() > 0)
-          {
-            sendNestedJsonObj(Name.c_str(), typecastValue(i.val()), Unit.c_str());
-          }
-          else 
-          {
-            sendNestedJsonObj(Name.c_str(), typecastValue(i.val()));
-          }
+          sendNestedJsonObj(Name.c_str(), typecastValue(i.val()), Unit.c_str());
         }
-        else if (!onlyIfPresent)
+        else
         {
-          sendNestedJsonObj(Name.c_str(), "-");
+          sendNestedJsonObj(Name.c_str(), typecastValue(i.val()));
         }
       }
+      else if (!onlyIfPresent)
+      {
+        sendNestedJsonObj(Name.c_str(), "-");
+      }
+    }
   }
 
 };  // buildJsonV1Api()
 
 
 //=======================================================================
-void sendJsonV1Fields(const char *Name) 
+void sendJsonV1Fields(const char *Name)
 {
   sendStartJsonObj(Name);
   DSMRdata.applyEach(buildJsonV1Api());
@@ -621,7 +629,7 @@ void sendJsonV1Fields(const char *Name)
 
 
 //=======================================================================
-void sendJsonHist(int8_t fileType, const char *fileName, const char *timeStamp, bool desc) 
+void sendJsonHist(int8_t fileType, const char *fileName, const char *timeStamp, bool desc)
 {
   uint8_t startSlot, nrSlots, recNr  = 0;
   char    typeApi[10];
@@ -632,26 +640,30 @@ void sendJsonHist(int8_t fileType, const char *fileName, const char *timeStamp, 
     writeDataToFiles();
     writeLastStatus();
   }
-    
-  switch(fileType) {
-    case HOURS:   startSlot       = timestampToHourSlot(timeStamp, strlen(timeStamp));
-                  nrSlots         = _NO_HOUR_SLOTS_;
-                  strCopy(typeApi, 9, "hours");
-                  break;
-    case DAYS:    startSlot       = timestampToDaySlot(timeStamp, strlen(timeStamp));
-                  nrSlots         = _NO_DAY_SLOTS_;
-                  strCopy(typeApi, 9, "days");
-                  break;
-    case MONTHS:  startSlot       = timestampToMonthSlot(timeStamp, strlen(timeStamp));
-                  nrSlots         = _NO_MONTH_SLOTS_;
-                  strCopy(typeApi, 9, "months");
-                  break;
+
+  switch(fileType)
+  {
+    case HOURS:
+      startSlot       = timestampToHourSlot(timeStamp, strlen(timeStamp));
+      nrSlots         = _NO_HOUR_SLOTS_;
+      strCopy(typeApi, 9, "hours");
+      break;
+    case DAYS:
+      startSlot       = timestampToDaySlot(timeStamp, strlen(timeStamp));
+      nrSlots         = _NO_DAY_SLOTS_;
+      strCopy(typeApi, 9, "days");
+      break;
+    case MONTHS:
+      startSlot       = timestampToMonthSlot(timeStamp, strlen(timeStamp));
+      nrSlots         = _NO_MONTH_SLOTS_;
+      strCopy(typeApi, 9, "months");
+      break;
   }
 
   sendStartJsonObj(typeApi);
 
   if (desc)
-        startSlot += nrSlots +1; // <==== voorbij actuele slot!
+    startSlot += nrSlots +1; // <==== voorbij actuele slot!
   else  startSlot += nrSlots;    // <==== start met actuele slot!
 
   DebugTf("sendJsonHist startSlot[%02d]\r\n", (startSlot % nrSlots));
@@ -659,43 +671,43 @@ void sendJsonHist(int8_t fileType, const char *fileName, const char *timeStamp, 
   for (uint8_t s = 0; s < nrSlots; s++)
   {
     if (desc)
-          readOneSlot(fileType, fileName, s, (s +startSlot), true, "hist") ;
+      readOneSlot(fileType, fileName, s, (s +startSlot), true, "hist") ;
     else  readOneSlot(fileType, fileName, s, (startSlot -s), true, "hist") ;
   }
   sendEndJsonObj();
-  
+
 } // sendJsonHist()
 
 
-bool isInFieldsArray(const char* lookUp, int elemts)
+bool isInFieldsArray(const char *lookUp, int elemts)
 {
   if (elemts == 0) return true;
 
   for (int i=0; i<elemts; i++)
   {
-    if (Verbose2) 
-        DebugTf("[%2d] Looking for [%s] in array[%s]\r\n", i, lookUp, fieldsArray[i]); 
+    if (Verbose2)
+      DebugTf("[%2d] Looking for [%s] in array[%s]\r\n", i, lookUp, fieldsArray[i]);
     if (strncmp(lookUp, fieldsArray[i], strlen(fieldsArray[i])) == 0) return true;
   }
   return false;
-  
+
 } // isInFieldsArray()
 
 
 void copyToFieldsArray(const char inArray[][35], int elemts)
 {
   int i = 0;
-  memset(fieldsArray,0,sizeof(fieldsArray));
+  memset(fieldsArray, 0, sizeof(fieldsArray));
   //if (Verbose2) DebugTln("start copying ....");
-  
+
   for ( i=0; i<elemts; i++)
   {
     strncpy(fieldsArray[i], inArray[i], 34);
-    //if (Verbose1) DebugTf("[%2d] => inArray[%s] fieldsArray[%s]\r\n", i, inArray[i], fieldsArray[i]); 
+    //if (Verbose1) DebugTf("[%2d] => inArray[%s] fieldsArray[%s]\r\n", i, inArray[i], fieldsArray[i]);
 
   }
   fieldsElements = i;
-  
+
 } // copyToFieldsArray()
 
 
@@ -705,9 +717,9 @@ bool listFieldsArray(char inArray[][35])
 
   for ( i=0; strlen(inArray[i]) == 0; i++)
   {
-    DebugTf("[%2d] => inArray[%s]\r\n", i, inArray[i]); 
+    DebugTf("[%2d] => inArray[%s]\r\n", i, inArray[i]);
   }
-  
+
 } // listFieldsArray()
 
 
@@ -729,17 +741,17 @@ void sendApiNotFound(const char *URI)
   strConcat(cMsg, sizeof(cMsg), URI);
   strConcat(cMsg, sizeof(cMsg), "</b>] is not a valid ");
   httpServer.sendContent(cMsg);
-  
+
   strCopy(cMsg,   sizeof(cMsg), "<a href=");
   strConcat(cMsg, sizeof(cMsg), "\"https://mrwheel-docs.gitbook.io/dsmrloggerapi/beschrijving-restapis\">");
   strConcat(cMsg, sizeof(cMsg), "restAPI</a> call.");
   httpServer.sendContent(cMsg);
-  
+
   strCopy(cMsg, sizeof(cMsg), "</body></html>\r\n");
   httpServer.sendContent(cMsg);
 
   writeToSysLog("[%s] is not a valid restAPI call!!", URI);
-  
+
 } // sendApiNotFound()
 
 
@@ -764,5 +776,5 @@ void sendApiNotFound(const char *URI)
 * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT
 * OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 * THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-* 
+*
 ***************************************************************************/

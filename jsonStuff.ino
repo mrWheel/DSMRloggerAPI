@@ -1,12 +1,12 @@
-/* 
-***************************************************************************  
+/*
+***************************************************************************
 **  Program  : jsonStuff, part of DSMRloggerAPI
 **  Version  : v3.0
 **
-**  Copyright (c) 2020 Willem Aandewiel
+**  Copyright (c) 2020 .. 2022 Willem Aandewiel
 **
-**  TERMS OF USE: MIT License. See bottom of file.                                                            
-***************************************************************************      
+**  TERMS OF USE: MIT License. See bottom of file.
+***************************************************************************
 */
 static char objSprtr[10] = "";
 
@@ -20,7 +20,7 @@ void sendStartJsonObj(const char *objName)
   httpServer.sendHeader("Access-Control-Allow-Origin", "*");
   httpServer.setContentLength(CONTENT_LENGTH_UNKNOWN);
   httpServer.send(200, "application/json", sBuff);
-  
+
 } // sendStartJsonObj()
 
 
@@ -31,19 +31,19 @@ void sendEndJsonObj()
 
   //httpServer.sendHeader( "Content-Length", "0");
   //httpServer.send ( 200, "application/json", "");
-  
+
 } // sendEndJsonObj()
 
 //=======================================================================
 void sendNestedJsonObj(uint8_t recNr, const char *recID, uint8_t slot, float EDT1, float EDT2, float ERT1, float ERT2, float GDT)
 {
   char jsonBuff[200] = "";
-  
+
   snprintf(jsonBuff, sizeof(jsonBuff), "%s{\"recnr\": %d, \"recid\": \"%s\", \"slot\": %d,"
-                          "\"edt1\": %.3f, \"edt2\": %.3f,"
-                          "\"ert1\": %.3f, \"ert2\": %.3f,"
-                          "\"gdt\": %.3f}"
-                                      , objSprtr, recNr, recID, slot, EDT1, EDT2, ERT1, ERT2, GDT);
+           "\"edt1\": %.3f, \"edt2\": %.3f,"
+           "\"ert1\": %.3f, \"ert2\": %.3f,"
+           "\"gdt\": %.3f}"
+           , objSprtr, recNr, recID, slot, EDT1, EDT2, ERT1, ERT2, GDT);
 
   httpServer.sendContent(jsonBuff);
   sprintf(objSprtr, ",\r\n");
@@ -55,16 +55,16 @@ void sendNestedJsonObj(uint8_t recNr, const char *recID, uint8_t slot, float EDT
 void sendNestedJsonObj(const char *cName, const char *cValue, const char *cUnit)
 {
   char jsonBuff[JSON_BUFF_MAX] = "";
-  
+
   if (strlen(cUnit) == 0)
   {
     snprintf(jsonBuff, sizeof(jsonBuff), "%s{\"name\": \"%s\", \"value\": \"%s\"}"
-                                      , objSprtr, cName, cValue);
+             , objSprtr, cName, cValue);
   }
   else
   {
     snprintf(jsonBuff, sizeof(jsonBuff), "%s{\"name\": \"%s\", \"value\": \"%s\", \"unit\": \"%s\"}"
-                                      , objSprtr, cName, cValue, cUnit);
+             , objSprtr, cName, cValue, cUnit);
   }
 
   httpServer.sendContent(jsonBuff);
@@ -78,7 +78,7 @@ void sendNestedJsonObj(const char *cName, const char *cValue)
   char noUnit[] = {'\0'};
 
   sendNestedJsonObj(cName, cValue, noUnit);
-  
+
 } // sendNestedJsonObj(*char, *char)
 
 
@@ -86,21 +86,21 @@ void sendNestedJsonObj(const char *cName, const char *cValue)
 void sendNestedJsonObj(const char *cName, String sValue, const char *cUnit)
 {
   char jsonBuff[JSON_BUFF_MAX] = "";
-  
+
   if (sValue.length() > (JSON_BUFF_MAX - 65) )
   {
     DebugTf("[2] sValue.length() [%d]\r\n", sValue.length());
   }
-  
+
   if (strlen(cUnit) == 0)
   {
     snprintf(jsonBuff, sizeof(jsonBuff), "%s{\"name\": \"%s\", \"value\": \"%s\"}"
-                                      , objSprtr, cName, sValue.c_str());
+             , objSprtr, cName, sValue.c_str());
   }
   else
   {
     snprintf(jsonBuff, sizeof(jsonBuff), "%s{\"name\": \"%s\", \"value\": \"%s\", \"unit\": \"%s\"}"
-                                      , objSprtr, cName, sValue.c_str(), cUnit);
+             , objSprtr, cName, sValue.c_str(), cUnit);
   }
 
   httpServer.sendContent(jsonBuff);
@@ -115,13 +115,13 @@ void sendNestedJsonObj(const char *cName, String sValue)
 
   if (sValue.length() > (JSON_BUFF_MAX - 60) )
   {
-    sendNestedJsonObj(cName, sValue.substring(0,(JSON_BUFF_MAX - (strlen(cName) + 30))), noUnit);
+    sendNestedJsonObj(cName, sValue.substring(0, (JSON_BUFF_MAX - (strlen(cName) + 30))), noUnit);
   }
   else
   {
     sendNestedJsonObj(cName, sValue, noUnit);
   }
-  
+
 } // sendNestedJsonObj(*char, String)
 
 
@@ -129,16 +129,16 @@ void sendNestedJsonObj(const char *cName, String sValue)
 void sendNestedJsonObj(const char *cName, int32_t iValue, const char *cUnit)
 {
   char jsonBuff[200] = "";
-  
+
   if (strlen(cUnit) == 0)
   {
     snprintf(jsonBuff, sizeof(jsonBuff), "%s{\"name\": \"%s\", \"value\": %d}"
-                                      , objSprtr, cName, iValue);
+             , objSprtr, cName, iValue);
   }
   else
   {
     snprintf(jsonBuff, sizeof(jsonBuff), "%s{\"name\": \"%s\", \"value\": %d, \"unit\": \"%s\"}"
-                                      , objSprtr, cName, iValue, cUnit);
+             , objSprtr, cName, iValue, cUnit);
   }
 
   httpServer.sendContent(jsonBuff);
@@ -152,7 +152,7 @@ void sendNestedJsonObj(const char *cName, int32_t iValue)
   char noUnit[] = {'\0'};
 
   sendNestedJsonObj(cName, iValue, noUnit);
-  
+
 } // sendNestedJsonObj(*char, int)
 
 
@@ -160,16 +160,16 @@ void sendNestedJsonObj(const char *cName, int32_t iValue)
 void sendNestedJsonObj(const char *cName, uint32_t uValue, const char *cUnit)
 {
   char jsonBuff[200] = "";
-  
+
   if (strlen(cUnit) == 0)
   {
     snprintf(jsonBuff, sizeof(jsonBuff), "%s{\"name\": \"%s\", \"value\": %u}"
-                                      , objSprtr, cName, uValue);
+             , objSprtr, cName, uValue);
   }
   else
   {
     snprintf(jsonBuff, sizeof(jsonBuff), "%s{\"name\": \"%s\", \"value\": %u, \"unit\": \"%s\"}"
-                                      , objSprtr, cName, uValue, cUnit);
+             , objSprtr, cName, uValue, cUnit);
   }
 
   httpServer.sendContent(jsonBuff);
@@ -183,7 +183,7 @@ void sendNestedJsonObj(const char *cName, uint32_t uValue)
   char noUnit[] = {'\0'};
 
   sendNestedJsonObj(cName, uValue, noUnit);
-  
+
 } // sendNestedJsonObj(*char, uint)
 
 
@@ -191,16 +191,16 @@ void sendNestedJsonObj(const char *cName, uint32_t uValue)
 void sendNestedJsonObj(const char *cName, float fValue, const char *cUnit)
 {
   char jsonBuff[200] = "";
-  
+
   if (strlen(cUnit) == 0)
   {
     snprintf(jsonBuff, sizeof(jsonBuff), "%s{\"name\": \"%s\", \"value\": %.3f}"
-                                      , objSprtr, cName, fValue);
+             , objSprtr, cName, fValue);
   }
   else
   {
     snprintf(jsonBuff, sizeof(jsonBuff), "%s{\"name\": \"%s\", \"value\": %.3f, \"unit\": \"%s\"}"
-                                      , objSprtr, cName, fValue, cUnit);
+             , objSprtr, cName, fValue, cUnit);
   }
 
   httpServer.sendContent(jsonBuff);
@@ -214,7 +214,7 @@ void sendNestedJsonObj(const char *cName, float fValue)
   char noUnit[] = {'\0'};
 
   sendNestedJsonObj(cName, fValue, noUnit);
-  
+
 } // sendNestedJsonObj(*char, float)
 
 
@@ -224,9 +224,9 @@ void sendNestedJsonObj(const char *cName, float fValue)
 void sendNestedJsonV0Obj(const char *cName, uint32_t uValue)
 {
   char jsonBuff[200] = "";
-  
+
   snprintf(jsonBuff, sizeof(jsonBuff), "%s \"%s\": %u"
-                                      , objSprtr, cName, uValue);
+           , objSprtr, cName, uValue);
 
   httpServer.sendContent(jsonBuff);
   sprintf(objSprtr, ",\r\n");
@@ -237,40 +237,40 @@ void sendNestedJsonV0Obj(const char *cName, uint32_t uValue)
 void sendNestedJsonV0Obj(const char *cName, float fValue)
 {
   char jsonBuff[200] = "";
-  
+
   snprintf(jsonBuff, sizeof(jsonBuff), "%s \"%s\": %.3f"
-                                      , objSprtr, cName, fValue);
+           , objSprtr, cName, fValue);
 
   httpServer.sendContent(jsonBuff);
   sprintf(objSprtr, ",\r\n");
-  
+
 } // sendNestedJsonV0Obj(*char, float)
 
 //---------------------------------------------------------------
 void sendNestedJsonV0Obj(const char *cName, int32_t iValue)
 {
   char jsonBuff[200] = "";
-  
+
   snprintf(jsonBuff, sizeof(jsonBuff), "%s \"%s\": %u"
-                                      , objSprtr, cName, iValue);
+           , objSprtr, cName, iValue);
 
   httpServer.sendContent(jsonBuff);
   sprintf(objSprtr, ",\r\n");
-  
+
 } // sendNestedV0Obj(*char, int)
 
 //---------------------------------------------------------------
 void sendNestedJsonV0Obj(const char *cName, String sValue)
 {
   char jsonBuff[200] = "";
-  
+
   snprintf(jsonBuff, sizeof(jsonBuff), "%s \"%s\": \"%s\""
-                                      , objSprtr, cName
-                                      , sValue.substring(0,(150 - (strlen(cName)))).c_str());
+           , objSprtr, cName
+           , sValue.substring(0, (150 - (strlen(cName)))).c_str());
 
   httpServer.sendContent(jsonBuff);
   sprintf(objSprtr, ",\r\n");
-  
+
 } // sendNestedJsonV0Obj(*char, String)
 
 
@@ -282,7 +282,7 @@ void sendJsonSettingObj(const char *cName, float fValue, const char *fType, int 
   char jsonBuff[200] = "";
 
   snprintf(jsonBuff, sizeof(jsonBuff), "%s{\"name\": \"%s\", \"value\": %.3f, \"type\": \"%s\", \"min\": %d, \"max\": %d}"
-                                      , objSprtr, cName, fValue, fType, minValue, maxValue);
+           , objSprtr, cName, fValue, fType, minValue, maxValue);
 
   httpServer.sendContent(jsonBuff);
   sprintf(objSprtr, ",\r\n");
@@ -295,22 +295,23 @@ void sendJsonSettingObj(const char *cName, float fValue, const char *fType, int 
 {
   char jsonBuff[200] = "";
 
-  switch(decPlaces) {
+  switch(decPlaces)
+  {
     case 0:
       snprintf(jsonBuff, sizeof(jsonBuff), "%s{\"name\": \"%s\", \"value\": %.0f, \"type\": \"%s\", \"min\": %d, \"max\": %d}"
-                                      , objSprtr, cName, fValue, fType, minValue, maxValue);
+               , objSprtr, cName, fValue, fType, minValue, maxValue);
       break;
     case 2:
       snprintf(jsonBuff, sizeof(jsonBuff), "%s{\"name\": \"%s\", \"value\": %.2f, \"type\": \"%s\", \"min\": %d, \"max\": %d}"
-                                      , objSprtr, cName, fValue, fType, minValue, maxValue);
+               , objSprtr, cName, fValue, fType, minValue, maxValue);
       break;
     case 5:
       snprintf(jsonBuff, sizeof(jsonBuff), "%s{\"name\": \"%s\", \"value\": %.5f, \"type\": \"%s\", \"min\": %d, \"max\": %d}"
-                                      , objSprtr, cName, fValue, fType, minValue, maxValue);
+               , objSprtr, cName, fValue, fType, minValue, maxValue);
       break;
     default:
       snprintf(jsonBuff, sizeof(jsonBuff), "%s{\"name\": \"%s\", \"value\": %f, \"type\": \"%s\", \"min\": %d, \"max\": %d}"
-                                      , objSprtr, cName, fValue, fType, minValue, maxValue);
+               , objSprtr, cName, fValue, fType, minValue, maxValue);
 
   }
 
@@ -326,7 +327,7 @@ void sendJsonSettingObj(const char *cName, int iValue, const char *iType, int mi
   char jsonBuff[200] = "";
 
   snprintf(jsonBuff, sizeof(jsonBuff), "%s{\"name\": \"%s\", \"value\": %d, \"type\": \"%s\", \"min\": %d, \"max\": %d}"
-                                      , objSprtr, cName, iValue, iType, minValue, maxValue);
+           , objSprtr, cName, iValue, iType, minValue, maxValue);
 
   httpServer.sendContent(jsonBuff);
   sprintf(objSprtr, ",\r\n");
@@ -340,7 +341,7 @@ void sendJsonSettingObj(const char *cName, const char *cValue, const char *sType
   char jsonBuff[200] = "";
 
   snprintf(jsonBuff, sizeof(jsonBuff), "%s{\"name\": \"%s\", \"value\":\"%s\", \"type\": \"%s\", \"maxlen\": %d}"
-                                      , objSprtr, cName, cValue, sType, maxLen);
+           , objSprtr, cName, cValue, sType, maxLen);
 
   httpServer.sendContent(jsonBuff);
   sprintf(objSprtr, ",\r\n");
@@ -357,12 +358,12 @@ void createMQTTjsonMessage(char *mqttBuff, const char *cName, const char *cValue
   if (strlen(cUnit) == 0)
   {
     snprintf(mqttBuff, MQTT_BUFF_MAX, "{\"%s\": [{\"value\": \"%s\"}]}"
-                                      , cName, cValue);
+             , cName, cValue);
   }
   else
   {
     snprintf(mqttBuff, MQTT_BUFF_MAX, "{\"%s\": [{\"value\": \"%s\", \"unit\": \"%s\"}]}"
-                                      , cName, cValue, cUnit);
+             , cName, cValue, cUnit);
   }
 
 } // createMQTTjsonMessage(*char, *char, *char)
@@ -373,7 +374,7 @@ void createMQTTjsonMessage(char *mqttBuff, const char *cName, const char *cValue
   char noUnit[] = {'\0'};
 
   createMQTTjsonMessage(mqttBuff, cName, cValue, noUnit);
-  
+
 } // createMQTTjsonMessage(*char, *char)
 
 
@@ -381,7 +382,7 @@ void createMQTTjsonMessage(char *mqttBuff, const char *cName, const char *cValue
 void createMQTTjsonMessage(char *mqttBuff, const char *cName, String sValue, const char *cUnit)
 {
   uint16_t hdrSize = (strlen(cName) * 2) +strlen(settingMQTTtopTopic) + 30;
-  
+
   if (strlen(cUnit) == 0)
   {
     //DebugTf("sValue.lenght()[%d], strlen(%s)[%d]\r\n", sValue.length(), cName, strlen(cName));
@@ -389,18 +390,18 @@ void createMQTTjsonMessage(char *mqttBuff, const char *cName, String sValue, con
     {
       String tmp = sValue.substring(0, (128 - hdrSize));
       snprintf(mqttBuff, MQTT_BUFF_MAX, "{\"%s\": [{\"value\": \"%s\"}]}"
-                         , cName, tmp.c_str());
+               , cName, tmp.c_str());
     }
     else
     {
       snprintf(mqttBuff, MQTT_BUFF_MAX, "{\"%s\": [{\"value\": \"%s\"}]}"
-                                      , cName, sValue.c_str());
+               , cName, sValue.c_str());
     }
   }
   else
   {
     snprintf(mqttBuff, MQTT_BUFF_MAX, "{\"%s\": [{\"value\": \"%s\", \"unit\": \"%s\"}]}"
-                                      , cName, sValue.c_str(), cUnit);
+             , cName, sValue.c_str(), cUnit);
   }
 
 } // createMQTTjsonMessage(*char, String, *char)
@@ -411,7 +412,7 @@ void createMQTTjsonMessage(char *mqttBuff, const char *cName, String sValue)
   char noUnit[] = {'\0'};
 
   createMQTTjsonMessage(mqttBuff, cName, sValue, noUnit);
-  
+
 } // createMQTTjsonMessage(*char, String)
 
 
@@ -421,12 +422,12 @@ void createMQTTjsonMessage(char *mqttBuff, const char *cName, int32_t iValue, co
   if (strlen(cUnit) == 0)
   {
     snprintf(mqttBuff, MQTT_BUFF_MAX, "{\"%s\": [{\"value\": %d}]}"
-                                      , cName, iValue);
+             , cName, iValue);
   }
   else
   {
     snprintf(mqttBuff, MQTT_BUFF_MAX, "{\"%s\": [{\"value\": %d, \"unit\": \"%s\"}]}"
-                                      , cName, iValue, cUnit);
+             , cName, iValue, cUnit);
   }
 
 } // createMQTTjsonMessage(*char, int, *char)
@@ -437,7 +438,7 @@ void createMQTTjsonMessage(char *mqttBuff, const char *cName, int32_t iValue)
   char noUnit[] = {'\0'};
 
   createMQTTjsonMessage(mqttBuff, cName, iValue, noUnit);
-  
+
 } // createMQTTjsonMessage(char *mqttBuff, *char, int)
 
 
@@ -447,12 +448,12 @@ void createMQTTjsonMessage(char *mqttBuff, const char *cName, uint32_t uValue, c
   if (strlen(cUnit) == 0)
   {
     snprintf(mqttBuff, MQTT_BUFF_MAX, "{\"%s\": [{\"value\": %u}]}"
-                                      , cName, uValue);
+             , cName, uValue);
   }
   else
   {
     snprintf(mqttBuff, MQTT_BUFF_MAX, "{\"%s\": [{\"value\": %u, \"unit\": \"%s\"}]}"
-                                      , cName, uValue, cUnit);
+             , cName, uValue, cUnit);
   }
 
 } // createMQTTjsonMessage(*char, uint, *char)
@@ -463,7 +464,7 @@ void createMQTTjsonMessage(char *mqttBuff, const char *cName, uint32_t uValue)
   char noUnit[] = {'\0'};
 
   createMQTTjsonMessage(mqttBuff, cName, uValue, noUnit);
-  
+
 } // createMQTTjsonMessage(char *mqttBuff, *char, uint)
 
 
@@ -473,12 +474,12 @@ void createMQTTjsonMessage(char *mqttBuff, const char *cName, float fValue, cons
   if (strlen(cUnit) == 0)
   {
     snprintf(mqttBuff, MQTT_BUFF_MAX, "{\"%s\": [{\"value\": %.3f}]}"
-                                      , cName, fValue);
+             , cName, fValue);
   }
   else
   {
     snprintf(mqttBuff, MQTT_BUFF_MAX, "{\"%s\": [{\"value\": %.3f, \"unit\": \"%s\"}]}"
-                                      , cName, fValue, cUnit);
+             , cName, fValue, cUnit);
   }
 
 } // createMQTTjsonMessage(*char, float, *char)
@@ -489,7 +490,7 @@ void createMQTTjsonMessage(char *mqttBuff, const char *cName, float fValue)
   char noUnit[] = {'\0'};
 
   createMQTTjsonMessage(mqttBuff, cName, fValue, noUnit);
-  
+
 } // createMQTTjsonMessage(char *mqttBuff, *char, float)
 
 
@@ -513,5 +514,5 @@ void createMQTTjsonMessage(char *mqttBuff, const char *cName, float fValue)
 * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT
 * OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 * THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-* 
+*
 ***************************************************************************/
