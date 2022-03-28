@@ -4,6 +4,7 @@ data/DSMRsettings.ini
 data/RINGdays.csv
 data/RINGhours.csv
 data/RINGmonths.csv
+.vscode/
 .DS_Store
 
 
