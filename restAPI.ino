@@ -397,20 +397,18 @@ void sendDeviceInfo()
 
   FlashMode_t ideMode = ESP.getFlashChipMode();
   sendNestedJsonObj("flashchipmode", flashMode[ideMode]);
-  sendNestedJsonObj("boardtype",
-#ifdef ARDUINO_ESP8266_NODEMCU
-                    "ESP8266_NODEMCU"
+#if defined(ARDUINO_ESP8266_NODEMCU)
+  sendNestedJsonObj("boardtype", "ESP8266_NODEMCU");
+#elif defined(ARDUINO_ESP8266_GENERIC)
+  sendNestedJsonObj("boardtype", "ESP8266_NODEMCU");
+#elif defined(ESP8266_ESP01)
+  sendNestedJsonObj("boardtype", "ESP8266_ESP01");
+#elif defined(ESP8266_ESP12)
+  sendNestedJsonObj("boardtype", "ESP8266_ESP12");
+#else
+  sendNestedJsonObj("boardtype", "unknown");
 #endif
-#ifdef ARDUINO_ESP8266_GENERIC
-                    "ESP8266_GENERIC"
-#endif
-#ifdef ESP8266_ESP01
-                    "ESP8266_ESP01"
-#endif
-#ifdef ESP8266_ESP12
-                    "ESP8266_ESP12"
-#endif
-                   );
+  
   sendNestedJsonObj("compileoptions", compileOptions);
   sendNestedJsonObj("ssid", WiFi.SSID().c_str());
 #ifdef SHOW_PASSWRDS
