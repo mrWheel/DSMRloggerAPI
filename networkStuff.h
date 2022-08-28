@@ -64,6 +64,8 @@ void startWiFi(const char *hostname, int timeOut)
 
   DebugTln("start ...");
 
+  WiFi.mode(WIFI_STA);
+
   manageWiFi.setDebugOutput(true);
 
   //--- set callback that gets called when connecting to previous WiFi fails, and enters Access Point mode

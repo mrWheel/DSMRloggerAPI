@@ -36,7 +36,7 @@ int readSerialUntil(Stream &uartOut, char cEnd, uint32_t waitT, bool doEcho)
 
   return 0;
 
-} //  readCharsUntil()
+} //  readSerialUntil()
 
 
 //===========================================================================================

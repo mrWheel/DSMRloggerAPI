@@ -10,6 +10,11 @@ Documentation can be found [here](https://mrwheel-docs.gitbook.io/dsmrloggerapi/
 <table>
   <tr><th>Versie</th><th align="Left">Opmerking</th></tr>
   <tr>
+    <td valign="top">3.0.3</td>
+    <td>"One Fits All" Release
+        <br>Zet Wifi mode op "WIFI_STA" in startWiFi()
+    </td>
+  <tr>
     <td valign="top">3.0.2</td>
     <td>"One Fits All" Release
         <br>In de zeldzame situatie waardoor de Slimme Meter een ObisID 0-0:96.13.0

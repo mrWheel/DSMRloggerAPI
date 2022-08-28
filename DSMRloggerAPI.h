@@ -18,12 +18,12 @@
 
 #include "FS.h"
 #if defined( USE_LITTLEFS )
-  #warning using LittleFS
+  #warning using LittleFS (which is good!) 
   #include "LittleFS.h"
   #define FSYS  LittleFS
 
 #else
-  #warning using SPIFFS
+  #warning using SPIFFS (better use LittleFS)
   //#include "SPIFFS.h"
   #define FSYS  SPIFFS
 
