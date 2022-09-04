@@ -104,6 +104,10 @@ void startWiFi(const char *hostname, int timeOut)
     oled_Clear();
   }
 
+  if (WiFi.softAPdisconnect(true))
+        Serial.println("WiFi Access Point disconnected and closed");
+  else  Serial.println("Hm.. could not disconnect WiFi Access Point! (maybe there was none?)");
+
 #ifdef USE_UPDATE_SERVER
   httpUpdater.setup(&httpServer);
   httpUpdater.setIndexPage(UpdateServerIndex);
