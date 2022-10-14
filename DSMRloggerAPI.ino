@@ -2,9 +2,9 @@
 ***************************************************************************
 **  Program  : DSMRloggerAPI (restAPI)
 */
-#define _FW_VERSION "v3.0.3 (04-09-2022)"
+#define _FW_VERSION "v3.0.4 (13-10-2022)"
 /*
-**  Copyright (c) 2020, 2021, 2022 Willem Aandewiel
+**  Copyright (c) 2020, 2021, 2022, 2023 Willem Aandewiel
 **
 **  TERMS OF USE: MIT License. See bottom of file.
 ***************************************************************************
@@ -188,6 +188,8 @@ void setup()
     }
   }
   digitalWrite(LED_BUILTIN, LED_OFF);  // HIGH is OFF
+  //-- Press [Reset] -> "External System"
+  //-- Software reset -> "Software/System restart"
   lastReset     = ESP.getResetReason();
 
   startTelnet();
@@ -250,6 +252,11 @@ void setup()
           , slotErrors);
   readSettings(true);
   oled_Init();
+
+  if (settingDailyReboot)
+  {
+    if (!lastReset.equals("Software/System restart")) telegramCount = 0;
+  }
 
   //=============start Networkstuff==================================
   if (settingOledType > 0)
@@ -679,6 +686,22 @@ void loop ()
     setSyncInterval(3600);
     check4DST(ntpTime);
   }
+
+#ifndef HAS_NO_SLIMMEMETER
+  //-- hier moet nog even over worden nagedacht
+  //-- via een setting in- of uit-schakelen
+  if (settingDailyReboot && (hour() == 4) && (minute() == 5))
+  {
+    slotErrors      = 0;
+    nrReboots       = 0;
+    writeLastStatus();
+    //--  skip to next minute (6)
+    delay(60000);
+    ESP.restart();
+    delay(3000);
+  }
+#endif
+
   yield();
 
 } // loop()

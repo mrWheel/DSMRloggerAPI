@@ -238,6 +238,11 @@ void handleKeyInput()
         showRawCount = 0;
         break;
       case 'R':
+        slotErrors      = 0;
+        nrReboots       = 0;
+        //telegramCount = 0;
+        telegramErrors  = 0;
+        writeLastStatus();
         DebugT(F("Reboot in 3 seconds ... \r\n"));
         DebugFlush();
         delay(3000);

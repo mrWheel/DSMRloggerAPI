@@ -252,6 +252,7 @@ uint8_t   settingMbus2Type     = 0;
 uint8_t   settingMbus3Type     = 0;
 uint8_t   settingMbus4Type     = 0;
 uint8_t   settingPreDSMR40     = 0;
+uint8_t   settingDailyReboot   = 0;
 char      settingHostname[30];
 char      settingIndexPage[50];
 char      settingMQTTbroker[101], settingMQTTuser[40], settingMQTTpasswd[40], settingMQTTtopTopic[21];

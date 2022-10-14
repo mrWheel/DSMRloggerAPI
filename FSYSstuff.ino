@@ -16,8 +16,8 @@ int16_t   bytesWritten;
 //====================================================================
 void readLastStatus()
 {
-  char buffer[50] = "";
-  char dummy[50] = "";
+  char buffer[100]  = "";
+  char dummy[50]    = "";
   char spiffsTimestamp[20] = "";
 
   File _file = FSYS.open("/DSMRstatus.csv", "r");
@@ -30,12 +30,17 @@ void readLastStatus()
     int l = _file.readBytesUntil('\n', buffer, sizeof(buffer));
     buffer[l] = 0;
     DebugTf("read lastUpdate[%s]\r\n", buffer);
-    sscanf(buffer, "%[^;]; %u; %u; %[^;]", spiffsTimestamp, &nrReboots, &slotErrors, dummy);
-    DebugTf("values timestamp[%s], nrReboots[%u], slotErrors[%u], dummy[%s]\r\n"
-            , spiffsTimestamp
-            , nrReboots
-            , slotErrors
-            , dummy);
+    sscanf(buffer, "%[^;]; %u; %u; %u; %[^;]", spiffsTimestamp
+                                          , &nrReboots
+                                          , &slotErrors
+                                          , &telegramCount
+                                          , dummy);
+    DebugTf("values timestamp[%s], nrReboots[%u], slotErrors[%u], telegramCount[%u], dummy[%s]\r\n"
+                                          , spiffsTimestamp
+                                          , nrReboots
+                                          , slotErrors
+                                          , telegramCount
+                                          , dummy);
     yield();
   }
   _file.close();
@@ -57,18 +62,26 @@ void writeLastStatus()
     writeToSysLog("Bailout low heap (%d bytes)", ESP.getFreeHeap());
     return;
   }
-  char buffer[50] = "";
-  DebugTf("writeLastStatus() => %s; %u; %u;\r\n", actTimestamp, nrReboots, slotErrors);
-  writeToSysLog("writeLastStatus() => %s; %u; %u;", actTimestamp, nrReboots, slotErrors);
+  char buffer[100] = "";
+  DebugTf("writeLastStatus() => %s; %u; %u; %u;\r\n", actTimestamp
+                                                    , nrReboots
+                                                    , slotErrors
+                                                    , telegramCount);
+  writeToSysLog("writeLastStatus() => %s; %u; %u; %u;", actTimestamp
+                                                    , nrReboots
+                                                    , slotErrors
+                                                    , telegramCount);
   File _file = FSYS.open("/DSMRstatus.csv", "w");
   if (!_file)
   {
     DebugTln("write(): No /DSMRstatus.csv found ..");
   }
-  snprintf(buffer, sizeof(buffer), "%-13.13s; %010u; %010u; %s;\n", actTimestamp
-           , nrReboots
-           , slotErrors
-           , "meta data");
+  snprintf(buffer, sizeof(buffer), "%-13.13s; %010u; %010u; %010u; %s;\n"
+                                                    , actTimestamp
+                                                    , nrReboots
+                                                    , slotErrors
+                                                    , telegramCount
+                                                    , "meta data");
   _file.print(buffer);
   _file.flush();
   _file.close();

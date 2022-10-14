@@ -410,7 +410,10 @@ void writePostToFile()
            , gasDelivered);
   //                                                        , DSMRdata.mbus1_delivered.val());
   //--- write the POST to a file...
-  minderGasFile.println(F("POST /api/gas_meter_readings HTTP/1.1"));
+  //-- api aanroep is veranderd per 1 jan. 2021 (??)
+  //-- was: minderGasFile.println(F("POST /api/gas_meter_readings HTTP/1.1"));
+  //-- hieronder de nieuwe URL
+  minderGasFile.println(F("POST /api/meter_readings HTTP/1.1"));
   minderGasFile.print(F("AUTH-TOKEN:"));
   minderGasFile.println(settingMindergasToken);
   minderGasFile.println(F("Host: mindergas.nl"));

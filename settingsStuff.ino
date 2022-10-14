@@ -37,6 +37,9 @@ void writeSettings()
   file.print("preDSMR40 = ");
   file.println(settingPreDSMR40);
   Debug(F("."));
+  file.print("dailyReboot = ");
+  file.println(settingDailyReboot);
+  Debug(F("."));
   file.print("EnergyDeliveredT1 = ");
   file.println(String(settingEDT1, 5));
   Debug(F("."));
@@ -208,6 +211,7 @@ void readSettings(bool show)
 
   snprintf(settingHostname, sizeof(settingHostname), "%s", _DEFAULT_HOSTNAME);
   settingPreDSMR40          = 0;
+  settingDailyReboot        = 0;
   settingMbus1Type          = 3;
   settingMbus2Type          = 0;
   settingMbus3Type          = 0;
@@ -265,6 +269,7 @@ void readSettings(bool show)
 
     if (words[0].equalsIgnoreCase("Hostname"))            strCopy(settingHostname, 29, words[1].c_str());
     if (words[0].equalsIgnoreCase("preDSMR40"))           settingPreDSMR40    = words[1].toInt();
+    if (words[0].equalsIgnoreCase("dailyReboot"))         settingDailyReboot  = words[1].toInt();
     if (words[0].equalsIgnoreCase("EnergyDeliveredT1"))   settingEDT1         = strToFloat(words[1].c_str(), 5);
     if (words[0].equalsIgnoreCase("EnergyDeliveredT2"))   settingEDT2         = strToFloat(words[1].c_str(), 5);
     if (words[0].equalsIgnoreCase("EnergyReturnedT1"))    settingERT1         = strToFloat(words[1].c_str(), 5);
@@ -345,6 +350,7 @@ void readSettings(bool show)
   Debugln(F("\r\n==== Settings ===================================================\r"));
   Debugf("                    Hostname : %s\r\n",     settingHostname);
   Debugf("   Pre DSMR 40 (0=No, 1=Yes) : %s\r\n",     settingPreDSMR40 ? "Yes":"No");
+  Debugf("  Daily Reboot (0=No, 1=Yes) : %s\r\n",     settingDailyReboot ? "Yes":"No");
   Debugf("   Energy Delivered Tarief 1 : %9.7f\r\n",  settingEDT1);
   Debugf("   Energy Delivered Tarief 2 : %9.7f\r\n",  settingEDT2);
   Debugf("   Energy Delivered Tarief 1 : %9.7f\r\n",  settingERT1);
@@ -406,6 +412,7 @@ void updateSetting(const char *field, const char *newValue)
     DebugTf("Need reboot before new %s.local will be available!\r\n\n", settingHostname);
   }
   if (!stricmp(field, "pre_DSMR40"))        settingPreDSMR40    = String(newValue).toInt();
+  if (!stricmp(field, "dailyreboot"))       settingDailyReboot  = String(newValue).toInt();
   if (!stricmp(field, "ed_tariff1"))        settingEDT1         = String(newValue).toFloat();
   if (!stricmp(field, "ed_tariff2"))        settingEDT2         = String(newValue).toFloat();
   if (!stricmp(field, "er_tariff1"))        settingERT1         = String(newValue).toFloat();

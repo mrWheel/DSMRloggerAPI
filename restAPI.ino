@@ -419,6 +419,7 @@ void sendDeviceInfo()
   sendNestedJsonObj("wifirssi", WiFi.RSSI());
   sendNestedJsonObj("uptime", upTime());
   sendNestedJsonObj("uptime_secs",      (int)upTimeSeconds, "sec");
+  sendNestedJsonObj("dailyreboot",      (int)settingDailyReboot);
   sendNestedJsonObj("oled_type",        (int)settingOledType);
   sendNestedJsonObj("oled_flip_screen", (int)settingOledFlip);
   sendNestedJsonObj("smhasfaseinfo",    (int)settingSmHasFaseInfo);
@@ -472,6 +473,7 @@ void sendDeviceSettings()
 
   sendJsonSettingObj("hostname",          settingHostname,        "s", sizeof(settingHostname) -1);
   sendJsonSettingObj("pre_dsmr40",        settingPreDSMR40,       "i", 0, 1);
+  sendJsonSettingObj("dailyreboot",       settingDailyReboot,     "i", 0, 1);
   sendJsonSettingObj("ed_tariff1",        settingEDT1,            "f", 0, 10,  5);
   sendJsonSettingObj("ed_tariff2",        settingEDT2,            "f", 0, 10,  5);
   sendJsonSettingObj("er_tariff1",        settingERT1,            "f", 0, 10,  5);
