@@ -1,9 +1,9 @@
 /*
 ***************************************************************************  
 **  Program  : DSMRindex.js, part of DSMRfirmwareAPI
-**  Version  : v3.0.1
+**  Version  : v3.0.4
 **
-**  Copyright (c) 2021 Willem Aandewiel
+**  Copyright (c) 2021, 2022, 2023 Willem Aandewiel
 **
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
@@ -36,6 +36,7 @@
   var gas_netw_costs        = 0;
   var hostName              =  "-";
   var pre_dsmr40            = 0;
+  var dailyreboot           = 0;
   var mbus_nr_gas           = 1;
   
   var data       = [];
@@ -1023,6 +1024,10 @@
             else if (json.settings[i].name == "pre_dsmr40")
             {
               pre_dsmr40 = json.settings[i].value;
+            }
+            else if (json.settings[i].name == "dailyreboot")
+            {
+              dailyreboot = json.settings[i].value;
             }
             else if (json.settings[i].name == "hostname")
             {
@@ -2037,6 +2042,7 @@ http://DSMR-API.local/api/v1/dev/settings</pre>", false);
           ,[ "smhasfaseinfo",             "SM Has Fase Info (0=No, 1=Yes)" ]
           ,[ "sm_has_fase_info",          "SM Has Fase Info (0=No, 1=Yes)" ]
           ,[ "pre_dsmr40",                "Pré DSMR 40 (0=No, 1=Yes)" ]
+          ,[ "dailyreboot",               "Dagelijkse Reboot (0=No, 1=Yes)" ]
           ,[ "oled_type",                 "OLED type (0=None, 1=SDD1306, 2=SH1106)" ]
           ,[ "oled_flip_screen",          "Flip OLED scherm (0=No, 1=Yes)" ]
           ,[ "tlgrm_interval",            "Telegram Lees Interval (Sec.)" ]
