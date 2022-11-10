@@ -126,13 +126,17 @@ time_t getNtpTime()
 //=======================================================================
 void check4DST(time_t t)
 {
-  int thisTime;
-  int DSTstart = 033103;
-  int DSTeind  = 103103;
+  int32_t thisTime;
+  //------- don't put a "0" in front of DSTstart!!!
+  int32_t DSTstart =  33103;
+  int32_t DSTeind  = 103103;
 
   snprintf(cMsg, sizeof(cMsg), "%02d%02d%02d", month(t), day(t), hour(t));
   thisTime = atoi(cMsg);
-  if (DSTstart < thisTime < DSTeind)
+  TelnetStream.printf("([%u] >= [%u]) && ([%u] < [%u]) (?) "
+                            , thisTime, DSTstart
+                            , thisTime, DSTeind);
+  if ((thisTime >= DSTstart) && (thisTime < DSTeind))
   {
     UTCtime   = 2;
     DSTactive = true;
