@@ -83,7 +83,7 @@ bool connectMQTT_FSM()
       if (!isValidIP(MQTTbrokerIP))
       {
         DebugTf("ERROR: [%s] => is not a valid URL\r\n", settingMQTTbroker);
-        settingMQTTinterval = 0;
+        //3.0.5: settingMQTTinterval = 0;
         DebugTln(F("Next State: MQTT_STATE_ERROR"));
         stateMQTT = MQTT_STATE_ERROR;
         return false;
