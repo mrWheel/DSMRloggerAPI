@@ -89,7 +89,7 @@ void writeLastStatus()
 } // writeLastStatus()
 
 //===========================================================================================
-bool buildDataRecordFromSM(char *recIn)
+void buildDataRecordFromSM(char *recIn)
 {
   static float GG = 1;
   char record[DATA_RECLEN + 1] = "";
@@ -592,7 +592,7 @@ void listFSYS()
 
 
 //===========================================================================================
-bool eraseFile()
+void eraseFile()
 {
   char eName[30] = "";
 

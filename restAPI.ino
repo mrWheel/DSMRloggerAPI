@@ -713,7 +713,7 @@ void copyToFieldsArray(const char inArray[][35], int elemts)
 } // copyToFieldsArray()
 
 
-bool listFieldsArray(char inArray[][35])
+void listFieldsArray(char inArray[][35])
 {
   int i = 0;
 
