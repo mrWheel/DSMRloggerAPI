@@ -7,6 +7,13 @@ Firmware for the DSMR-logger using only API call's
 
 Documentation can be found [here](https://mrwheel-docs.gitbook.io/dsmrloggerapi/) (in progress)!
 
+Let op!
+
+Een nieuwe ontwikkeling van de hard- and software staat [hier](https://willem.aandewiel.nl/index.php/2022/11/15/crisis-what-crisis/) beschreven!
+
+
+There is a new permutation of the hard- and software that you can find [here](https://willem.aandewiel.nl/index.php/2022/11/15/crisis-what-crisis/)!
+
 <table>
   <tr><th>Versie</th><th align="Left">Opmerking</th></tr>
   <tr>
