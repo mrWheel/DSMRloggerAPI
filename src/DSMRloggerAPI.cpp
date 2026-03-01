@@ -3,7 +3,7 @@
 ***************************************************************************
 **  Program  : DSMRloggerAPI (restAPI)
 */
-const char* PROG_VERSION = "v3.0.5 (18-03-2023)";
+const char* PROG_VERSION = "v3.0.4 (18-03-2023)";
 /*
 **  Copyright (c) 2020, 2021, 2022, 2023 Willem Aandewiel
 **
