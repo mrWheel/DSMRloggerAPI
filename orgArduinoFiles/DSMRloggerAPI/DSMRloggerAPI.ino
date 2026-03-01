@@ -2,7 +2,7 @@
 ***************************************************************************
 **  Program  : DSMRloggerAPI (restAPI)
 */
-#define _FW_VERSION "v3.0.5 (18-03-2023)"
+const char* PROG_VERSION "v3.0.5 (18-03-2023)"
 /*
 **  Copyright (c) 2020, 2021, 2022, 2023 Willem Aandewiel
 **
@@ -165,15 +165,15 @@ void setup()
   //--- Read more: https://config9.com/arduino/getting-a-truly-random-number-in-arduino/
   randomSeed(RANDOM_REG32);
   snprintf(settingHostname, sizeof(settingHostname), "%s", _DEFAULT_HOSTNAME);
-  Serial.printf("\n\nBooting....[%s]\r\n\r\n", String(_FW_VERSION).c_str());
+  Serial.printf("\n\nBooting....[%s]\r\n\r\n", String(PROG_VERSION).c_str());
 
   if (settingOledType > 0)
   {
     oled_Init();
     oled_Clear();  // clear the screen so we can paint the menu.
     oled_Print_Msg(0, " <DSMRloggerAPI>", 0);
-    int8_t sPos = String(_FW_VERSION).indexOf(' ');
-    snprintf(cMsg, sizeof(cMsg), "(c)2020 [%s]", String(_FW_VERSION).substring(0, sPos).c_str());
+    int8_t sPos = String(PROG_VERSION).indexOf(' ');
+    snprintf(cMsg, sizeof(cMsg), "(c)2020 [%s]", String(PROG_VERSION).substring(0, sPos).c_str());
     oled_Print_Msg(1, cMsg, 0);
     oled_Print_Msg(2, " Willem Aandewiel", 0);
     oled_Print_Msg(3, " >> Have fun!! <<", 1000);

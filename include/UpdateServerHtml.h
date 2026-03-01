@@ -7,11 +7,10 @@
 
 //============ Added by Convertor ==========
 
-
 #define UPDATESERVERHTML_H
 
 static const char UpdateServerIndex[] PROGMEM =
-  R"(<html charset="UTF-8">
+    R"(<html charset="UTF-8">
      <style type='text/css'>
         body {background-color: lightblue;}
      </style>
@@ -52,7 +51,7 @@ static const char UpdateServerIndex[] PROGMEM =
      </html>)";
 
 static const char UpdateServerSuccess[] PROGMEM =
-  R"(<html charset="UTF-8">
+    R"(<html charset="UTF-8">
      <style type='text/css'>
         body {background-color: lightgray;}
      </style>

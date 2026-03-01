@@ -15,7 +15,6 @@
 
 //============ Added by Convertor ==========
 
-
 /*
  * safeTimers.h (original name timers.h) is developed by Erik
  *
@@ -112,88 +111,88 @@
  *    RESTART_TIMER(screenUpdate);                                // restart timer so next DUE is in 500ms
  *  }
  *
-*/
+ */
 
 //--- timerType's -----------------------
-	//-- moved to arduinoGlue.h // #define SKIP_MISSED_TICKS             0
-	//-- moved to arduinoGlue.h // #define SKIP_MISSED_TICKS_WITH_SYNC   1
-	//-- moved to arduinoGlue.h // #define CATCH_UP_MISSED_TICKS         2
+//-- moved to arduinoGlue.h // #define SKIP_MISSED_TICKS             0
+//-- moved to arduinoGlue.h // #define SKIP_MISSED_TICKS_WITH_SYNC   1
+//-- moved to arduinoGlue.h // #define CATCH_UP_MISSED_TICKS         2
 
-	//-- moved to arduinoGlue.h // #define DECLARE_TIMER_MIN(timerName, ...) \
-	//-- moved to arduinoGlue.h //   static uint32_t timerName##_interval = (getParam(0, __VA_ARGS__, 0) * 60 * 1000), \
-	//-- moved to arduinoGlue.h //                                          timerName##_due  = millis() \
-	//-- moved to arduinoGlue.h //                                              +timerName##_interval \
-	//-- moved to arduinoGlue.h //                                              +random(timerName##_interval / 3); \
-	//-- moved to arduinoGlue.h //   static byte     timerName##_type = getParam(1, __VA_ARGS__, 0);
+//-- moved to arduinoGlue.h // #define DECLARE_TIMER_MIN(timerName, ...) \
+//-- moved to arduinoGlue.h //   static uint32_t timerName##_interval = (getParam(0, __VA_ARGS__, 0) * 60 * 1000), \
+//-- moved to arduinoGlue.h //                                          timerName##_due  = millis() \
+//-- moved to arduinoGlue.h //                                              +timerName##_interval \
+//-- moved to arduinoGlue.h //                                              +random(timerName##_interval / 3); \
+//-- moved to arduinoGlue.h //   static byte     timerName##_type = getParam(1, __VA_ARGS__, 0);
 
-	//-- moved to arduinoGlue.h // #define DECLARE_TIMER_SEC(timerName, ...) \
-	//-- moved to arduinoGlue.h //   static uint32_t timerName##_interval = (getParam(0, __VA_ARGS__, 0) * 1000), \
-	//-- moved to arduinoGlue.h //                                          timerName##_due  = millis() \
-	//-- moved to arduinoGlue.h //                                              +timerName##_interval \
-	//-- moved to arduinoGlue.h //                                              +random(timerName##_interval / 3); \
-	//-- moved to arduinoGlue.h //   static byte     timerName##_type = getParam(1, __VA_ARGS__, 0);
+//-- moved to arduinoGlue.h // #define DECLARE_TIMER_SEC(timerName, ...) \
+//-- moved to arduinoGlue.h //   static uint32_t timerName##_interval = (getParam(0, __VA_ARGS__, 0) * 1000), \
+//-- moved to arduinoGlue.h //                                          timerName##_due  = millis() \
+//-- moved to arduinoGlue.h //                                              +timerName##_interval \
+//-- moved to arduinoGlue.h //                                              +random(timerName##_interval / 3); \
+//-- moved to arduinoGlue.h //   static byte     timerName##_type = getParam(1, __VA_ARGS__, 0);
 
-	//-- moved to arduinoGlue.h // #define DECLARE_TIMER_MS(timerName, ...) \
-	//-- moved to arduinoGlue.h //   static uint32_t timerName##_interval = (getParam(0, __VA_ARGS__, 0)), \
-	//-- moved to arduinoGlue.h //                                          timerName##_due  = millis() \
-	//-- moved to arduinoGlue.h //                                              +timerName##_interval \
-	//-- moved to arduinoGlue.h //                                              +random(timerName##_interval / 3); \
-	//-- moved to arduinoGlue.h //   static byte     timerName##_type = getParam(1, __VA_ARGS__, 0);
+//-- moved to arduinoGlue.h // #define DECLARE_TIMER_MS(timerName, ...) \
+//-- moved to arduinoGlue.h //   static uint32_t timerName##_interval = (getParam(0, __VA_ARGS__, 0)), \
+//-- moved to arduinoGlue.h //                                          timerName##_due  = millis() \
+//-- moved to arduinoGlue.h //                                              +timerName##_interval \
+//-- moved to arduinoGlue.h //                                              +random(timerName##_interval / 3); \
+//-- moved to arduinoGlue.h //   static byte     timerName##_type = getParam(1, __VA_ARGS__, 0);
 
-	//-- moved to arduinoGlue.h // #define DECLARE_TIMER   DECLARE_TIMER_MS
+//-- moved to arduinoGlue.h // #define DECLARE_TIMER   DECLARE_TIMER_MS
 
-	//-- moved to arduinoGlue.h // #define CHANGE_INTERVAL_MIN(timerName, ...) \
-	//-- moved to arduinoGlue.h //   timerName##_interval = (getParam(0, __VA_ARGS__, 0) *60*1000); \
-	//-- moved to arduinoGlue.h //   timerName##_due  = millis() +timerName##_interval;
-	//-- moved to arduinoGlue.h // #define CHANGE_INTERVAL_SEC(timerName, ...) \
-	//-- moved to arduinoGlue.h //   timerName##_interval = (getParam(0, __VA_ARGS__, 0) *1000); \
-	//-- moved to arduinoGlue.h //   timerName##_due  = millis() +timerName##_interval;
-	//-- moved to arduinoGlue.h // #define CHANGE_INTERVAL_MS(timerName, ...) \
-	//-- moved to arduinoGlue.h //   timerName##_interval = (getParam(0, __VA_ARGS__, 0) ); \
-	//-- moved to arduinoGlue.h //   timerName##_due  = millis() +timerName##_interval;
+//-- moved to arduinoGlue.h // #define CHANGE_INTERVAL_MIN(timerName, ...) \
+//-- moved to arduinoGlue.h //   timerName##_interval = (getParam(0, __VA_ARGS__, 0) *60*1000); \
+//-- moved to arduinoGlue.h //   timerName##_due  = millis() +timerName##_interval;
+//-- moved to arduinoGlue.h // #define CHANGE_INTERVAL_SEC(timerName, ...) \
+//-- moved to arduinoGlue.h //   timerName##_interval = (getParam(0, __VA_ARGS__, 0) *1000); \
+//-- moved to arduinoGlue.h //   timerName##_due  = millis() +timerName##_interval;
+//-- moved to arduinoGlue.h // #define CHANGE_INTERVAL_MS(timerName, ...) \
+//-- moved to arduinoGlue.h //   timerName##_interval = (getParam(0, __VA_ARGS__, 0) ); \
+//-- moved to arduinoGlue.h //   timerName##_due  = millis() +timerName##_interval;
 
-	//-- moved to arduinoGlue.h // #define CHANGE_INTERVAL CHANGE_INTERVAL_MS
+//-- moved to arduinoGlue.h // #define CHANGE_INTERVAL CHANGE_INTERVAL_MS
 
-	//-- moved to arduinoGlue.h // #define TIME_LEFT(timerName)          ( __TimeLeft__(timerName##_due) )
-	//-- moved to arduinoGlue.h // #define TIME_LEFT_MS(timerName)       ( (TIME_LEFT(timerName) ) )
-	//-- moved to arduinoGlue.h // #define TIME_LEFT_MIN(timerName)      ( (TIME_LEFT(timerName) ) / (60 * 1000))
-	//-- moved to arduinoGlue.h // #define TIME_LEFT_SEC(timerName)      ( (TIME_LEFT(timerName) ) / 1000 )
+//-- moved to arduinoGlue.h // #define TIME_LEFT(timerName)          ( __TimeLeft__(timerName##_due) )
+//-- moved to arduinoGlue.h // #define TIME_LEFT_MS(timerName)       ( (TIME_LEFT(timerName) ) )
+//-- moved to arduinoGlue.h // #define TIME_LEFT_MIN(timerName)      ( (TIME_LEFT(timerName) ) / (60 * 1000))
+//-- moved to arduinoGlue.h // #define TIME_LEFT_SEC(timerName)      ( (TIME_LEFT(timerName) ) / 1000 )
 
-	//-- moved to arduinoGlue.h // #define TIME_PAST(timerName)          ( (timerName##_interval - TIME_LEFT(timerName)) )
-	//-- moved to arduinoGlue.h // #define TIME_PAST_MS(timerName)       ( (TIME_PAST(timerName) )
-	//-- moved to arduinoGlue.h // #define TIME_PAST_SEC(timerName)      ( (TIME_PAST(timerName) / 1000) )
-	//-- moved to arduinoGlue.h // #define TIME_PAST_MIN(timerName)      ( (TIME_PAST(timerName) / (60*1000)) )
+//-- moved to arduinoGlue.h // #define TIME_PAST(timerName)          ( (timerName##_interval - TIME_LEFT(timerName)) )
+//-- moved to arduinoGlue.h // #define TIME_PAST_MS(timerName)       ( (TIME_PAST(timerName) )
+//-- moved to arduinoGlue.h // #define TIME_PAST_SEC(timerName)      ( (TIME_PAST(timerName) / 1000) )
+//-- moved to arduinoGlue.h // #define TIME_PAST_MIN(timerName)      ( (TIME_PAST(timerName) / (60*1000)) )
 
-	//-- moved to arduinoGlue.h // #define RESTART_TIMER(timerName)      ( timerName##_due = millis()+timerName##_interval );
+//-- moved to arduinoGlue.h // #define RESTART_TIMER(timerName)      ( timerName##_due = millis()+timerName##_interval );
 
-	//-- moved to arduinoGlue.h // #define DUE(timerName)                ( __Due__(timerName##_due, timerName##_interval, timerName##_type) )
+//-- moved to arduinoGlue.h // #define DUE(timerName)                ( __Due__(timerName##_due, timerName##_interval, timerName##_type) )
 
-uint32_t __Due__(uint32_t &timer_due, uint32_t timer_interval, byte timerType)
+uint32_t __Due__(uint32_t& timer_due, uint32_t timer_interval, byte timerType)
 {
   if ((int32_t)(millis() - timer_due) >= 0)
   {
     switch (timerType)
     {
-      case CATCH_UP_MISSED_TICKS:
+    case CATCH_UP_MISSED_TICKS:
+      timer_due += timer_interval;
+      break;
+
+    case SKIP_MISSED_TICKS_WITH_SYNC:
+      if ((millis() - timer_due) >= (timer_interval * 0.05))
+      {
         timer_due += timer_interval;
-        break;
+        return 0;
+      }
+      while ((int32_t)(millis() - timer_due) >= 0)
+      {
+        timer_due += timer_interval;
+        yield();
+      }
+      break;
 
-      case SKIP_MISSED_TICKS_WITH_SYNC:
-        if ( (millis() - timer_due) >= (timer_interval * 0.05) )
-        {
-          timer_due  += timer_interval;
-          return 0;
-        }
-        while ((int32_t)(millis() - timer_due) >= 0)
-        {
-          timer_due  += timer_interval;
-          yield();
-        }
-        break;
-
-      default:  // SKIP_MISSED_TICKS
-        timer_due = millis() + timer_interval;
-        break;
+    default: // SKIP_MISSED_TICKS
+      timer_due = millis() + timer_interval;
+      break;
     } // switch()
 
     return (uint32_t)timer_due;
@@ -214,23 +213,27 @@ uint32_t __TimeLeft__(uint32_t timer_due)
   // state=0  0-------T-D-------------------|------------------------------UMAX
 
   // state=1  0---T<========INT32_MAX========>-------------------------D---UMAX
-  if ( timer_due > (millis() + INT32_MAX) ) state = 1;  // millis() rolled-over
+  if (timer_due > (millis() + INT32_MAX))
+    state = 1; // millis() rolled-over
 
   // state=2  0--------D<========INT32_MAX========>---------------T--------UMAX
-  if ( millis() > (timer_due + INT32_MAX) ) state = 2;  // _due rolled-over
+  if (millis() > (timer_due + INT32_MAX))
+    state = 2; // _due rolled-over
 
-  switch(state)
+  switch (state)
   {
-    case 1:     //--- millis() rolled-over
-    case 2:     //--- _due rolled-over
-      if ( (int32_t)((timer_due + UINT32_MAX) - millis()) >= 0 )
-        tmp = (timer_due + UINT32_MAX) - millis();
-      else  tmp = 0;
-      break;
-    default:
-      if ( (int32_t)(timer_due - millis()) >= 0 )
-        tmp = timer_due - millis();
-      else  tmp = 0;
+  case 1: //--- millis() rolled-over
+  case 2: //--- _due rolled-over
+    if ((int32_t)((timer_due + UINT32_MAX) - millis()) >= 0)
+      tmp = (timer_due + UINT32_MAX) - millis();
+    else
+      tmp = 0;
+    break;
+  default:
+    if ((int32_t)(timer_due - millis()) >= 0)
+      tmp = timer_due - millis();
+    else
+      tmp = 0;
   }
 
   return (uint32_t)tmp;
@@ -243,36 +246,36 @@ uint32_t getParam(int i, ...)
   uint32_t parm, p;
   va_list vl;
   va_start(vl, i);
-  for (p=0; p<=i; p++)
+  for (p = 0; p <= i; p++)
   {
-    parm=va_arg(vl, uint32_t);
+    parm = va_arg(vl, uint32_t);
   }
   va_end(vl);
   return parm;
 } // getParam()
 
 /***************************************************************************
-*
-* Permission is hereby granted, free of charge, to any person obtaining a
-* copy of this software and associated documentation files (the
-* "Software"), to deal in the Software without restriction, including
-* without limitation the rights to use, copy, modify, merge, publish,
-* distribute, sublicense, and/or sell copies of the Software, and to permit
-* persons to whom the Software is furnished to do so, subject to the
-* following conditions:
-*
-* The above copyright notice and this permission notice shall be included
-* in all copies or substantial portions of the Software.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-* OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT
-* OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
-* THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*
-****************************************************************************
-*/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to permit
+ * persons to whom the Software is furnished to do so, subject to the
+ * following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included
+ * in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+ * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT
+ * OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
+ * THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ ****************************************************************************
+ */
 
 #endif // SAFETIMERS_H
