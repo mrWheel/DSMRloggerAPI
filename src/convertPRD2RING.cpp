@@ -13,17 +13,17 @@
 //=====================================================================
 void convertPRD2RING()
 {
-  if (DSMRfileExist("PRDhours.csv",  false) )
+  if (DSMRfileExist("PRDhours.csv", false))
   {
     FSYS.remove(HOURS_FILE);
     convertPRDfile(HOURS);
   }
-  if (DSMRfileExist("PRDdays.csv",   false) )
+  if (DSMRfileExist("PRDdays.csv", false))
   {
     FSYS.remove(DAYS_FILE);
     convertPRDfile(DAYS);
   }
-  if (DSMRfileExist("PRDmonths.csv", false) )
+  if (DSMRfileExist("PRDmonths.csv", false))
   {
     FSYS.remove(MONTHS_FILE);
     convertPRDfile(MONTHS);
@@ -35,42 +35,42 @@ void convertPRD2RING()
 //=====================================================================
 void convertPRDfile(int8_t fileType)
 {
-  char  PRDfileName[30];
-  char  buffer[200];
-  char  recKey[15];
+  char PRDfileName[30];
+  char buffer[200];
+  char recKey[15];
   float EDT1, EDT2, ERT1, ERT2, GDT;
-  int   offSet = 0, maxRecs = 0;
+  int offSet = 0, maxRecs = 0;
 
   Debugln("convertPRDfile() =============================================\r\n");
 
-  switch(fileType)
+  switch (fileType)
   {
-    case HOURS:
-      strCopy(PRDfileName, sizeof(PRDfileName), "/PRDhours.csv");
-      maxRecs = 49;
-      break;
-    case DAYS:
-      strCopy(PRDfileName, sizeof(PRDfileName), "/PRDdays.csv");
-      maxRecs = 15;
-      break;
-    case MONTHS:
-      strCopy(PRDfileName, sizeof(PRDfileName), "/PRDmonths.csv");
-      maxRecs = 25;
-      break;
+  case HOURS:
+    strCopy(PRDfileName, sizeof(PRDfileName), "/PRDhours.csv");
+    maxRecs = 49;
+    break;
+  case DAYS:
+    strCopy(PRDfileName, sizeof(PRDfileName), "/PRDdays.csv");
+    maxRecs = 15;
+    break;
+  case MONTHS:
+    strCopy(PRDfileName, sizeof(PRDfileName), "/PRDmonths.csv");
+    maxRecs = 25;
+    break;
 
   } // switch()
 
-  File PRDfile  = FSYS.open(PRDfileName, "r");    // open for Read
+  File PRDfile = FSYS.open(PRDfileName, "r"); // open for Read
   if (!PRDfile)
   {
     DebugTf("File [%s] does not exist, skip\r\n", PRDfileName);
     return;
   } // if (!dataFile)
 
-  int recLen = PRDfile.readBytesUntil('\n', buffer, sizeof(buffer)) +1;
+  int recLen = PRDfile.readBytesUntil('\n', buffer, sizeof(buffer)) + 1;
   DebugTf("recLen[%02d]\r\n", recLen);
 
-  for(int r=maxRecs; r>0; r--)
+  for (int r = maxRecs; r > 0; r--)
   {
     offSet = r * recLen;
     DebugTf("offSet[%4d] => ", offSet);
@@ -98,8 +98,7 @@ void convertPRDfile(int8_t fileType)
 } // convertPRDfile()
 
 //=====================================================================
-void writeToRINGfile(int8_t fileType, const char *key, float EDT1, float EDT2
-                     , float ERT1, float ERT2, float GDT)
+void writeToRINGfile(int8_t fileType, const char* key, float EDT1, float EDT2, float ERT1, float ERT2, float GDT)
 {
   char record[DATA_RECLEN + 1] = "";
   char newKey[15];
@@ -111,71 +110,67 @@ void writeToRINGfile(int8_t fileType, const char *key, float EDT1, float EDT2
   //  months:  YYMM     concat DDHHmmssX
   strCopy(newKey, 14, key);
 
-  switch(fileType)
+  switch (fileType)
   {
-    case HOURS:
-      strConcat(newKey, 14, "0101X");
-      recSlot = timestampToHourSlot(newKey,  strlen(newKey));
-      break;
-    case DAYS:
-      strConcat(newKey, 14, "230101X");
-      recSlot = timestampToDaySlot(newKey,   strlen(newKey));
-      break;
-    case MONTHS:
-      strConcat(newKey, 14, "01230101X");
-      recSlot = timestampToMonthSlot(newKey, strlen(newKey));
-      break;
+  case HOURS:
+    strConcat(newKey, 14, "0101X");
+    recSlot = timestampToHourSlot(newKey, strlen(newKey));
+    break;
+  case DAYS:
+    strConcat(newKey, 14, "230101X");
+    recSlot = timestampToDaySlot(newKey, strlen(newKey));
+    break;
+  case MONTHS:
+    strConcat(newKey, 14, "01230101X");
+    recSlot = timestampToMonthSlot(newKey, strlen(newKey));
+    break;
 
   } // switch()
 
-  snprintf(record, sizeof(record), (char *)DATA_FORMAT, newKey, (float)EDT1
-           , (float)EDT2
-           , (float)ERT1
-           , (float)ERT2
-           , (float)GDT);
+  snprintf(record, sizeof(record), (char*)DATA_FORMAT, newKey, (float)EDT1, (float)EDT2, (float)ERT1, (float)ERT2, (float)GDT);
 
   // DATA + \n + \0
   fillRecord(record, DATA_RECLEN);
 
-  if (Verbose2) Debugf("key[%s], slot[%02d] %s\r", newKey, recSlot, record);
+  if (Verbose2)
+    Debugf("key[%s], slot[%02d] %s\r", newKey, recSlot, record);
 
-  switch(fileType)
+  switch (fileType)
   {
-    case HOURS:
-      writeDataToFile(HOURS_FILE,  record, recSlot, HOURS);
-      break;
-    case DAYS:
-      writeDataToFile(DAYS_FILE,   record, recSlot, DAYS);
-      break;
-    case MONTHS:
-      writeDataToFile(MONTHS_FILE, record, recSlot, MONTHS);
-      break;
+  case HOURS:
+    writeDataToFile(HOURS_FILE, record, recSlot, HOURS);
+    break;
+  case DAYS:
+    writeDataToFile(DAYS_FILE, record, recSlot, DAYS);
+    break;
+  case MONTHS:
+    writeDataToFile(MONTHS_FILE, record, recSlot, MONTHS);
+    break;
 
   } // switch()
 
 } // writeToRINGfile()
 
-
 /***************************************************************************
-*
-* Permission is hereby granted, free of charge, to any person obtaining a
-* copy of this software and associated documentation files (the
-* "Software"), to deal in the Software without restriction, including
-* without limitation the rights to use, copy, modify, merge, publish,
-* distribute, sublicense, and/or sell copies of the Software, and to permit
-* persons to whom the Software is furnished to do so, subject to the
-* following conditions:
-*
-* The above copyright notice and this permission notice shall be included
-* in all copies or substantial portions of the Software.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-* OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT
-* OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
-* THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*
-****************************************************************************
-*/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to permit
+ * persons to whom the Software is furnished to do so, subject to the
+ * following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included
+ * in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+ * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT
+ * OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
+ * THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ ****************************************************************************
+ */

@@ -14,7 +14,7 @@
 //==================================================================================
 void handleSlimmemeter()
 {
-  //DebugTf("showRaw (%s)\r\n", showRaw ?"true":"false");
+  // DebugTf("showRaw (%s)\r\n", showRaw ?"true":"false");
   if (showRaw)
   {
     //-- process telegrams in raw mode
@@ -27,19 +27,18 @@ void handleSlimmemeter()
 
 } // handleSlimmemeter()
 
-
 //==================================================================================
 void processSlimmemeterRaw()
 {
-  char    tlgrm[MAX_TLGRM_LENGTH] = "";
-  char    checkSum[10]            = "";
+  char tlgrm[MAX_TLGRM_LENGTH] = "";
+  char checkSum[10] = "";
 
   DebugTf("handleSlimmerMeter RawCount=[%4d]\r\n", showRawCount);
   showRawCount++;
   showRaw = (showRawCount <= 20);
   if (!showRaw)
   {
-    showRawCount  = 0;
+    showRawCount = 0;
     return;
   }
 
@@ -56,12 +55,11 @@ void processSlimmemeterRaw()
 
   int l = 0, lc = 0;
 
-  if (l=readSerialUntil(TelnetStream, '/', 5000, false))
+  if (l = readSerialUntil(TelnetStream, '/', 5000, false))
   {
     TelnetStream.print("\r\n/");
-    l  = readSerialUntil(TelnetStream, '!', 500, true);
-    lc = readSerialUntil(TelnetStream, '\n', 500, true) +l;
-
+    l = readSerialUntil(TelnetStream, '!', 500, true);
+    lc = readSerialUntil(TelnetStream, '\n', 500, true) + l;
   }
   else
   {
@@ -73,7 +71,6 @@ void processSlimmemeterRaw()
   return;
 
 } // processSlimmemeterRaw()
-
 
 //==================================================================================
 void processSlimmemeter()
@@ -88,9 +85,9 @@ void processSlimmemeter()
     telegramCount++;
 
     DSMRdata = {};
-    String    DSMRerror;
+    String DSMRerror;
 
-    if (slimmeMeter.parse(&DSMRdata, &DSMRerror))   // Parse succesful, print result
+    if (slimmeMeter.parse(&DSMRdata, &DSMRerror)) // Parse succesful, print result
     {
       if (telegramCount > (UINT32_MAX - 10))
       {
@@ -103,9 +100,10 @@ void processSlimmemeter()
       {
         //--- this is a hack! The identification can have a backslash in it
         //--- that will ruin javascript processing :-(
-        for(int i=0; i<DSMRdata.identification.length(); i++)
+        for (int i = 0; i < DSMRdata.identification.length(); i++)
         {
-          if (DSMRdata.identification[i] == '\\') DSMRdata.identification[i] = '=';
+          if (DSMRdata.identification[i] == '\\')
+            DSMRdata.identification[i] = '=';
           yield();
         }
       }
@@ -113,20 +111,20 @@ void processSlimmemeter()
       if (DSMRdata.p1_version_be_present)
       {
         DSMRdata.p1_version = DSMRdata.p1_version_be;
-        DSMRdata.p1_version_be_present  = false;
-        DSMRdata.p1_version_present     = true;
+        DSMRdata.p1_version_be_present = false;
+        DSMRdata.p1_version_present = true;
       }
 
       modifySmFaseInfo();
 
       if (!DSMRdata.timestamp_present)
       {
-        sprintf(cMsg, "%02d%02d%02d%02d%02d%02d\0\0"
-                , (year() - 2000), month(), day()
-                , hour(), minute(), second());
-        if (DSTactive)  strConcat(cMsg, 15, "S");
-        else            strConcat(cMsg, 15, "W");
-        DSMRdata.timestamp         = cMsg;
+        sprintf(cMsg, "%02d%02d%02d%02d%02d%02d\0\0", (year() - 2000), month(), day(), hour(), minute(), second());
+        if (DSTactive)
+          strConcat(cMsg, 15, "S");
+        else
+          strConcat(cMsg, 15, "W");
+        DSMRdata.timestamp = cMsg;
         DSMRdata.timestamp_present = true;
       }
 
@@ -139,9 +137,8 @@ void processSlimmemeter()
         DebugTln("showValues: ");
         DSMRdata.applyEach(showValues());
       }
-
     }
-    else                  // Parser error, print error
+    else // Parser error, print error
     {
       telegramErrors++;
 #ifdef USE_SYSLOGGER
@@ -153,7 +150,7 @@ void processSlimmemeter()
       slimmeMeter.loop();
     }
 
-    if ( (telegramCount > 25) && (telegramCount % (2100 / (settingTelegramInterval + 1)) == 0) )
+    if ((telegramCount > 25) && (telegramCount % (2100 / (settingTelegramInterval + 1)) == 0))
     {
       DebugTf("Processed [%d] telegrams ([%d] errors)\r\n", telegramCount, telegramErrors);
       writeToSysLog("Processed [%d] telegrams ([%d] errors)", telegramCount, telegramErrors);
@@ -163,8 +160,7 @@ void processSlimmemeter()
 
 } // handleSlimmeMeter()
 
-#endif  // HAS_NO_SLIMMEMETER
-
+#endif // HAS_NO_SLIMMEMETER
 
 //==================================================================================
 void modifySmFaseInfo()
@@ -189,7 +185,6 @@ void modifySmFaseInfo()
 
 } //  modifySmFaseInfo()
 
-
 //==================================================================================
 float modifyMbusDelivered()
 {
@@ -199,11 +194,12 @@ float modifyMbusDelivered()
     DSMRdata.mbus1_delivered = DSMRdata.mbus1_delivered_ntc;
   else if (DSMRdata.mbus1_delivered_dbl_present)
     DSMRdata.mbus1_delivered = DSMRdata.mbus1_delivered_dbl;
-  DSMRdata.mbus1_delivered_present     = true;
+  DSMRdata.mbus1_delivered_present = true;
   DSMRdata.mbus1_delivered_ntc_present = false;
   DSMRdata.mbus1_delivered_dbl_present = false;
-  if (settingMbus1Type > 0) DebugTf("mbus1_delivered [%.3f]\r\n", (float)DSMRdata.mbus1_delivered);
-  if ( (settingMbus1Type == 3) && (DSMRdata.mbus1_device_type == 3) )
+  if (settingMbus1Type > 0)
+    DebugTf("mbus1_delivered [%.3f]\r\n", (float)DSMRdata.mbus1_delivered);
+  if ((settingMbus1Type == 3) && (DSMRdata.mbus1_device_type == 3))
   {
     tmpGasDelivered = (float)(DSMRdata.mbus1_delivered * 1.0);
     DebugTf("gasDelivered .. [%.3f]\r\n", tmpGasDelivered);
@@ -213,11 +209,12 @@ float modifyMbusDelivered()
     DSMRdata.mbus2_delivered = DSMRdata.mbus2_delivered_ntc;
   else if (DSMRdata.mbus2_delivered_dbl_present)
     DSMRdata.mbus2_delivered = DSMRdata.mbus2_delivered_dbl;
-  DSMRdata.mbus2_delivered_present     = true;
+  DSMRdata.mbus2_delivered_present = true;
   DSMRdata.mbus2_delivered_ntc_present = false;
   DSMRdata.mbus2_delivered_dbl_present = false;
-  if (settingMbus2Type > 0) DebugTf("mbus2_delivered [%.3f]\r\n", (float)DSMRdata.mbus2_delivered);
-  if ( (settingMbus2Type == 3) && (DSMRdata.mbus2_device_type == 3) )
+  if (settingMbus2Type > 0)
+    DebugTf("mbus2_delivered [%.3f]\r\n", (float)DSMRdata.mbus2_delivered);
+  if ((settingMbus2Type == 3) && (DSMRdata.mbus2_device_type == 3))
   {
     tmpGasDelivered = (float)(DSMRdata.mbus2_delivered * 1.0);
     DebugTf("gasDelivered .. [%.3f]\r\n", tmpGasDelivered);
@@ -227,11 +224,12 @@ float modifyMbusDelivered()
     DSMRdata.mbus3_delivered = DSMRdata.mbus3_delivered_ntc;
   else if (DSMRdata.mbus3_delivered_dbl_present)
     DSMRdata.mbus3_delivered = DSMRdata.mbus3_delivered_dbl;
-  DSMRdata.mbus3_delivered_present     = true;
+  DSMRdata.mbus3_delivered_present = true;
   DSMRdata.mbus3_delivered_ntc_present = false;
   DSMRdata.mbus3_delivered_dbl_present = false;
-  if (settingMbus3Type > 0) DebugTf("mbus3_delivered [%.3f]\r\n", (float)DSMRdata.mbus3_delivered);
-  if ( (settingMbus3Type == 3) && (DSMRdata.mbus3_device_type == 3) )
+  if (settingMbus3Type > 0)
+    DebugTf("mbus3_delivered [%.3f]\r\n", (float)DSMRdata.mbus3_delivered);
+  if ((settingMbus3Type == 3) && (DSMRdata.mbus3_device_type == 3))
   {
     tmpGasDelivered = (float)(DSMRdata.mbus3_delivered * 1.0);
     DebugTf("gasDelivered .. [%.3f]\r\n", tmpGasDelivered);
@@ -241,11 +239,12 @@ float modifyMbusDelivered()
     DSMRdata.mbus4_delivered = DSMRdata.mbus4_delivered_ntc;
   else if (DSMRdata.mbus4_delivered_dbl_present)
     DSMRdata.mbus4_delivered = DSMRdata.mbus4_delivered_dbl;
-  DSMRdata.mbus4_delivered_present     = true;
+  DSMRdata.mbus4_delivered_present = true;
   DSMRdata.mbus4_delivered_ntc_present = false;
   DSMRdata.mbus4_delivered_dbl_present = false;
-  if (settingMbus4Type > 0) DebugTf("mbus4_delivered [%.3f]\r\n", (float)DSMRdata.mbus4_delivered);
-  if ( (settingMbus4Type == 3) && (DSMRdata.mbus4_device_type == 3) )
+  if (settingMbus4Type > 0)
+    DebugTf("mbus4_delivered [%.3f]\r\n", (float)DSMRdata.mbus4_delivered);
+  if ((settingMbus4Type == 3) && (DSMRdata.mbus4_device_type == 3))
   {
     tmpGasDelivered = (float)(DSMRdata.mbus4_delivered * 1.0);
     DebugTf("gasDelivered .. [%.3f]\r\n", tmpGasDelivered);
@@ -256,24 +255,24 @@ float modifyMbusDelivered()
 } //  modifyMbusDelivered()
 
 /***************************************************************************
-*
-* Permission is hereby granted, free of charge, to any person obtaining a
-* copy of this software and associated documentation files (the
-* "Software"), to deal in the Software without restriction, including
-* without limitation the rights to use, copy, modify, merge, publish,
-* distribute, sublicense, and/or sell copies of the Software, and to permit
-* persons to whom the Software is furnished to do so, subject to the
-* following conditions:
-*
-* The above copyright notice and this permission notice shall be included
-* in all copies or substantial portions of the Software.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-* OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT
-* OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
-* THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*
-***************************************************************************/
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to permit
+ * persons to whom the Software is furnished to do so, subject to the
+ * following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included
+ * in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+ * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT
+ * OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
+ * THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ ***************************************************************************/

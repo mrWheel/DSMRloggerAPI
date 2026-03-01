@@ -17,6 +17,12 @@ There is a new permutation of the hard- and software that you can find [here](ht
 <table>
   <tr><th>Versie</th><th align="Left">Opmerking</th></tr>
   <tr>
+    <td valign="top">3.0.5</td>
+    <td>Ready for flasher.aandewiel.nl
+        <br>_FW_VERSION is now PROG_VERSION to comply with tag-release.py 
+    </td>
+  </tr>
+  <tr>
     <td valign="top">3.0.4</td>
     <td>"One Fits All" Release
         <br>Nieuwe optie op DSMR-logger dagelijks te rebooten

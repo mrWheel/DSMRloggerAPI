@@ -1,0 +1,10 @@
+{
+  "name": "DSMRloggerAPI",
+  "description_nl": "**DSMRloggerAPI** firmware voor het DSMRlogger bordje (V4) waarmee de Slimme Meter kan worden uitgelezen",
+  "description_en": "**DSMRloggerAPI** firmware for the DSMRlogger board (V4) that enables reading data from the Smart Meter",
+  "long_name_nl": "DSMRloggerAPI firmware voor DSMRlogger V4 bordje",
+  "long_name_en": "DSMRloggerAPI firmware for the DSMRlogger V4 board",
+  "github_url": "https://github.com/mrWheel/DSMRloggerAPI",
+  "post_url": "https://willem.aandewiel.nl/index.php/2020/02/28/restapis-zijn-hip-nieuwe-firmware-voor-de-dsmr-logger/",
+  "image": "DSMRlogger_V4.png"
+}

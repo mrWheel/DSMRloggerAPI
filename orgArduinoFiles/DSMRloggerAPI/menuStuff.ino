@@ -40,7 +40,7 @@ void displayBoardInfo()
   Debugln(F("\r\n==================================================================\r"));
   Debug(F(" \r\n            (c)2019 by [Willem Aandewiel"));
   Debug(F("]\r\n      Firmware Version ["));
-  Debug( _FW_VERSION );
+  Debug( PROG_VERSION );
   Debug(F("]\r\n              Compiled ["));
   Debug( __DATE__ );
   Debug( "  " );
